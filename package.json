@@ -1,5 +1,5 @@
 {
-  "name": "hub-template",
+  "name": "slack-knowledgebase-chatgpt-responder",
   "version": "1.0.0",
   "description": "Template to start a new repository on the hub",
   "main": "index.js",
@@ -11,15 +11,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/nearform/hub-template.git"
+    "url": "git+https://github.com/nearform/slack-knowledgebase-chatgpt-responder.git"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "bugs": {
-    "url": "https://github.com/nearform/hub-template/issues"
+    "url": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder/issues"
   },
-  "homepage": "https://github.com/nearform/hub-template#readme",
+  "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "devDependencies": {
     "@commitlint/cli": "^17.4.4",
     "@commitlint/config-conventional": "^17.4.4",
@@ -32,5 +32,8 @@
   },
   "lint-staged": {
     "*.{js,jsx}": "eslint --cache --fix"
-  }
+  },
+  "workspaces": [
+    "packages/slack-bot"
+  ]
 }
