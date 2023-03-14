@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "description": "Template to start a new repository on the hub",
   "main": "index.js",
-  "type": "module",
   "scripts": {
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 0",
