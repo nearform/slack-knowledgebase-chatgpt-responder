@@ -1,0 +1,7 @@
+- follow guide here https://cloud.google.com/python/docs/setup
+- follow guide here https://cloud.google.com/functions/docs/create-deploy-gcloud
+- follow guide here for local development https://cloud.google.com/functions/docs/running/function-frameworks
+- enable apis cloudfunctions cloudbuild artifactregistry eventarc cloudrun
+- grant cloud storage service account pubsub.publisher role https://cloud.google.com/eventarc/docs/run/create-trigger-storage-gcloud#before-you-begin
+- deploy https://cloud.google.com/functions/docs/deploy
+- gcloud functions deploy testing --gen2 --runtime=python311 --source=packages\embeddings-creation --entry-point=create_embeddings --trigger-bucket=simone-testing --region=europe-west4 --set-env-vars OPENAI_API_KEY={the api key}
