@@ -2,7 +2,7 @@
 
 ## Installation
 
-### Notion setep
+### Notion setup
 
 Create a new notion integration and add it to a section. Please refer to https://www.notion.so/my-integrations.
 
