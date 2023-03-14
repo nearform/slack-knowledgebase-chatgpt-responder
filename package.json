@@ -36,7 +36,7 @@
     "*.{js,jsx}": "eslint --cache --fix"
   },
   "workspaces": [
-    "packages/slack-bot",
+    "packages/slack-bot-js",
     "packages/crawler"
   ]
 }
