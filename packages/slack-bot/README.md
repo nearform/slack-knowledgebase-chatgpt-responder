@@ -17,3 +17,4 @@ Head to https://api.slack.com/apps and select your app. Then copy/paste the foll
 | `SLACK_SIGNING_SECRET` | `Basic information` > `Signing Secret`         |
 | `SLACK_APP_TOKEN`      | `Basic information` > `App-Level Tokens`       |
 | `SLACK_BOT_TOKEN`      | `OAuth & Permissions` > `Bot User OAuth Token` |
+| `GET_ANSWER_API`       | API endpoint to fetch an answer from           |

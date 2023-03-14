@@ -1,5 +1,10 @@
-require('dotenv').config()
-const { App } = require('@slack/bolt')
+import * as dotenv from 'dotenv'
+import bolt from '@slack/bolt'
+import fetch from 'node-fetch'
+import querystring from 'node:querystring'
+
+const { App } = bolt
+dotenv.config()
 
 // Initializes your app with your bot token and signing secret
 const app = new App({
@@ -12,8 +17,18 @@ const app = new App({
 
 // Listens to incoming messages that contain "hello"
 app.message('hello', async ({ message, say }) => {
+  const payload = {
+    question: message.message
+  }
+
+  const response = await fetch(
+    `${process.env.GET_ANSWER_API}?${querystring.encode(payload)}`
+  )
+  const data = await response.json()
+
   // say() sends a message to the channel where the event was triggered
-  await say(`Hey there <@${message.user}>!`)
+  // @NOTE expected payload temporarily hardcoded as https://zenquotes.io/api/random response :)
+  await say(`Hey there <@${message.user}>!\nThe answer is: ${data[0].q}`)
 })
 ;(async () => {
   // Start your app
