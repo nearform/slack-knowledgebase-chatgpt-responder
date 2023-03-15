@@ -60,9 +60,10 @@ const getPageContent = async (id: string) => {
 export const fetchData = async () => {
   const pages = await getPages()
   const results = await Promise.all(
-    pages.map(async page => {
+    pages.map(async (page, i) => {
       const content = await getPageContent(page.id)
       return {
+        index: i,
         title: page.title,
         text: content.join(' ').replace(/(\r\n|\n|\r)/gm, '')
       }
