@@ -17,4 +17,3 @@ lib/
 .venv
 __pycache__/
 env
-packages
