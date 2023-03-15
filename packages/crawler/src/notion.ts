@@ -64,10 +64,10 @@ export const fetchData = async () => {
       const content = await getPageContent(page.id)
       return {
         title: page.title,
-        content: content.join(' ').replace(/(\r\n|\n|\r)/gm, '')
+        text: content.join(' ').replace(/(\r\n|\n|\r)/gm, '')
       }
     })
   )
 
-  return results.filter(page => page.content)
+  return results.filter(page => page.text)
 }
