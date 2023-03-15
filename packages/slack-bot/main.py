@@ -9,7 +9,7 @@ load_dotenv()  # take environment variables from .env.
 
 # Initializes your app with your bot token and socket mode handler
 # See: https://slack.dev/bolt-python/tutorial/getting-started
-app = App(token=os.environ.get("SLACK_BOT_TOKEN"))
+app = App(token=os.environ.get("SLACK_BOT_TOKEN"), signing_secret=os.environ.get("SLACK_SIGNING_SECRET"))
 
 
 def greet(username):
@@ -23,4 +23,4 @@ def message_response(message, say):
 
 # Start your app
 if __name__ == "__main__":
-    SocketModeHandler(app, os.environ["SLACK_APP_TOKEN"]).start()
+    app.start(port=int(os.environ.get("PORT", 3000)))
