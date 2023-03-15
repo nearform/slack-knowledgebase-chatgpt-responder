@@ -12,11 +12,13 @@ Please refer to https://slack.dev/bolt-python/tutorial/getting-started to have a
 
 Head to https://api.slack.com/apps and select your app. Then copy/paste the following values in an `.env` file:
 
-| Env var                | Where is Slack App admin page                  |
-| ---------------------- | ---------------------------------------------- |
-| `SLACK_SIGNING_SECRET` | `Basic information` > `Signing Secret`         |
-| `SLACK_APP_TOKEN`      | `Basic information` > `App-Level Tokens`       |
-| `SLACK_BOT_TOKEN`      | `OAuth & Permissions` > `Bot User OAuth Token` |
+| Env var                            | Where is Slack App admin page                  |
+| ---------------------------------- | ---------------------------------------------- |
+| `SLACK_SIGNING_SECRET`             | `Basic information` > `Signing Secret`         |
+| `SLACK_APP_TOKEN`                  | `Basic information` > `App-Level Tokens`       |
+| `SLACK_BOT_TOKEN`                  | `OAuth & Permissions` > `Bot User OAuth Token` |
+| `OPENAI_API_KEY`                   | `Open API key`                                 |
+| `ABSOLUTE_PATH_TO_EMBEDDINGS_FILE` | `Absolute path to a local embeddings file`     |
 
 ### Python setup
 

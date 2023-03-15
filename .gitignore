@@ -15,5 +15,5 @@ lib/
 
 # Python specific
 .venv
-__pycache__
+__pycache__/
 env
