@@ -1,10 +1,9 @@
-import dotenv from 'dotenv'
-dotenv.config()
+import 'dotenv/config'
 
 import * as ff from '@google-cloud/functions-framework'
-import { generateCsv } from './csv'
-import { fetchData } from './notion'
-import { upload } from './file-upload'
+import { generateCsv } from './csv.js'
+import { fetchData } from './notion.js'
+import { upload } from './file-upload.js'
 
 ff.http('crawl', (req, res) => {
   fetchData()
