@@ -22,9 +22,7 @@
     "@google-cloud/storage": "^6.9.4",
     "@notionhq/client": "^2.2.3",
     "dotenv": "^16.0.3",
-    "json-2-csv": "^3.20.0"
-  },
-  "devDependencies": {
+    "json-2-csv": "^3.20.0",
     "@google-cloud/functions-framework": "^3.1.3"
   }
 }
