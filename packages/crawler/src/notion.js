@@ -1,17 +1,10 @@
 import { Client } from '@notionhq/client'
-import {
-  PageObjectResponse,
-  PartialPageObjectResponse
-} from '@notionhq/client/build/src/api-endpoints'
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN
 })
 
-const getPageTitle = (
-  item: PageObjectResponse | PartialPageObjectResponse,
-  fieldName: 'Name' | 'title'
-): string | null => {
+const getPageTitle = (item, fieldName) => {
   const hasProperties = 'properties' in item
 
   if (hasProperties) {
@@ -34,25 +27,21 @@ const getPages = async () => {
   })
 
   return result.results.map(item => {
-    const pageObject = item as PageObjectResponse | PartialPageObjectResponse
-    const id = pageObject.id
-    const title =
-      getPageTitle(pageObject, 'Name') || getPageTitle(pageObject, 'title')
+    const id = item.id
+    const title = getPageTitle(item, 'Name') || getPageTitle(item, 'title')
 
     return { id, title }
   })
 }
 
-const getPageContent = async (id: string) => {
+const getPageContent = async id => {
   const blocks = await notion.blocks.children.list({ block_id: id })
   return blocks.results
     .filter(item => 'type' in item)
     .flatMap(item => {
-      const blockObject = item as any
+      const blockObject = item
       const blockType = blockObject.type
-      return blockObject[blockType]?.rich_text?.map(
-        (text: any) => text.plain_text
-      )
+      return blockObject[blockType]?.rich_text?.map(text => text.plain_text)
     })
     .filter(Boolean)
 }
