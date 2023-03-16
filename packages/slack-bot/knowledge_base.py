@@ -4,19 +4,43 @@ import openai
 from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
 import os
 from dotenv import load_dotenv
+from google.cloud import storage
 
 load_dotenv()  # take environment variables from .env.
 
+openai.api_key = os.environ.get("OPENAI_API_KEY")
 
-openai.api_key = os.environ["OPENAI_API_KEY"]
 
-# @TODO replace this with a bucket
-embeddings_path = os.path.dirname(__file__) + "/mocks/embeddings.csv"
+def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
+    # Instantiates a client
+    storage_client = storage.Client()
+
+    # Gets the bucket
+    bucket = storage_client.bucket(bucket_name)
+
+    # Gets the blob (file)
+    blob = bucket.blob(file_name)
+
+    # Downloads the file to path
+    blob.download_to_filename(destination)
+
 
 # Most of the code taken from:
 # https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a
-df = pd.read_csv(embeddings_path, index_col=0)
-df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
+def get_embeddings_file():
+    bucket_name = os.environ.get("GCP_STORAGE_BUCKET_NAME")
+    bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
+    local_embeddings_file = "embeddings.csv"
+
+    download_csv_from_bucket_to_path(bucket_name, bucket_embeddings_file, local_embeddings_file)
+    df = pd.read_csv(local_embeddings_file, index_col=0)
+    df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
+
+    return df
+
+
+# @NOTE When shall we get the embeddings file? Module or create_context execution?
+df = get_embeddings_file()
 
 
 def create_context(question, df, max_len=1800, size="ada"):
@@ -93,7 +117,3 @@ def answer_question(
 
 def get_answer(question):
     return answer_question(df, question=question, debug=True)
-
-
-def get_dummy_answer(question):
-    return f"The answer lies in the question: {question} :)"
