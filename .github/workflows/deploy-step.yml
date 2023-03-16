@@ -21,7 +21,6 @@ jobs:
   provision:
     name: 'Provision and deploy'
     runs-on: ubuntu-latest
-
     permissions:
       contents: 'read'
       id-token: write
