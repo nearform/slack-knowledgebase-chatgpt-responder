@@ -1,0 +1,76 @@
+on:
+  workflow_call:
+    inputs:
+      environment:
+        required: true
+        type: string
+      GCP_PROJECT_ID:
+        required: true
+        type: string
+      GCP_WORKLOAD_IDENTITY_PROVIDER:
+        required: true
+        type: string
+      GCP_SERVICE_ACCOUNT:
+        required: true
+        type: string
+      GCP_STORAGE_BUCKET_NAME:
+        required: true
+        type: string
+      GCP_STORAGE_FILE_NAME:
+        required: true
+        type: string
+    secrets:
+      GH_PRIVATE_KEY:
+        required: true
+      GH_WEBHOOK_SECRET:
+        required: true
+
+jobs:
+  provision:
+    name: 'Provision and deploy'
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: 'read'
+      id-token: write
+
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: 'Authenticate with GCP'
+        uses: google-github-actions/auth@v1
+        with:
+          workload_identity_provider: ${{ inputs.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ inputs.GCP_SERVICE_ACCOUNT }}
+
+      - name: 'Set up Cloud SDK'
+        uses: google-github-actions/setup-gcloud@v1
+        with:
+          project_id: ${{ inputs.GCP_PROJECT_ID }}
+
+      - name: Set default region to europe-west1
+        run: |
+          gcloud compute project-info add-metadata --metadata google-compute-default-region=europe-west1
+          gcloud init
+
+      - name: Update secrets in GCP Secret Manager
+        run: |
+          printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
+
+      - name: 'Deploy webhook to Cloud Run'
+        id: deploy-webhook
+        run: >-
+          gcloud functions deploy crawl
+          --runtime=nodejs18
+          --source=./packages/crawler
+          --entry-point crawl
+          --set-secrets=PRIVATE_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
+          --set-env-vars=FIRESTORE_COLLECTION=snoozes-${{ inputs.environment }}
+          --set-env-vars=GC_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
+          --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          --trigger-topic=crawler-topic
+          --gen2
+
+      - name: 'Show summary'
+        run: >-
+          echo "App successfully deployed."
