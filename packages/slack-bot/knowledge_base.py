@@ -11,6 +11,14 @@ load_dotenv()  # take environment variables from .env.
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
 
+def make_cache_folder():
+    if not os.path.exists(".cache"):
+        os.makedirs(".cache")
+
+
+make_cache_folder()
+
+
 def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
     # Instantiates a client
     storage_client = storage.Client()
@@ -30,7 +38,7 @@ def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
 def get_embeddings_file():
     bucket_name = os.environ.get("GCP_STORAGE_BUCKET_NAME")
     bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
-    local_embeddings_file = "embeddings.csv"
+    local_embeddings_file = ".cache/embeddings.csv"
 
     download_csv_from_bucket_to_path(bucket_name, bucket_embeddings_file, local_embeddings_file)
     df = pd.read_csv(local_embeddings_file, index_col=0)
