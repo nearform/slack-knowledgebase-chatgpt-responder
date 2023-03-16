@@ -19,11 +19,6 @@ on:
       GCP_STORAGE_FILE_NAME:
         required: true
         type: string
-    secrets:
-      NOTION_TOKEN:
-        required: true
-      OPENAI_API_KEY:
-        required: true
 
 jobs:
   provision:
@@ -65,6 +60,7 @@ jobs:
           --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
           --trigger-topic=crawler-topic
           --region=europe-west1
+          --memory=512Mb
           --gen2
 
       - name: 'Show summary'
