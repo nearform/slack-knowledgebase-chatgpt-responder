@@ -18,14 +18,20 @@ Once the BOT is deployed (or executed locally), you'll have to provide your Slac
 
 Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
 
-| Env var                | Where is Slack App admin page                                    |
-| ---------------------- | ---------------------------------------------------------------- |
-| `SLACK_SIGNING_SECRET` | `api.slack.com` > `Basic information` > `Signing Secret`         |
-| `SLACK_BOT_TOKEN`      | `api.slack.com` > `OAuth & Permissions` > `Bot User OAuth Token` |
-| `OPENAI_API_KEY`       | Open API key                                                     |
-| `LOCAL_PORT`           | Local port the bot listens to (optional)                         |
+| Env var                           | Where is Slack App admin page                                    |
+| --------------------------------- | ---------------------------------------------------------------- |
+| `SLACK_SIGNING_SECRET`            | `api.slack.com` > `Basic information` > `Signing Secret`         |
+| `SLACK_BOT_TOKEN`                 | `api.slack.com` > `OAuth & Permissions` > `Bot User OAuth Token` |
+| `OPENAI_API_KEY`                  | Open API key                                                     |
+| `GCP_STORAGE_BUCKET_NAME`         | GCP bucket name hosting embeddings file                          |
+| `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket                               |
+| `LOCAL_PORT`                      | Local port the bot listens to (optional)                         |
 
 ## Local development
+
+### Google cloud provider setup
+
+Login to GCP with `gcloud auth application-default login`.
 
 ### Python setup
 
