@@ -16,6 +16,9 @@ on:
       GCP_STORAGE_FILE_NAME:
         required: true
         type: string
+      GCP_STORAGE_EMBEDDING_FILE_NAME:
+        required: true
+        type: string
 
 jobs:
   provision:
@@ -51,31 +54,46 @@ jobs:
         run: >-
           gcloud functions deploy crawl
           --runtime=nodejs18
-          --source=./packages/crawler
-          --entry-point crawl
-          --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
-          --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
-          --trigger-topic=crawler-topic
           --region=europe-west1
           --memory=256Mb
           --gen2
+          --source=./packages/crawler
+          --entry-point crawl
+          --trigger-topic=crawler-topic
+          --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
+          --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
+          --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
 
       - name: 'Deploy slackBot to Cloud Run'
         id: deploy-slack-bot
         run: >-
           gcloud functions deploy slackbot
           --runtime python39 
-          --trigger-http 
-          --allow-unauthenticated 
+          --memory=512MB
+          --region=europe-west1
+          --gen2
           --source=./packages/slack-bot
           --entry-point=slack_bot 
+          --trigger-http 
+          --allow-unauthenticated 
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
           --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
+
+      - name: 'Deploy embedding-creation to Cloud Run'
+        id: deploy-embedding-creation
+        run: >-
+          gcloud functions deploy embedding-creation 
+          --runtime=python311 
           --memory=512MB
-          --region="europe-west1"
+          --region=europe-west1
           --gen2
+          --source=./packages/embeddings-creation 
+          --entry-point=create_embeddings 
+          --trigger-bucket=${{ inputs.GCP_STORAGE_BUCKET_NAME }} 
+          --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
+          --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
 
       - name: 'Show summary'
         run: >-
