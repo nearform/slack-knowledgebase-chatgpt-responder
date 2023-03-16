@@ -21,4 +21,3 @@ jobs:
       GCP_STORAGE_BUCKET_NAME: ${{ vars.GCP_STORAGE_BUCKET_NAME }}
       GCP_STORAGE_FILE_NAME: ${{ vars.GCP_STORAGE_FILE_NAME }}
     secrets: inherit
-    vars: inherit
