@@ -50,7 +50,7 @@ jobs:
           printf -- "${{ secrets.OPENAI_API_KEY }}" | gcloud secrets versions add open-api-key --data-file=-
 
       - name: 'Deploy crawl to Cloud Run'
-        id: deploy-webhook
+        id: deploy-crawl
         run: >-
           gcloud functions deploy crawl
           --runtime=nodejs18
@@ -75,7 +75,9 @@ jobs:
           --source=./packages/slack-bot
           --entry-point=slack_bot 
           --trigger-http 
-          --allow-unauthenticated 
+          --allow-unauthenticated
+          --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
+          --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
           --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
