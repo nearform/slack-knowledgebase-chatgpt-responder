@@ -24,6 +24,7 @@ jobs:
   provision:
     name: 'Provision and deploy'
     runs-on: ubuntu-latest
+    environment: ${{ vars.environment }}
 
     permissions:
       contents: 'read'
