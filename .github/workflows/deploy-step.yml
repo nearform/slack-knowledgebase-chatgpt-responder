@@ -64,7 +64,7 @@ jobs:
       - name: 'Deploy slackBot to Cloud Run'
         id: deploy-slack-bot
         run: >-
-          gcloud functions deploy slackBot
+          gcloud functions deploy slackbot
           --runtime python39 
           --trigger-http 
           --allow-unauthenticated 
