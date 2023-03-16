@@ -1,9 +1,6 @@
 on:
   workflow_call:
     inputs:
-      environment:
-        required: true
-        type: string
       GCP_PROJECT_ID:
         required: true
         type: string
@@ -24,7 +21,6 @@ jobs:
   provision:
     name: 'Provision and deploy'
     runs-on: ubuntu-latest
-    environment: ${{ vars.environment }}
 
     permissions:
       contents: 'read'
