@@ -55,7 +55,7 @@ jobs:
           --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
           --trigger-topic=crawler-topic
           --region=europe-west1
-          --memory=512Mb
+          --memory=256Mb
           --gen2
 
       - name: 'Show summary'

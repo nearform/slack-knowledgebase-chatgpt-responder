@@ -4,7 +4,6 @@ on:
   push:
     branches:
       - master
-      - chore/deploy-pipeline
   workflow_dispatch:
 
 permissions:
