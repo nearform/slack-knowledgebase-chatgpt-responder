@@ -8,11 +8,11 @@ Create a new notion integration and add it to a section. Please refer to https:/
 
 Head to https://www.notion.so/my-integrations/ and select your. Then copy/paste the following values in an `.env` file:
 
-| Env var                  |                                |
-| ------------------------ | ------------------------------ |
-| `NOTION_TOKEN`           | secret_y0uR_1n73gr4710n_S3cr37 |
-| `GC_STORAGE_BUCKET_NAME` | your_bucket_name               |
-| `FILE_NAME`              | fallback on "scraped.csv"      |
+| Env var                   |                                |
+| ------------------------- | ------------------------------ |
+| `NOTION_TOKEN`            | secret_y0uR_1n73gr4710n_S3cr37 |
+| `GCP_STORAGE_BUCKET_NAME` | your_bucket_name               |
+| `GCP_STORAGE_FILE_NAME`   | fallback on "scraped.csv"      |
 
 ## Google Cloud
 
@@ -27,6 +27,17 @@ Once the cli is installed, perform the login using `gcloud auth login`
 **Create the topic (one-time operation):**
 `gcloud pubsub topics create crawler-topic`
 
+**Create a cron job (one-time operation):**
+
+```
+gcloud scheduler jobs create pubsub crawl-job \
+  --schedule="* * 1 * *" \
+  --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
+  --message-body="start_crawl"\
+  --project=slack-kb-chatgpt-responder \
+  --location=europe-west1
+```
+
 **Deploy (from inside the `crawler` folder):**
 
 ```
@@ -36,24 +47,7 @@ gcloud functions deploy crawl \
 --region europe-west1 \
 --entry-point crawl \
 --trigger-topic crawler-topic \
---set-env-vars NOTION_TOKEN=notion_secret,GC_STORAGE_BUCKET_NAME=bucket-name,FILE_NAME=scraped.csv
+--set-env-vars NOTION_TOKEN=notion_secret,GCP_STORAGE_BUCKET_NAME=bucket-name,GCP_STORAGE_FILE_NAME=scraped.csv
 ```
 
-Once the function is deployed, you can manually publish a message to the topic using:
-`gcloud pubsub topics publish crawler-topic --message="start_crawl"`
-
-**TODO Create a cron job:**
-
-```
-gcloud scheduler jobs create pubsub JOB \
---location=LOCATION \
---schedule=SCHEDULE \
---topic=TOPIC
-
-gcloud scheduler jobs create pubsub crawl-job \
-  --schedule="* * 1 * *" \
-  --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
-  --message-body="start_crawl"\
-  --project=slack-kb-chatgpt-responder \
-  --location=europe-west1
-```
+**👆 This is done automatically each time a branch is merged on master**
