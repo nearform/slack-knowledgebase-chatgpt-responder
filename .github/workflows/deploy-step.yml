@@ -48,11 +48,6 @@ jobs:
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
 
-      - name: Set default region to europe-west1
-        run: |
-          gcloud compute project-info add-metadata --metadata google-compute-default-region=europe-west1
-          gcloud init
-
       - name: Update secrets in GCP Secret Manager
         run: |
           printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
@@ -69,6 +64,7 @@ jobs:
           --set-env-vars=GC_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
           --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
           --trigger-topic=crawler-topic
+          --region=europe-west1
           --gen2
 
       - name: 'Show summary'
