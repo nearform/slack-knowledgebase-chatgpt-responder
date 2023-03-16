@@ -20,9 +20,9 @@ on:
         required: true
         type: string
     secrets:
-      GH_PRIVATE_KEY:
+      NOTION_TOKEN:
         required: true
-      GH_WEBHOOK_SECRET:
+      OPENAI_API_KEY:
         required: true
 
 jobs:
