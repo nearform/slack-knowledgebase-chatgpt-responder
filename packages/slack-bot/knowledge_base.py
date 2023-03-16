@@ -10,10 +10,11 @@ load_dotenv()  # take environment variables from .env.
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
-# Use this to get embaddings from a relative path
-# embeddings_path = os.path.dirname(__file__) + "/embeddings.csv"
+embeddings_path = os.path.dirname(__file__) + "/mocks/embeddings.csv"
+# Use this to get embeddings path from env vars
+# embeddings_path = os.environ["ABSOLUTE_PATH_TO_EMBEDDINGS_FILE"]
 
-df = pd.read_csv(os.environ["ABSOLUTE_PATH_TO_EMBEDDINGS_FILE"], index_col=0)
+df = pd.read_csv(embeddings_path, index_col=0)
 df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
 
 
