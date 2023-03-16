@@ -10,10 +10,11 @@ load_dotenv()  # take environment variables from .env.
 
 openai.api_key = os.environ["OPENAI_API_KEY"]
 
+# @TODO replace this with a bucket
 embeddings_path = os.path.dirname(__file__) + "/mocks/embeddings.csv"
-# Use this to get embeddings path from env vars
-# embeddings_path = os.environ["ABSOLUTE_PATH_TO_EMBEDDINGS_FILE"]
 
+# Most of the code taken from:
+# https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a
 df = pd.read_csv(embeddings_path, index_col=0)
 df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
 
