@@ -42,21 +42,40 @@ jobs:
       - name: Update secrets in GCP Secret Manager
         run: |
           printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
+          printf -- "${{ secrets.SLACK_BOT_TOKEN }}" | gcloud secrets versions add slack-bot-token --data-file=-
+          printf -- "${{ secrets.SLACK_SIGNING_SECRET }}" | gcloud secrets versions add slack-signing-secret --data-file=-
+          printf -- "${{ secrets.OPENAI_API_KEY }}" | gcloud secrets versions add open-api-key --data-file=-
 
-      - name: 'Deploy webhook to Cloud Run'
+      - name: 'Deploy crawl to Cloud Run'
         id: deploy-webhook
         run: >-
           gcloud functions deploy crawl
-          --runtime=nodejs18
-          --source=./packages/crawler
-          --entry-point crawl
-          --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
-          --set-env-vars=GC_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
-          --trigger-topic=crawler-topic
-          --region=europe-west1
-          --memory=256Mb
-          --gen2
+            --runtime=nodejs18
+            --source=./packages/crawler
+            --entry-point crawl
+            --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
+            --set-env-vars=GC_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
+            --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+            --trigger-topic=crawler-topic
+            --region=europe-west1
+            --memory=256Mb
+            --gen2
+
+      - name: 'Deploy slackBot to Cloud Run'
+        id: deploy-slack-bot
+        run: >-
+          gcloud functions deploy slackBot
+            --runtime python39 
+            --trigger-http 
+            --source=./packages/crawler
+            --entry-point=slack_bot 
+            --allow-unauthenticated 
+            --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
+            --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
+            --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
+            --memory=512MB
+            --region="europe-west1"
+            --gen2
 
       - name: 'Show summary'
         run: >-
