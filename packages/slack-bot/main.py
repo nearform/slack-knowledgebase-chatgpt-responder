@@ -12,13 +12,13 @@ load_dotenv()  # take environment variables from .env.
 app = App(token=os.environ.get("SLACK_BOT_TOKEN"), signing_secret=os.environ.get("SLACK_SIGNING_SECRET"))
 
 
-def greet(username):
-    return f"Hey there <@{username}>!"
-
-
-@app.message("hello")
-def message_response(message, say):
-    say(greet(message["user"]) + "\n" + knowledge_base.get_answer(message["text"]))
+@app.event("message")
+def handle_message(event, say):
+    # Check if the message is a direct message to the bot
+    if event["channel_type"] == "im":
+        text = event["text"]
+        # Your logic for handling direct messages goes here
+        say(knowledge_base.get_answer(text))
 
 
 handler = SlackRequestHandler(app)
