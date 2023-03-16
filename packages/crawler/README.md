@@ -21,6 +21,9 @@ Once the cli is installed, perform the login using `gcloud auth login`
 
 ### Deploying
 
+**Enable cloudresourcemanager.googleapis.com**
+`gcloud services enable cloudresourcemanager.googleapis.com --project $PROJECT_ID`
+
 **Create the topic (one-time operation):**
 `gcloud pubsub topics create crawler-topic`
 
@@ -30,7 +33,7 @@ Once the cli is installed, perform the login using `gcloud auth login`
 gcloud functions deploy crawl \
 --gen2 \
 --runtime nodejs18 \
---region europe-west4 \
+--region europe-west1 \
 --entry-point crawl \
 --trigger-topic crawler-topic \
 --set-env-vars NOTION_TOKEN=notion_secret,GC_STORAGE_BUCKET_NAME=bucket-name,FILE_NAME=scraped.csv
@@ -46,4 +49,11 @@ gcloud scheduler jobs create pubsub JOB \
 --location=LOCATION \
 --schedule=SCHEDULE \
 --topic=TOPIC
+
+gcloud scheduler jobs create pubsub crawl-job \
+  --schedule="* * 1 * *" \
+  --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
+  --message-body="start_crawl"\
+  --project=slack-kb-chatgpt-responder \
+  --location=europe-west1
 ```
