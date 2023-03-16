@@ -14,8 +14,6 @@ permissions:
 jobs:
   call-deploy-development:
     uses: ./.github/workflows/deploy-step.yml
-    environment:
-      name: dev
     with:
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
@@ -23,3 +21,4 @@ jobs:
       GCP_STORAGE_BUCKET_NAME: ${{ vars.GCP_STORAGE_BUCKET_NAME }}
       GCP_STORAGE_FILE_NAME: ${{ vars.GCP_STORAGE_FILE_NAME }}
     secrets: inherit
+    vars: inherit
