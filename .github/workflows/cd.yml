@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - chore/bucket-trigger-filter
   workflow_dispatch:
 
 permissions:
