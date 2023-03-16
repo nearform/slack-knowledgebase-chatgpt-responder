@@ -51,7 +51,6 @@ jobs:
           --source=./packages/crawler
           --entry-point crawl
           --set-secrets=PRIVATE_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
-          --set-env-vars=FIRESTORE_COLLECTION=snoozes-${{ inputs.environment }}
           --set-env-vars=GC_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
           --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
           --trigger-topic=crawler-topic

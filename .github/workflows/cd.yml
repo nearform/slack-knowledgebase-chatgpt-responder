@@ -14,8 +14,9 @@ permissions:
 jobs:
   call-deploy-development:
     uses: ./.github/workflows/deploy-step.yml
+    environment:
+      name: dev
     with:
-      environment: dev
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
       GCP_SERVICE_ACCOUNT: ${{ vars.GCP_SERVICE_ACCOUNT }}
       GCP_WORKLOAD_IDENTITY_PROVIDER: ${{ vars.GCP_WORKLOAD_IDENTITY_PROVIDER }}
