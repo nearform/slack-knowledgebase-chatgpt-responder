@@ -51,8 +51,8 @@ jobs:
           --source=./packages/crawler
           --entry-point crawl
           --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
-          --set-env-vars=GC_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --set-env-vars=FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
+          --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
           --trigger-topic=crawler-topic
           --region=europe-west1
           --memory=256Mb
