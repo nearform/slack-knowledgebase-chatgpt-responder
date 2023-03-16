@@ -2,7 +2,6 @@
   "name": "slack-knowledgebase-chatgpt-responder",
   "version": "1.0.0",
   "description": "Template to start a new repository on the hub",
-  "main": "index.js",
   "scripts": {
     "lint": "eslint .",
     "test": "echo \"Error: no test specified\" && exit 0",
