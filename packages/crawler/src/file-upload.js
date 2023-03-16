@@ -3,7 +3,7 @@ import { Storage } from '@google-cloud/storage'
 
 export const upload = csv => {
   const bucketName = process.env.GC_STORAGE_BUCKET_NAME || ''
-  const destFileName = process.env.FILE_NAME || 'notion.csv'
+  const destFileName = process.env.FILE_NAME || 'scraped.csv'
 
   const storage = new Storage()
 
