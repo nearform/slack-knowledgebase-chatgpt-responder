@@ -5,6 +5,7 @@ on:
     branches:
       - master
       - chore/bucket-trigger-filter
+      - chore/bucket-trigger-filter-andrea
   workflow_dispatch:
 
 permissions:
