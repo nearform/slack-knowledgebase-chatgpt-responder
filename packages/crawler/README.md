@@ -51,3 +51,26 @@ gcloud functions deploy crawl \
 ```
 
 **👆 This is done automatically each time a branch is merged on master**
+
+### Local testing
+
+Once you started the project using `npm start`, you can run:
+
+```
+curl localhost:8080 \
+  -X POST \
+  -H "Content-Type: application/json" \
+  -H "ce-id: 123451234512345" \
+  -H "ce-specversion: 1.0" \
+  -H "ce-time: 2020-01-02T12:34:56.789Z" \
+  -H "ce-type: google.cloud.pubsub.topic.v1.messagePublished" \
+  -H "ce-source: //pubsub.googleapis.com/projects/slack-kb-chatgpt-responder/topics/crawler-topic" \
+  -d '{
+        "message": {
+          "data": "c3RhcnRfY3Jhd2w="
+        }
+      }'
+```
+
+If you are not logged in yet, use `gcloud auth application-default login`.
+Note that `c3RhcnRfY3Jhd2w=`is `start_crawl` base64 encoded.
