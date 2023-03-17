@@ -59,9 +59,8 @@ jobs:
           --gen2
           --source=./packages/embeddings-creation 
           --entry-point=create_embeddings
-          --trigger-resource=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --trigger-event=google.storage.object.finalize 
-          --trigger-resource-path=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          --trigger-event-filters="bucket=${{ inputs.GCP_STORAGE_BUCKET_NAME }}"
+          --trigger-event-filters-path-pattern="resourceName=/projects/_/buckets/${{ inputs.GCP_STORAGE_BUCKET_NAME }}/objects/${{ inputs.GCP_STORAGE_FILE_NAME }}"
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
           --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
