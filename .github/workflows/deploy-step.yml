@@ -83,7 +83,7 @@ jobs:
         id: deploy-slack-bot
         run: >-
           gcloud functions deploy slackbot
-          --runtime python39 
+          --runtime python311 
           --memory=512MB
           --region=europe-west1
           --gen2

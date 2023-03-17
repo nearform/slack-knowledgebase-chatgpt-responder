@@ -50,7 +50,7 @@ You can do so with `ngrok`:
 ## Deployment
 
 ```
-gcloud functions deploy slackBot --runtime python39 --trigger-http --entry-point slack_bot --allow-unauthenticated --verbosity="debug" --env-vars-file .env.yaml --memory 512MB --region="europe-west1"
+gcloud functions deploy slackBot --runtime python311 --trigger-http --entry-point slack_bot --allow-unauthenticated --verbosity="debug" --env-vars-file .env.yaml --memory 512MB --region="europe-west1"
 ```
 
 Once deployed, provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
