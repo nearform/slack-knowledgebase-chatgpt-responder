@@ -1,3 +1,3 @@
-# @nearform/knowledge-base-responder-crawler
+# crawler
 
 Please refer to the root level README.md

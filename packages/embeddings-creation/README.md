@@ -1,3 +1,3 @@
-# @nearform/embeddings-creation
+# embeddings-creation
 
 Please refer to the root level README.md

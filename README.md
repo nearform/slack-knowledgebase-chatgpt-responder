@@ -1,4 +1,10 @@
-# @nearform/slack-knowledgebase-chatgpt-responder
+# slack-knowledgebase-chatgpt-responder
+
+This project is composed of 3 components, which communicate with each other. Everything is hosted on Google Cloud Platform.
+
+1. **Crawler**: A function which crawls once a day data from Notion (The NearForm way section), and stores a csv file with the relevant page content
+2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI.
+3. **Slack bot** A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base.
 
 ## Notion setup
 
@@ -14,7 +20,7 @@ Once the cli is installed, perform the login using `gcloud auth login`
 
 Create the project and enable all the required pieces: https://cloud.google.com/eventarc/docs/run/create-trigger-storage-gcloud#before-you-begin
 
-# Crawler function
+# crawler
 
 ## Environment variables
 
@@ -76,7 +82,7 @@ curl localhost:8080 \
 If you are not logged in yet, use `gcloud auth application-default login`.
 Note that `c3RhcnRfY3Jhd2w=`is `start_crawl` base64 encoded.
 
-# @nearform/embeddings-creation
+# embeddings-creation
 
 ### Environment variables
 
@@ -94,7 +100,7 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 See .github/workflows/deploy-step.yml
 ```
 
-# @nearform/knowledge-base-responder-slack-bot
+# slack-bot
 
 Slack bots configured to respond to direct messages with NearForm knowledge base answers retrieved via chatGPT APIs.
 
