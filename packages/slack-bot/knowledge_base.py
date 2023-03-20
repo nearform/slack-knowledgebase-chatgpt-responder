@@ -3,21 +3,27 @@ import numpy as np
 import openai
 from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
 import os
+import time
 from dotenv import load_dotenv
-from google.cloud import storage
+from google.cloud import storage, pubsub_v1
+import json
 
 load_dotenv()  # take environment variables from .env.
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 
+project_name = os.environ.get("GCP_PROJECT_NAME")
+bucket_name = os.environ.get("GCP_STORAGE_BUCKET_NAME")
+bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
+embeddings_subscription = os.environ.get("GCP_EMBEDDING_SUBSCRIPTION")
+local_embeddings_file = ".cache/embeddings.csv"
 
 def make_cache_folder():
     if not os.path.exists(".cache"):
         os.makedirs(".cache")
 
 
-make_cache_folder()
-
+make_cache_folder()    
 
 def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
     # Instantiates a client
@@ -32,24 +38,32 @@ def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
     # Downloads the file to path
     blob.download_to_filename(destination)
 
-
 # Most of the code taken from:
 # https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a
 def get_embeddings_file():
-    bucket_name = os.environ.get("GCP_STORAGE_BUCKET_NAME")
-    bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
-    local_embeddings_file = ".cache/embeddings.csv"
-
     download_csv_from_bucket_to_path(bucket_name, bucket_embeddings_file, local_embeddings_file)
     df = pd.read_csv(local_embeddings_file, index_col=0)
     df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
 
     return df
 
-
 # @NOTE When shall we get the embeddings file? Module or create_context execution?
 df = get_embeddings_file()
 
+def subscribe_to_embedding_changes():
+    subscriber = pubsub_v1.SubscriberClient()
+
+    def callback(message):
+        global df    
+        if message.attributes['objectId'] == bucket_embeddings_file and message.attributes['eventType'] == 'OBJECT_FINALIZE':
+          df = get_embeddings_file()
+
+        message.ack()
+
+    subscriber.subscribe(f"projects/{project_name}/subscriptions/{embeddings_subscription}", callback)
+
+
+subscribe_to_embedding_changes()
 
 def create_context(question, df, max_len=1800, size="ada"):
     """
