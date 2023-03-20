@@ -3,10 +3,8 @@ import numpy as np
 import openai
 from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
 import os
-import time
 from dotenv import load_dotenv
 from google.cloud import storage, pubsub_v1
-import json
 
 load_dotenv()  # take environment variables from .env.
 
