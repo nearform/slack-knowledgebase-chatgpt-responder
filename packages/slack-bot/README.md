@@ -55,9 +55,17 @@ You can do so with `ngrok`:
 
 ## Deployment
 
-**To make the script notified about an embedding.csv update (one time operation):**
+**To make the script notified about an embedding.csv update (one time operation)**
+
+Trigger a notification to the `embeddings-update-topic` topic each time a file is uploaded:
+
 `gcloud storage buckets notifications create gs://slack-kb-chatgpt-responder-processed --topic=embeddings-update-topic --event-types=OBJECT_FINALIZE`
+
+Create the subscription for the topic:
+
 `gcloud pubsub subscriptions create embeddings-subscription --topic=embeddings-update-topic`
+
+**Deploy command**
 
 ```
 gcloud functions deploy slackBot --runtime python39 --trigger-http --entry-point slack_bot --allow-unauthenticated --verbosity="debug" --env-vars-file .env.yaml --memory 512MB --region="europe-west1"
