@@ -177,7 +177,7 @@ You can do so with `ngrok`:
 
 ...you should now be able to interact with you Slack bot locally.
 
-## Deployment
+### Deployment
 
 **Create a GCP trigger which fires when the embedding.csv is updated (one time operation)**
 
