@@ -40,7 +40,7 @@ import numpy as np
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 tokenizer = tiktoken.get_encoding("cl100k_base")
 max_tokens = 500
-scraped_file = os.environ.get("GCP_STORAGE_FILE_NAME")
+scraped_file = os.environ.get("GCP_STORAGE_SCRAPED_FILE_NAME")
 embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
 
 

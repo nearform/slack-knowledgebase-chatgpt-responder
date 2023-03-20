@@ -3,7 +3,8 @@ import { Storage } from '@google-cloud/storage'
 
 export const upload = csv => {
   const bucketName = process.env.GCP_STORAGE_BUCKET_NAME || ''
-  const destFileName = process.env.GCP_STORAGE_FILE_NAME || 'scraped.csv'
+  const destFileName =
+    process.env.GCP_STORAGE_SCRAPED_FILE_NAME || 'scraped.csv'
 
   const storage = new Storage()
 

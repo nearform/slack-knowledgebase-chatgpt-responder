@@ -13,7 +13,7 @@ on:
       GCP_STORAGE_BUCKET_NAME:
         required: true
         type: string
-      GCP_STORAGE_FILE_NAME:
+      GCP_STORAGE_SCRAPED_FILE_NAME:
         required: true
         type: string
       GCP_STORAGE_EMBEDDING_FILE_NAME:
@@ -62,7 +62,7 @@ jobs:
           --trigger-topic=crawler-topic
           --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
           --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          --set-env-vars=GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
 
       - name: 'Deploy slackBot to Cloud Run'
         id: deploy-slack-bot
@@ -94,7 +94,7 @@ jobs:
           --entry-point=create_embeddings 
           --trigger-bucket=${{ inputs.GCP_STORAGE_BUCKET_NAME }} 
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
-          --set-env-vars=GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          --set-env-vars=GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
 
       - name: 'Show summary'
