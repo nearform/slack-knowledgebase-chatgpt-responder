@@ -9,19 +9,17 @@ from google.cloud import storage, pubsub_v1
 load_dotenv()  # take environment variables from .env.
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
-
 project_name = os.environ.get("GCP_PROJECT_NAME")
 bucket_name = os.environ.get("GCP_STORAGE_BUCKET_NAME")
 bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
 embeddings_subscription = os.environ.get("GCP_EMBEDDING_SUBSCRIPTION")
 local_embeddings_file = ".cache/embeddings.csv"
 
+
 def make_cache_folder():
     if not os.path.exists(".cache"):
         os.makedirs(".cache")
 
-
-make_cache_folder()    
 
 def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
     # Instantiates a client
@@ -36,6 +34,7 @@ def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
     # Downloads the file to path
     blob.download_to_filename(destination)
 
+
 # Most of the code taken from:
 # https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a
 def get_embeddings_file():
@@ -45,23 +44,22 @@ def get_embeddings_file():
 
     return df
 
-# @NOTE When shall we get the embeddings file? Module or create_context execution?
-df = get_embeddings_file()
 
 def subscribe_to_embedding_changes():
     subscriber = pubsub_v1.SubscriberClient()
 
     def callback(message):
-        global df    
-        if message.attributes['objectId'] == bucket_embeddings_file and message.attributes['eventType'] == 'OBJECT_FINALIZE':
-          df = get_embeddings_file()
+        global df
+        if (
+            message.attributes["objectId"] == bucket_embeddings_file
+            and message.attributes["eventType"] == "OBJECT_FINALIZE"
+        ):
+            df = get_embeddings_file()
 
         message.ack()
 
     subscriber.subscribe(f"projects/{project_name}/subscriptions/{embeddings_subscription}", callback)
 
-
-subscribe_to_embedding_changes()
 
 def create_context(question, df, max_len=1800, size="ada"):
     """
@@ -137,3 +135,8 @@ def answer_question(
 
 def get_answer(question):
     return answer_question(df, question=question, debug=True)
+
+
+make_cache_folder()
+df = get_embeddings_file()
+subscribe_to_embedding_changes()
