@@ -20,11 +20,11 @@ Create the project and enable all the required pieces: https://cloud.google.com/
 
 Head to https://www.notion.so/my-integrations/ and select your. Then copy/paste the following values in an `.env` file:
 
-| Env var                   |                                |
-| ------------------------- | ------------------------------ |
-| `NOTION_TOKEN`            | secret_y0uR_1n73gr4710n_S3cr37 |
-| `GCP_STORAGE_BUCKET_NAME` | your_bucket_name               |
-| `GCP_STORAGE_FILE_NAME`   | fallback on "scraped.csv"      |
+| Env var                         |                                |
+| ------------------------------- | ------------------------------ |
+| `NOTION_TOKEN`                  | secret_y0uR_1n73gr4710n_S3cr37 |
+| `GCP_STORAGE_BUCKET_NAME`       | your_bucket_name               |
+| `GCP_STORAGE_SCRAPED_FILE_NAME` | fallback on "scraped.csv"      |
 
 ### Deploying
 
@@ -85,7 +85,7 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 | Env var                           | Where is Slack App admin page        |
 | --------------------------------- | ------------------------------------ |
 | `OPENAI_API_KEY`                  | OpenAI API key                       |
-| `GCP_STORAGE_FILE_NAME`           | Scraped data file name on the bucket |
+| `GCP_STORAGE_SCRAPED_FILE_NAME`   | Scraped data file name on the bucket |
 | `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket   |
 
 ## Deployment
