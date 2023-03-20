@@ -8,11 +8,11 @@ Create a new notion integration and add it to a section. Please refer to https:/
 
 Head to https://www.notion.so/my-integrations/ and select your. Then copy/paste the following values in an `.env` file:
 
-| Env var                   |                                |
-| ------------------------- | ------------------------------ |
-| `NOTION_TOKEN`            | secret_y0uR_1n73gr4710n_S3cr37 |
-| `GCP_STORAGE_BUCKET_NAME` | your_bucket_name               |
-| `GCP_STORAGE_FILE_NAME`   | fallback on "scraped.csv"      |
+| Env var                         |                                |
+| ------------------------------- | ------------------------------ |
+| `NOTION_TOKEN`                  | secret_y0uR_1n73gr4710n_S3cr37 |
+| `GCP_STORAGE_BUCKET_NAME`       | your_bucket_name               |
+| `GCP_STORAGE_SCRAPED_FILE_NAME` | fallback on "scraped.csv"      |
 
 ## Google Cloud
 
@@ -47,7 +47,7 @@ gcloud functions deploy crawl \
 --region europe-west1 \
 --entry-point crawl \
 --trigger-topic crawler-topic \
---set-env-vars NOTION_TOKEN=notion_secret,GCP_STORAGE_BUCKET_NAME=bucket-name,GCP_STORAGE_FILE_NAME=scraped.csv
+--set-env-vars NOTION_TOKEN=notion_secret,GCP_STORAGE_BUCKET_NAME=bucket-name,GCP_STORAGE_SCRAPED_FILE_NAME=scraped.csv
 ```
 
 **👆 This is done automatically each time a branch is merged on master**
