@@ -1,4 +1,5 @@
 import { Client } from '@notionhq/client'
+import pMap from 'p-map'
 
 const notion = new Client({
   auth: process.env.NOTION_TOKEN
@@ -48,16 +49,17 @@ const getPageContent = async id => {
 
 export const fetchData = async () => {
   const pages = await getPages()
-  const results = await Promise.all(
-    pages.map(async (page, i) => {
-      const content = await getPageContent(page.id)
-      return {
-        index: i,
-        title: page.title,
-        text: content.join(' ').replace(/(\r\n|\n|\r)/gm, '')
-      }
-    })
-  )
+
+  const mapper = async (page, i) => {
+    const content = await getPageContent(page.id)
+    return {
+      index: i,
+      title: page.title,
+      text: content.join(' ').replace(/(\r\n|\n|\r)/gm, '')
+    }
+  }
+
+  const results = await pMap(pages, mapper, { concurrency: 5 })
 
   return results.filter(page => page.text)
 }
