@@ -20,11 +20,13 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 
 | Env var                           | Where is Slack App admin page                                    |
 | --------------------------------- | ---------------------------------------------------------------- |
+| `GCP_PROJECT_NAME`                | GCP Project name                                                 |
+| `GCP_EMBEDDING_SUBSCRIPTION`      | Embedding file update subscription name                          |
+| `GCP_STORAGE_BUCKET_NAME`         | GCP bucket name hosting embeddings file                          |
+| `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket                               |
 | `SLACK_SIGNING_SECRET`            | `api.slack.com` > `Basic information` > `Signing Secret`         |
 | `SLACK_BOT_TOKEN`                 | `api.slack.com` > `OAuth & Permissions` > `Bot User OAuth Token` |
 | `OPENAI_API_KEY`                  | Open API key                                                     |
-| `GCP_STORAGE_BUCKET_NAME`         | GCP bucket name hosting embeddings file                          |
-| `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket                               |
 | `LOCAL_PORT`                      | Local port the bot listens to (optional)                         |
 
 ## Local development
@@ -54,6 +56,18 @@ You can do so with `ngrok`:
 ...you should now be able to interact with you Slack bot locally.
 
 ## Deployment
+
+**Create a GCP trigger which fires when the embedding.csv is updated (one time operation)**
+
+Trigger a notification to the `embeddings-update-topic` topic each time a file is uploaded:
+
+`gcloud storage buckets notifications create gs://slack-kb-chatgpt-responder-processed --topic=embeddings-update-topic --event-types=OBJECT_FINALIZE`
+
+Create the subscription for the topic:
+
+`gcloud pubsub subscriptions create embeddings-subscription --topic=embeddings-update-topic`
+
+**Deploy command**
 
 ```
 gcloud functions deploy slackBot --runtime python39 --trigger-http --entry-point slack_bot --allow-unauthenticated --verbosity="debug" --env-vars-file .env.yaml --memory 512MB --region="europe-west1"
