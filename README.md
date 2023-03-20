@@ -48,13 +48,7 @@ gcloud scheduler jobs create pubsub crawl-job \
 **Deploy (from inside the `crawler` folder):**
 
 ```
-gcloud functions deploy crawl \
---gen2 \
---runtime nodejs18 \
---region europe-west1 \
---entry-point crawl \
---trigger-topic crawler-topic \
---set-env-vars NOTION_TOKEN=notion_secret,GCP_STORAGE_BUCKET_NAME=bucket-name,GCP_STORAGE_FILE_NAME=scraped.csv
+See .github/workflows/deploy-step.yml
 ```
 
 **👆 This is done automatically each time a branch is merged on master**
@@ -84,13 +78,6 @@ Note that `c3RhcnRfY3Jhd2w=`is `start_crawl` base64 encoded.
 
 # @nearform/embeddings-creation
 
-- enable apis cloudfunctions cloudbuild artifactregistry eventarc cloudrun
-- grant cloud storage service account pubsub.publisher role https://cloud.google.com/eventarc/docs/run/create-trigger-storage-gcloud#before-you-begin
-
-## Deployment
-
-`gcloud functions deploy testing --gen2 --runtime=python311 --source=packages\embeddings-creation --entry-point=create_embeddings --trigger-bucket=simone-testing --region=europe-west4 --set-env-vars OPENAI_API_KEY={the api key}`
-
 ### Environment variables
 
 Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
@@ -100,6 +87,12 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 | `OPENAI_API_KEY`                  | OpenAI API key                       |
 | `GCP_STORAGE_FILE_NAME`           | Scraped data file name on the bucket |
 | `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket   |
+
+## Deployment
+
+```
+See .github/workflows/deploy-step.yml
+```
 
 # @nearform/knowledge-base-responder-slack-bot
 
@@ -199,7 +192,7 @@ Create the subscription for the topic:
 **Deploy command**
 
 ```
-gcloud functions deploy slackBot --runtime python39 --trigger-http --entry-point slack_bot --allow-unauthenticated --verbosity="debug" --env-vars-file .env.yaml --memory 512MB --region="europe-west1"
+See .github/workflows/deploy-step.yml
 ```
 
 Once deployed, provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
