@@ -76,6 +76,7 @@ jobs:
           --entry-point=slack_bot 
           --trigger-http 
           --allow-unauthenticated
+          --set-env-vars=SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
           --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
