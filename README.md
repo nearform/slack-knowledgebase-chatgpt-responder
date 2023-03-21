@@ -8,7 +8,7 @@ This project is composed of 3 components, which communicate with each other. Eve
 
 ![alt text](./assets/schema.png 'Schema')
 
-We used (this)[https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a] tutorial to write the OpenAI part.
+We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) tutorial to write the OpenAI part.
 
 ## Notion setup
 
