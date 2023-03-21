@@ -3,6 +3,7 @@ from dotenv import load_dotenv
 from slack_bolt import App
 from slack_bolt.adapter.google_cloud_functions import SlackRequestHandler
 import knowledge_base
+import functions_framework
 
 load_dotenv()  # take environment variables from .env.
 
@@ -25,6 +26,7 @@ handler = SlackRequestHandler(app)
 
 
 ###CLOUDRUN
+@functions_framework.http
 def slack_bot(request):
     return handler.handle(request)
 

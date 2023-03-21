@@ -19,3 +19,5 @@ lib/
 __pycache__/
 env
 *.env.yaml
+
+.nyc_output
