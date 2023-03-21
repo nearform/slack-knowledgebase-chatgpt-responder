@@ -1,4 +1,6 @@
-# {
+# Example of message received from notification
+#
+#   {
 #    "attributes":{
 #       "specversion":"1.0",
 #       "id":"123451234512345",
@@ -22,8 +24,10 @@
 #       "updated":"2020-04-23T07:38:57.230Z"
 #    }
 # }
+#
 # https://cloud.google.com/storage/docs/json_api/v1/objects#resource
 # see https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/functions/v2/storage/main.py
+
 import os
 import functions_framework
 from google.cloud import storage

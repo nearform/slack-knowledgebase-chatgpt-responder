@@ -1,5 +1,5 @@
 {
-  "name": "@nearform/knowledge-base-responder-crawler",
+  "name": "crawler",
   "version": "1.0.0",
   "description": "Crawl data from Notion and write the csv file to a gcp bucket",
   "main": "src/index.js",
