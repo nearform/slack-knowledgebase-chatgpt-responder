@@ -6,6 +6,10 @@ This project is composed of 3 components, which communicate with each other. Eve
 2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI.
 3. **Slack bot** A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base.
 
+![alt text](./assets/schema.png 'Schema')
+
+We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) tutorial to write the OpenAI part.
+
 ## Notion setup
 
 Create a new notion integration and add it to a section. Please refer to https://www.notion.so/my-integrations.
