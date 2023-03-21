@@ -1,9 +1,8 @@
-name: cd
+name: production-deploy
 
 on:
-  push:
-    branches:
-      - master
+  release:
+    types: [published]
   workflow_dispatch:
 
 permissions:
@@ -11,7 +10,7 @@ permissions:
   contents: read
 
 jobs:
-  call-deploy-development:
+  call-deploy-production:
     uses: ./.github/workflows/deploy-step.yml
     with:
       GCP_PROJECT_ID: ${{ vars.GCP_PROJECT_ID }}
