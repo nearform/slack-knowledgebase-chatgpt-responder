@@ -42,7 +42,7 @@ jobs:
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
 
-      - name: Update secrets in GCP Secret Manager
+      - name: Update topic and scheduler
         run: |
           if ! gcloud pubsub topics describe crawler-topic; then
             gcloud pubsub topics create crawler-topic
