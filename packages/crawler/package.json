@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
     "start": "functions-framework --target=crawl --signature-type=cloudevent"
   },
   "repository": {
@@ -25,5 +25,11 @@
     "dotenv": "^16.0.3",
     "json-2-csv": "^4.0.0",
     "p-map": "^5.5.0"
+  },
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.21.3",
+    "@babel/plugin-syntax-import-assertions": "^7.20.0",
+    "cross-env": "^7.0.3",
+    "esmock": "^2.1.0"
   }
 }
