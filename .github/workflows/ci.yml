@@ -1,14 +1,14 @@
 name: Continuous Integration
 
-on: 
+on:
   push:
-   branches:
-    - master
+    branches:
+      - master
   pull_request:
 
 jobs:
-  test:
-    name: Lint and test
+  test-crawler:
+    name: Test Crawler
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -17,12 +17,33 @@ jobs:
           node-version-file: '.nvmrc'
       - run: |
           npm ci
-          npm run lint
+      - name: Run tests
+        working-directory: ./packages/crawler
+        run: |
           npm test
+
+  test-slack-bot:
+    name: Test Slack bot
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Install dependencies
+        working-directory: ./packages/slack-bot
+        run: |
+          python -m pip install --upgrade pip
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Run tests
+        working-directory: ./packages/slack-bot
+        run: |
+          python test.py
 
   automerge:
     name: Merge dependabot's PRs
-    needs: test
+    needs: [test-crawler, test-slack-bot]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write
