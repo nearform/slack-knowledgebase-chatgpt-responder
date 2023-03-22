@@ -191,7 +191,7 @@ You can do so with `ngrok`:
 - Run bot's local server with `functions-framework --target=slack_bot`
 - Install `ngrok` globally on your local machine: `brew install --cask ngrok`
 - Run `ngrok`: `ngrok http <local-bolt-port>`
-- Provide the generated public URL (`<slack-bot-url>/slack/events>`) in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
+- Provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
 
 ...you should now be able to interact with you Slack bot locally.
 
