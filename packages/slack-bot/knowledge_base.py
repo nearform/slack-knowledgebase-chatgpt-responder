@@ -93,8 +93,8 @@ def create_context(question, df, max_len=1800, size="ada"):
 
 def answer_question(
     df,
-    model="text-davinci-003",
-    question="Am I allowed to publish model outputs to Twitter, without a human review?",
+    model="gpt-3.5-turbo",
+    question="What is NearForm?",
     max_len=1800,
     size="ada",
     debug=False,
@@ -117,8 +117,12 @@ def answer_question(
 
     try:
         # Create a completions using the question and context
-        response = openai.Completion.create(
-            prompt=f"Answer the question based on the context below, and if the question can't be answered based on the context, say \"I don't know\"\n\nContext: {context}\n\n---\n\nQuestion: {question}\nAnswer:",
+        response = openai.ChatCompletion.create(
+            messages=[
+                {"role": "system", "content": "You are a helpful assitant"},
+                {"role": "assistant", "content": context},
+                {"role": "user", "content": question},
+            ],
             temperature=0,
             max_tokens=max_tokens,
             top_p=1,
@@ -127,7 +131,7 @@ def answer_question(
             stop=stop_sequence,
             model=model,
         )
-        return response["choices"][0]["text"].strip()
+        return response["choices"][0]["message"]["content"].strip()
     except Exception as e:
         print(e)
         return ""

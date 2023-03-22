@@ -172,7 +172,7 @@ Login to GCP with `gcloud auth application-default login`.
 - Install virtual environment with `python -m venv .venv`
 - Activate the environment with `source .venv/bin/activate`
 - Install project dependencies with `pip install -r requirements.txt`
-- Run the project with `python main.py`
+- Run the project with `functions-framework --target=slack_bot` (default port 8080, check (here)[https://cloud.google.com/functions/docs/running/function-frameworks#functions-local-ff-install-python] for customize it)
 
 ### Slack setup
 
@@ -180,7 +180,7 @@ Since Bolt runs on the local host and Slack needs a public URL to reach the app,
 
 You can do so with `ngrok`:
 
-- Run bot's local server with `python main.py`
+- Run bot's local server with `functions-framework --target=slack_bot`
 - Install `ngrok` globally on your local machine: `brew install --cask ngrok`
 - Run `ngrok`: `ngrok http <local-bolt-port>`
 - Provide the generated public URL (`<slack-bot-url>/slack/events>`) in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
