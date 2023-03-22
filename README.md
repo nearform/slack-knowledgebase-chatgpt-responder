@@ -158,7 +158,6 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 | `SLACK_SIGNING_SECRET`            | `api.slack.com/apps/[id]` > `Basic information` > `Signing Secret`         |
 | `SLACK_BOT_TOKEN`                 | `api.slack.com/apps/[id]` > `OAuth & Permissions` > `Bot User OAuth Token` |
 | `OPENAI_API_KEY`                  | Open API key                                                               |
-| `LOCAL_PORT`                      | Local port the bot listens to (dev only)                                   |
 | `GOOGLE_CLOUD_PROJECT`            | Set the same value as `GCP_PROJECT_NAME`, (dev only)                       |
 
 ## Local development
