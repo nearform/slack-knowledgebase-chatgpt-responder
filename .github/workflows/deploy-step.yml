@@ -44,6 +44,20 @@ jobs:
 
       - name: Update secrets in GCP Secret Manager
         run: |
+          if ! gcloud pubsub topics describe crawler-topic; then
+            gcloud pubsub topics create crawler-topic
+          fi
+
+          if ! gcloud scheduler jobs describe crawl-job --location=europe-west1; then
+            gcloud scheduler jobs create pubsub crawl-job \
+            --schedule="* * 1 * *" \
+            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
+            --message-body="start_crawl"\
+            --location=europe-west1
+          fi
+
+      - name: Update secrets in GCP Secret Manager
+        run: |
           printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
           printf -- "${{ secrets.SLACK_BOT_TOKEN }}" | gcloud secrets versions add slack-bot-token --data-file=-
           printf -- "${{ secrets.SLACK_SIGNING_SECRET }}" | gcloud secrets versions add slack-signing-secret --data-file=-

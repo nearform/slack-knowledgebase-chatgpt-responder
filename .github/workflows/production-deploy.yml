@@ -3,6 +3,9 @@ name: production-deploy
 on:
   release:
     types: [published]
+  push:
+    branches:
+      - chore/missing-pipeline-commands
   workflow_dispatch:
 
 permissions:
