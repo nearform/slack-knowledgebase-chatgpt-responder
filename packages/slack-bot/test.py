@@ -2,6 +2,11 @@ import unittest
 from unittest.mock import MagicMock
 import openai
 import knowledge_base as knowledge_base
+from openai.error import RateLimitError
+import slack_bolt as slack_bolt
+
+slack_bolt.App = MagicMock()
+import main
 
 
 # Create .cache/embeddings.csv mock
@@ -48,6 +53,18 @@ class TestAnswer(unittest.TestCase):
         actual = knowledge_base.get_answer("What is nearform?")
         expected = openAICompletionResponseMock["choices"][0]["message"]["content"]
         self.assertEqual(actual, expected)
+
+
+class TestRateLimitErrorAnswer(unittest.TestCase):
+    def test_rate_limit_error_answer(self):
+        openai.Embedding.create = MagicMock(return_value=openAIEmbeddingsResponseMock)
+        openai.ChatCompletion.create = MagicMock(side_effect=openAICompletionResponseMock)
+
+        event = {"channel_type": "im", "text": "hello!"}
+        knowledge_base.get_answer = MagicMock(side_effect=RateLimitError())
+        say_mock = MagicMock()
+        main.handle_message(event, say_mock)
+        say_mock.assert_called_with("I'm having a :coffee:️, I'll be back later")
 
 
 if __name__ == "__main__":
