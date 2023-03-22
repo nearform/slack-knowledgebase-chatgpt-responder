@@ -42,6 +42,24 @@ jobs:
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
 
+      - name: Update topic and scheduler
+        run: |
+          if ! gcloud pubsub topics describe crawler-topic; then
+            gcloud pubsub topics create crawler-topic
+          fi
+
+          if ! gcloud scheduler jobs describe crawl-job --location=europe-west1; then
+            gcloud scheduler jobs create pubsub crawl-job \
+            --schedule="* * 1 * *" \
+            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
+            --message-body="start_crawl"\
+            --location=europe-west1
+          fi
+          
+          gcloud storage buckets notifications create gs://slack-kb-chatgpt-responder-processed \
+          --topic=embeddings-update-topic \
+          --event-types=OBJECT_FINALIZE
+
       - name: Update secrets in GCP Secret Manager
         run: |
           printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
