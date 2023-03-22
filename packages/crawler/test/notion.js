@@ -8,12 +8,12 @@ class NotionClientMock {
   constructor() {}
 
   async search() {
-    return Promise.resolve(fakePageResponse)
+    return fakePageResponse
   }
 
   blocks = {
     children: {
-      list: ({ block_id }) => Promise.resolve(fakeChildrenResponse[block_id])
+      list: async ({ block_id }) => fakeChildrenResponse[block_id]
     }
   }
 }
@@ -26,6 +26,4 @@ tap.test('fetchData returns correct parsed data', async t => {
   })
 
   t.matchSnapshot(await fetchData(), 'fetchData() result does not match!')
-
-  t.end()
 })
