@@ -55,6 +55,10 @@ jobs:
             --message-body="start_crawl"\
             --location=europe-west1
           fi
+          
+          gcloud storage buckets notifications create gs://slack-kb-chatgpt-responder-processed \
+          --topic=embeddings-update-topic \
+          --event-types=OBJECT_FINALIZE
 
       - name: Update secrets in GCP Secret Manager
         run: |
