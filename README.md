@@ -3,30 +3,39 @@
 This project is composed of 3 components, which communicate with each other. Everything is hosted on Google Cloud Platform.
 
 1. **Crawler**: A function which crawls once a day data from Notion (The NearForm way section), and stores a csv file with the relevant page content
-2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI.
-3. **Slack bot** A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base.
+2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI
+3. **Slack bot** A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base
 
 ![alt text](./assets/schema.png 'Schema')
 
 We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) tutorial to write the OpenAI part.
 
-## Notion setup
+## Table of contents
+
+- [Initial setup](initial-setup)
+- [Crawler](#crawler)
+- [Embeddings creation](#embeddings-creation)
+- [Slack bot](#slack-bot)
+
+## Initial setup
+
+### Notion setup
 
 Create a new notion integration and add it to a section. Please refer to https://www.notion.so/my-integrations.
 Click on "New Integration", set `slack-kb-chatgpt-responder` as name. Under the "Capabilities" section, make sure that all the "Content Capabilities" are checked. No "Comment Capabilities" are required, same for the "User Capabilities".
 
 To add the new integration, access to "The NearForm way" section in Notion, then click on the 3-dots icon in the top-right corner of the page and scroll the menu to reach the "Connections" section, from which you can click on "Add connection" to add the previously created one.
 
-## Google Cloud
+### Google Cloud
 
 Install google cloud CLI to work on your local machine from [here](https://cloud.google.com/sdk/docs/install).
 Once the cli is installed, perform the login using `gcloud auth login`
 
 Create the project and enable all the required pieces: https://cloud.google.com/eventarc/docs/run/create-trigger-storage-gcloud#before-you-begin
 
-# crawler
+## Crawler
 
-## Environment variables
+### Environment variables
 
 Head to https://www.notion.so/my-integrations/ and select your. Then copy/paste the following values in an `.env` file:
 
@@ -86,7 +95,7 @@ curl localhost:8080 \
 If you are not logged in yet, use `gcloud auth application-default login`.
 Note that `c3RhcnRfY3Jhd2w=`is `start_crawl` base64 encoded.
 
-# embeddings-creation
+## Embeddings creation
 
 ### Environment variables
 
@@ -98,19 +107,19 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 | `GCP_STORAGE_SCRAPED_FILE_NAME`   | Scraped data file name on the bucket |
 | `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket   |
 
-## Deployment
+### Deployment
 
 ```
 See .github/workflows/deploy-step.yml
 ```
 
-# slack-bot
+## Slack bot
 
 Slack bots configured to respond to direct messages with NearForm knowledge base answers retrieved via chatGPT APIs.
 
-## Installation
+### Installation
 
-### Slack application setup
+#### Slack application setup
 
 1. Create a new slack workspace and a new Slack application or use an existing one.
 2. Please refer to https://slack.dev/bolt-python/tutorial/getting-started-http to have a general understanding of how `bolt-python` works and how to setup a Slack app to interact with the bot.
@@ -145,7 +154,7 @@ settings:
 
 Once the BOT is deployed (or executed locally), you'll have to provide your Slack app configuration with bot's public URL (see docs below).
 
-### Environment variables
+#### Environment variables
 
 Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
 
@@ -158,23 +167,22 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 | `SLACK_SIGNING_SECRET`            | `api.slack.com/apps/[id]` > `Basic information` > `Signing Secret`         |
 | `SLACK_BOT_TOKEN`                 | `api.slack.com/apps/[id]` > `OAuth & Permissions` > `Bot User OAuth Token` |
 | `OPENAI_API_KEY`                  | Open API key                                                               |
-| `LOCAL_PORT`                      | Local port the bot listens to (dev only)                                   |
 | `GOOGLE_CLOUD_PROJECT`            | Set the same value as `GCP_PROJECT_NAME`, (dev only)                       |
 
-## Local development
+### Local development
 
-### Google cloud provider setup
+#### Google cloud provider setup
 
 Login to GCP with `gcloud auth application-default login`.
 
-### Python setup
+#### Python setup
 
 - Install virtual environment with `python -m venv .venv`
 - Activate the environment with `source .venv/bin/activate`
 - Install project dependencies with `pip install -r requirements.txt`
 - Run the project with `functions-framework --target=slack_bot` (default port 8080, check (here)[https://cloud.google.com/functions/docs/running/function-frameworks#functions-local-ff-install-python] for customize it)
 
-### Slack setup
+#### Slack setup
 
 Since Bolt runs on the local host and Slack needs a public URL to reach the app, you're going to need to [expose your local port as a public URL](https://slack.dev/bolt-python/tutorial/getting-started-http#setting-up-events).
 
@@ -183,7 +191,7 @@ You can do so with `ngrok`:
 - Run bot's local server with `functions-framework --target=slack_bot`
 - Install `ngrok` globally on your local machine: `brew install --cask ngrok`
 - Run `ngrok`: `ngrok http <local-bolt-port>`
-- Provide the generated public URL (`<slack-bot-url>/slack/events>`) in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
+- Provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
 
 ...you should now be able to interact with you Slack bot locally.
 
