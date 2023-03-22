@@ -1,8 +1,8 @@
 import tap from 'tap'
 import esmock from 'esmock'
 
-import fakePageResponse from './page-response.json' assert { type: 'json' }
-import fakeChildrenResponse from './children-response.json' assert { type: 'json' }
+import fakePageResponse from './mocks/page-response.json' assert { type: 'json' }
+import fakeChildrenResponse from './mocks/children-response.json' assert { type: 'json' }
 
 class NotionClientMock {
   constructor() {}
