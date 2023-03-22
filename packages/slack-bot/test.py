@@ -1,26 +1,22 @@
 import unittest
 from unittest.mock import MagicMock
 import openai
-from google.cloud import storage
+import knowledge_base as knowledge_base
 
 
-# Google cloud storage mocks
-class GoogleCloudStorageMock:
-    def bucket(bucket_name, _):
-        return GoogleCloudBucketMock()
+# Create .cache/embeddings.csv mock
+def createEmbeddingFile():
+    embeddingsFileMock = (
+        ",text,n_tokens,embeddings\n"
+        '0,"NearForm is a software development company.",500,"[0.017733527347445488, -0.01051256712526083, -0.004159081261605024, -0.037195149809122086, -0.029185574501752853]"'
+    )
+    with open("./.cache/embeddings.csv", "w") as f:
+        f.write(embeddingsFileMock)
 
 
-class GoogleCloudBucketMock:
-    def blob(file_name, _):
-        return GoogleCloudBlobMock()
-
-
-class GoogleCloudBlobMock:
-    def download_to_filename(destination, _):
-        return
-
-
-storage.Client = MagicMock(return_value=GoogleCloudStorageMock())
+# Mock out some internal methods
+knowledge_base.subscribe_to_embedding_changes = MagicMock()
+knowledge_base.download_csv_from_bucket_to_path = MagicMock(side_effect=createEmbeddingFile())
 
 
 # OPEN AI mocks
@@ -42,18 +38,6 @@ openAIEmbeddingsResponseMock = {
 openAICompletionResponseMock = {
     "choices": [{"message": {"content": "Answer mock"}}],
 }
-
-embeddingsFileMock = (
-    ",text,n_tokens,embeddings\n"
-    '0,"NearForm is a software development company.",500,"[0.017733527347445488, -0.01051256712526083, -0.004159081261605024, -0.037195149809122086, -0.029185574501752853]"'
-)
-
-# Create .cache/embeddings.csv mock
-with open("./.cache/embeddings.csv", "w") as f:
-    f.write(embeddingsFileMock)
-
-# Imported here since we need to mock dependencies before module execution
-import knowledge_base as knowledge_base
 
 
 class TestAnswer(unittest.TestCase):
