@@ -25,12 +25,6 @@ def handle_message(event, say):
 handler = SlackRequestHandler(app)
 
 
-###CLOUDRUN
 @functions_framework.http
 def slack_bot(request):
     return handler.handle(request)
-
-
-###LOCAL DEVELOPMENT
-if __name__ == "__main__":
-    app.start(port=int(os.environ.get("LOCAL_PORT", 3000)))

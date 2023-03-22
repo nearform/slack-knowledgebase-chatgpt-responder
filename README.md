@@ -172,7 +172,7 @@ Login to GCP with `gcloud auth application-default login`.
 - Install virtual environment with `python -m venv .venv`
 - Activate the environment with `source .venv/bin/activate`
 - Install project dependencies with `pip install -r requirements.txt`
-- Run the project with `python main.py`
+- Run the project with `functions-framework --target=slack_bot`
 
 ### Slack setup
 
