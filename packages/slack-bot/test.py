@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import MagicMock
 import openai
@@ -9,12 +10,18 @@ slack_bolt.App = MagicMock()
 import main
 
 
+def make_cache_folder():
+    if not os.path.exists(".cache"):
+        os.makedirs(".cache")
+
+
 # Create .cache/embeddings.csv mock
 def createEmbeddingFile():
     embeddingsFileMock = (
         ",text,n_tokens,embeddings\n"
         '0,"NearForm is a software development company.",500,"[0.017733527347445488, -0.01051256712526083, -0.004159081261605024, -0.037195149809122086, -0.029185574501752853]"'
     )
+    make_cache_folder()
     with open("./.cache/embeddings.csv", "w") as f:
         f.write(embeddingsFileMock)
 
