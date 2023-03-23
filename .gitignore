@@ -1,6 +1,8 @@
 node_modules
 .eslintcache
 .cache/
+packages/embeddings-creation/embeddings.csv
+packages/embeddings-creation/scraped.csv
 
 # JetBrains IDEs
 .idea
