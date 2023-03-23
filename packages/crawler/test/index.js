@@ -2,6 +2,10 @@ import tap from 'tap'
 import esmock from 'esmock'
 import sinon from 'sinon'
 
+tap.afterEach(function () {
+  sinon.restore()
+})
+
 tap.test('successfull', async t => {
   const fetchDataMock = sinon.fake.returns(
     Promise.resolve([
