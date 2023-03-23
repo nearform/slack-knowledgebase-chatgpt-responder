@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
+    "lint": "eslint .",
     "start": "functions-framework --target=crawl --signature-type=cloudevent"
   },
   "repository": {
