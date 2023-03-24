@@ -49,12 +49,6 @@ tap.test('wrong command', async t => {
       ff: (_, cb) => {
         cb()
       }
-    },
-    '../src/notion.js': {
-      fetchData: fetchDataMock
-    },
-    '../src/file-upload.js': {
-      upload: uploadMock
     }
   })
 
