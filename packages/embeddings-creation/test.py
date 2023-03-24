@@ -42,7 +42,7 @@ def createScrapedFile(_):
         f.write(scrapedFileMock)
 
 
-class TesEmbeddingsCreation(unittest.TestCase):
+class TestEmbeddingsCreation(unittest.TestCase):
     @patch("google.cloud.storage.Client")
     @mock.patch.dict(
         "os.environ",
