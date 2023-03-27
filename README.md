@@ -1,6 +1,7 @@
 # slack-knowledgebase-chatgpt-responder
 
-This project is composed of 3 components, which communicate with each other. Everything is hosted on Google Cloud Platform.
+![CI](https://github.com/nearform/slack-knowledgebase-chatgpt-responder/actions/workflows/ci.yml/badge.svg?event=push)
+![Production deploy](https://github.com/nearform/slack-knowledgebase-chatgpt-responder/actions/workflows/production-deploy.yml/badge.svg?event=push)
 
 1. **Crawler**: A function which crawls once a day data from Notion (The NearForm way section), and stores a csv file with the relevant page content
 2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI
