@@ -1,5 +1,7 @@
 # slack-knowledgebase-chatgpt-responder
 
+![CI](https://github.com/nearform/slack-knowledgebase-chatgpt-responder/actions/workflows/ci.yml/badge.svg?event=push)
+
 This project is composed of 3 components, which communicate with each other. Everything is hosted on Google Cloud Platform.
 
 1. **Crawler**: A function which crawls once a day data from Notion (The NearForm way section), and stores a csv file with the relevant page content
