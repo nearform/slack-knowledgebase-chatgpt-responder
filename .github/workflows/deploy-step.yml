@@ -61,11 +61,13 @@ jobs:
           --event-types=OBJECT_FINALIZE
 
       - name: Update secrets in GCP Secret Manager
-        run: |
-          printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
-          printf -- "${{ secrets.SLACK_BOT_TOKEN }}" | gcloud secrets versions add slack-bot-token --data-file=-
-          printf -- "${{ secrets.SLACK_SIGNING_SECRET }}" | gcloud secrets versions add slack-signing-secret --data-file=-
-          printf -- "${{ secrets.OPENAI_API_KEY }}" | gcloud secrets versions add open-api-key --data-file=-
+        uses: nearform-actions/github-action-gcp-secrets@v1
+        with:
+          secrets: |-
+            notion-token:"${{ secrets.NOTION_TOKEN }}"
+            slack-bot-token:"${{ secrets.SLACK_BOT_TOKEN }}"
+            slack-signing-secret:"${{ secrets.SLACK_SIGNING_SECRET }}"
+            openai-api-key:"${{ secrets.OPENAI_API_KEY }}"
 
       - name: 'Deploy crawl to Cloud Run'
         id: deploy-crawl
@@ -99,7 +101,7 @@ jobs:
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
           --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
-          --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
+          --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/openai-api-key:latest
 
       - name: 'Deploy embedding-creation to Cloud Run'
         id: deploy-embedding-creation
@@ -112,7 +114,7 @@ jobs:
           --source=./packages/embeddings-creation 
           --entry-point=create_embeddings 
           --trigger-bucket=${{ inputs.GCP_STORAGE_BUCKET_NAME }} 
-          --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/open-api-key:latest
+          --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/openai-api-key:latest
           --set-env-vars=GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
 
