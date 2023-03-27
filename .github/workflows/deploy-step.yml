@@ -61,11 +61,13 @@ jobs:
           --event-types=OBJECT_FINALIZE
 
       - name: Update secrets in GCP Secret Manager
-        run: |
-          printf -- "${{ secrets.NOTION_TOKEN }}" | gcloud secrets versions add notion-token --data-file=-
-          printf -- "${{ secrets.SLACK_BOT_TOKEN }}" | gcloud secrets versions add slack-bot-token --data-file=-
-          printf -- "${{ secrets.SLACK_SIGNING_SECRET }}" | gcloud secrets versions add slack-signing-secret --data-file=-
-          printf -- "${{ secrets.OPENAI_API_KEY }}" | gcloud secrets versions add open-api-key --data-file=-
+        uses: nearform-actions/github-action-gcp-secrets@v1
+        with:
+          secrets: |-
+            notion-token:"${{ secrets.NOTION_TOKEN }}"
+            slack-bot-token:"${{ secrets.SLACK_BOT_TOKEN }}"
+            slack-signing-secret:"${{ secrets.SLACK_SIGNING_SECRET }}"
+            open-api-key:"${{ secrets.OPENAI_API_KEY }}"
 
       - name: 'Deploy crawl to Cloud Run'
         id: deploy-crawl
