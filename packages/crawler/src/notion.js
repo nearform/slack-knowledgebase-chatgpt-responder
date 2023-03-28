@@ -19,7 +19,7 @@ const getPageTitle = (item, fieldName) => {
   return null
 }
 
-const getPages = async () => {
+export const getPages = async () => {
   let data = []
   let hasMore = true
   let cursor = undefined
