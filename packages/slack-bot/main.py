@@ -5,7 +5,6 @@ from slack_bolt.adapter.google_cloud_functions import SlackRequestHandler
 import knowledge_base
 import functions_framework
 from openai.error import RateLimitError
-import logging
 
 load_dotenv()  # take environment variables from .env.
 
