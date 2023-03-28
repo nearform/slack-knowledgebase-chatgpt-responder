@@ -50,7 +50,13 @@ jobs:
 
           if ! gcloud scheduler jobs describe crawl-job --location=europe-west1; then
             gcloud scheduler jobs create pubsub crawl-job \
-            --schedule="* * 1 * *" \
+            --schedule="0 1 * * *" \
+            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
+            --message-body="start_crawl"\
+            --location=europe-west1
+          else
+            gcloud scheduler jobs update pubsub crawl-job \
+            --schedule="0 1 * * *" \
             --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
             --message-body="start_crawl"\
             --location=europe-west1
