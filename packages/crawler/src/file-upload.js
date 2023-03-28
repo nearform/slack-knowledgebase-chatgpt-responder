@@ -1,7 +1,34 @@
+import path from 'path'
+import { fileURLToPath } from 'url'
+import fs from 'fs'
 import stream from 'stream'
 import { Storage } from '@google-cloud/storage'
 
+function isLocalEnvironment() {
+  // @TODO Find an appropriate env var to tell prod environment
+  const { FUNCTION_REGION } = process.env
+  return FUNCTION_REGION === undefined
+}
+
+function getCurrentDirectoryPath() {
+  const __filename = fileURLToPath(import.meta.url)
+  return path.dirname(__filename)
+}
+
+function writeFileToSharedCache(content, fileName) {
+  const cachePath = getCurrentDirectoryPath() + '/../../../.cache/'
+  if (fs.existsSync(cachePath) === false) {
+    fs.mkdirSync(cachePath)
+  }
+  fs.writeFileSync(cachePath + fileName, content)
+}
+
 export const upload = csv => {
+  if (isLocalEnvironment()) {
+    writeFileToSharedCache(csv, 'scraped.csv')
+    return
+  }
+
   const bucketName = process.env.GCP_STORAGE_BUCKET_NAME || ''
   const destFileName =
     process.env.GCP_STORAGE_SCRAPED_FILE_NAME || 'scraped.csv'
