@@ -180,6 +180,7 @@ Login to GCP with `gcloud auth application-default login`.
 
 - Install virtual environment with `python -m venv .venv`
 - Activate the environment with `source .venv/bin/activate`
+- Install pip: `python3 -m ensurepip --upgrade`
 - Install project dependencies with `pip install -r requirements.txt`
 - Run the project with `functions-framework --target=slack_bot` (default port 8080, check (here)[https://cloud.google.com/functions/docs/running/function-frameworks#functions-local-ff-install-python] for customize it)
 
