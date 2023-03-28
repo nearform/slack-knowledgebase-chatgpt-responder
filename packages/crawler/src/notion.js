@@ -12,7 +12,7 @@ const getPageTitle = (item, fieldName) => {
     const field = item.properties[fieldName]
 
     if (field && 'title' in field) {
-      return 'title' in field ? field.title[0].plain_text : null
+      return 'title' in field ? field.title[0]?.plain_text : null
     }
   }
 
@@ -20,19 +20,35 @@ const getPageTitle = (item, fieldName) => {
 }
 
 const getPages = async () => {
-  const result = await notion.search({
-    filter: {
-      value: 'page',
-      property: 'object'
-    }
-  })
+  let data = []
+  let hasMore = true
+  let cursor = undefined
 
-  return result.results.map(item => {
-    const id = item.id
-    const title = getPageTitle(item, 'Name') || getPageTitle(item, 'title')
+  while (hasMore) {
+    const result = await notion.search({
+      filter: {
+        value: 'page',
+        property: 'object'
+      },
+      start_cursor: cursor,
+      page_size: 10
+    })
 
-    return { id, title }
-  })
+    hasMore = result.has_more
+    cursor = result.next_cursor
+
+    data = [
+      ...data,
+      ...result.results.map(item => {
+        const id = item.id
+        const title = getPageTitle(item, 'Name') || getPageTitle(item, 'title')
+
+        return { id, title }
+      })
+    ]
+  }
+
+  return data
 }
 
 const getPageContent = async id => {
