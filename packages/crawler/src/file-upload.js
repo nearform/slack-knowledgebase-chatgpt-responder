@@ -17,9 +17,6 @@ function getCurrentDirectoryPath() {
 
 function writeFileToSharedCache(content, fileName) {
   const cachePath = getCurrentDirectoryPath() + '/../../../.cache/'
-  if (fs.existsSync(cachePath) === false) {
-    fs.mkdirSync(cachePath)
-  }
   fs.writeFileSync(cachePath + fileName, content)
 }
 
