@@ -133,7 +133,7 @@ def answer_question(
         # Create a completions using the question and context
         response = openai.ChatCompletion.create(
             messages=[
-                {"role": "system", "content": "You are a helpful assitant"},
+                {"role": "system", "content": "You are a helpful assistant"},
                 {
                     "role": "assistant",
                     "content": f"I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I'm sorry but I can only provide answers to questions related to NearForm': {context}",
