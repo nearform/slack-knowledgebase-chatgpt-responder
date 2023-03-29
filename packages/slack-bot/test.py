@@ -56,20 +56,22 @@ class TestAnswer(unittest.TestCase):
     def test_answer(self):
         openai.Embedding.create = MagicMock(return_value=openAIEmbeddingsResponseMock)
         openai.ChatCompletion.create = MagicMock(return_value=openAICompletionResponseMock)
+        say_mock = MagicMock()
 
-        actual = knowledge_base.get_answer("What is nearform?")
+        event = {"channel_type": "im", "text": "What is nearform?"}
+        main.handle_message(event, say_mock)
         expected = openAICompletionResponseMock["choices"][0]["message"]["content"]
-        self.assertEqual(actual, expected)
+        say_mock.assert_called_with(expected)
 
 
 class TestRateLimitErrorAnswer(unittest.TestCase):
     def test_rate_limit_error_answer(self):
         openai.Embedding.create = MagicMock(return_value=openAIEmbeddingsResponseMock)
         openai.ChatCompletion.create = MagicMock(side_effect=openAICompletionResponseMock)
+        say_mock = MagicMock()
 
         event = {"channel_type": "im", "text": "hello!"}
         knowledge_base.get_answer = MagicMock(side_effect=RateLimitError())
-        say_mock = MagicMock()
         main.handle_message(event, say_mock)
         say_mock.assert_called_with("I'm having a :coffee:️, I'll be back later")
 
