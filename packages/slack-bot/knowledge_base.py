@@ -37,16 +37,9 @@ def make_cache_folder():
 
 
 def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
-    # Instantiates a client
     storage_client = storage.Client()
-
-    # Gets the bucket
     bucket = storage_client.bucket(bucket_name)
-
-    # Gets the blob (file)
     blob = bucket.blob(file_name)
-
-    # Downloads the file to path
     blob.download_to_filename(destination)
 
 

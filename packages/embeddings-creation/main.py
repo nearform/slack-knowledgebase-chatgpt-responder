@@ -36,6 +36,9 @@ import openai
 import backoff
 import numpy as np
 from utils import download_from_bucket_to_path, upload_from_path_to_bucket
+from dotenv import load_dotenv
+
+load_dotenv()
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -77,8 +80,6 @@ def create_embeddings(cloud_event):
 
     # Tokenize the text and save the number of tokens to a new column
     df["n_tokens"] = df.text.apply(lambda x: len(tokenizer.encode(x)))
-
-    print("Downloaded storage object {} from bucket {} to local file {}.".format(name, bucket, scraped_file))
 
     shortened = []
 
