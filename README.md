@@ -98,7 +98,16 @@ If you are not logged in yet, use `gcloud auth application-default login`.
 
 ## Embeddings creation
 
-### Environment variables
+### Installation
+
+#### Python setup
+
+- Install virtual environment with `python -m venv .venv`
+- Activate the environment with `source .venv/bin/activate`
+- Install pip: `python3 -m ensurepip --upgrade`
+- Install project dependencies with `pip install -r requirements.txt`
+
+#### Environment variables
 
 Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
 

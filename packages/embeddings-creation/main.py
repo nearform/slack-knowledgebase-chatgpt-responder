@@ -30,12 +30,12 @@
 
 import os
 import functions_framework
-from google.cloud import storage
 import tiktoken
 import pandas as pd
 import openai
 import backoff
 import numpy as np
+from utils import download_from_bucket_to_path, upload_from_path_to_bucket
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -47,8 +47,6 @@ max_tokens = 500
 def create_embeddings(cloud_event):
     scraped_file = os.environ.get("GCP_STORAGE_SCRAPED_FILE_NAME")
     embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
-
-    storage_client = storage.Client()
 
     data = cloud_event.data
     event_id = cloud_event["id"]
@@ -72,10 +70,7 @@ def create_embeddings(cloud_event):
         print("Skipping processing of file {}".format(name))
         return
 
-    bucket = storage_client.bucket(bucket)
-
-    blob = bucket.blob(name)
-    blob.download_to_filename(scraped_file)
+    download_from_bucket_to_path(bucket, name, scraped_file)
 
     df = pd.read_csv(scraped_file, index_col=0)
     df.columns = ["title", "text"]
@@ -109,9 +104,8 @@ def create_embeddings(cloud_event):
     )
 
     df.to_csv(embeddings_file)
-
-    destination_blob = bucket.blob(embeddings_file)
-    destination_blob.upload_from_filename(embeddings_file, if_generation_match=None)
+    
+    upload_from_path_to_bucket(bucket,embeddings_file)
 
 
 # Function to split the text into chunks of a maximum number of tokens
