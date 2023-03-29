@@ -157,8 +157,6 @@ def answer_question(
         return ""
 
 
-initialize_module_if_necessary()
-
-
 def get_answer(question):
+    initialize_module_if_necessary()
     return answer_question(df, question=question, debug=True)
