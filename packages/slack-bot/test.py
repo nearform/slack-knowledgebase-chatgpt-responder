@@ -1,12 +1,11 @@
 import unittest
-from unittest.mock import MagicMock
+from unittest.mock import MagicMock, patch
+
 import openai
-import knowledge_base as knowledge_base
 from openai.error import RateLimitError
 import slack_bolt as slack_bolt
 
 slack_bolt.App = MagicMock()
-import main
 
 
 # OPEN AI mocks
@@ -31,7 +30,19 @@ openAICompletionResponseMock = {
 
 
 class TestAnswer(unittest.TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        # Set up the environment variables mock
+        cls.env_patch = patch.dict(
+          "os.environ",
+          {"GCP_STORAGE_EMBEDDING_FILE_NAME": "embeddings.csv"},
+          clear=True,
+        )
+        cls.env_patch.start()
+
     def test_answer(self):
+        import main
         openai.Embedding.create = MagicMock(return_value=openAIEmbeddingsResponseMock)
         openai.ChatCompletion.create = MagicMock(return_value=openAICompletionResponseMock)
         say_mock = MagicMock()
@@ -41,9 +52,9 @@ class TestAnswer(unittest.TestCase):
         expected = openAICompletionResponseMock["choices"][0]["message"]["content"]
         say_mock.assert_called_with(expected)
 
-
-class TestRateLimitErrorAnswer(unittest.TestCase):
     def test_rate_limit_error_answer(self):
+        import main
+        import knowledge_base
         openai.Embedding.create = MagicMock(return_value=openAIEmbeddingsResponseMock)
         openai.ChatCompletion.create = MagicMock(side_effect=openAICompletionResponseMock)
         say_mock = MagicMock()
@@ -52,6 +63,7 @@ class TestRateLimitErrorAnswer(unittest.TestCase):
         knowledge_base.get_answer = MagicMock(side_effect=RateLimitError())
         main.handle_message(event, say_mock)
         say_mock.assert_called_with("I'm having a :coffee:, I'll be back later")
+
 
 
 if __name__ == "__main__":
