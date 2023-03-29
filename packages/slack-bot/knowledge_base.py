@@ -136,7 +136,7 @@ def answer_question(
                 {"role": "system", "content": "You are a helpful assitant"},
                 {
                     "role": "assistant",
-                    "content": f"I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I can answer only to NearForm related question!': {context}",
+                    "content": f"I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I'm sorry but I can only provide answers to questions related to NearForm': {context}",
                 },
                 {
                     "role": "user",
