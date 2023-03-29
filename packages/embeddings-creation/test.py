@@ -1,8 +1,7 @@
 import unittest
 import main
-import openai
 from unittest import mock
-from unittest.mock import MagicMock, patch
+from unittest.mock import patch
 
 scraped_file_name = "scraped.csv"
 embeddings_file_name = "embeddings.csv"
@@ -42,14 +41,15 @@ def createScrapedFile(_, __, ___):
 
 
 class TestEmbeddingsCreation(unittest.TestCase):
+    @patch('openai.Embedding.create')
     @patch('main.download_from_bucket_to_path')
     @mock.patch.dict(
         "os.environ",
         {"GCP_STORAGE_SCRAPED_FILE_NAME": scraped_file_name, "GCP_STORAGE_EMBEDDING_FILE_NAME": embeddings_file_name},
         clear=True,
     )
-    def test_embeddings_creations(self, download_from_bucket_to_path_mock):
-        openai.Embedding.create = MagicMock(return_value=openAIEmbeddingsResponseMock)
+    def test_embeddings_creations(self, download_from_bucket_to_path_mock, openai_Embedding_create_mock):
+        openai_Embedding_create_mock.return_value=openAIEmbeddingsResponseMock
 
         download_from_bucket_to_path_mock.side_effect = createScrapedFile
 
