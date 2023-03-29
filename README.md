@@ -17,10 +17,17 @@ We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-craw
 - [Crawler](#crawler)
 - [Embeddings creation](#embeddings-creation)
 - [Slack bot](#slack-bot)
+- [Run the project locally](#run-the-project-locally)
 
 ## Initial setup
 
-### Notion setup
+### Monorepo
+
+- `cd` to the root of the repo
+- Make sure you use the expected node version with `nvm use`
+- Install monorepo dependencies with `npm ci`
+
+### Notion: create a access token
 
 Create a new notion integration and add it to a section. Please refer to https://www.notion.so/my-integrations.
 Click on "New Integration", set `slack-kb-chatgpt-responder` as name. Under the "Capabilities" section, make sure that all the "Content Capabilities" are checked. No "Comment Capabilities" are required, same for the "User Capabilities".
@@ -36,15 +43,15 @@ Create the project and enable all the required pieces: https://cloud.google.com/
 
 ## Crawler
 
-### Environment variables
+### Installation
 
-Head to https://www.notion.so/my-integrations/ and select your. Then copy/paste the following values in an `.env` file:
+#### Environment variables
 
-| Env var                         |                                |
-| ------------------------------- | ------------------------------ |
-| `NOTION_TOKEN`                  | secret_y0uR_1n73gr4710n_S3cr37 |
-| `GCP_STORAGE_BUCKET_NAME`       | your_bucket_name               |
-| `GCP_STORAGE_SCRAPED_FILE_NAME` | fallback on "scraped.csv"      |
+| Env var                         |                                         |
+| ------------------------------- | --------------------------------------- |
+| `NOTION_TOKEN`                  | Notion token created in intial setup    |
+| `GCP_STORAGE_BUCKET_NAME`       | GCP bucket name hosting embeddings file |
+| `GCP_STORAGE_SCRAPED_FILE_NAME` | Scraped data file name on the bucket    |
 
 ### Deploying
 
@@ -224,6 +231,17 @@ Create the subscription for the topic:
 See .github/workflows/deploy-step.yml
 ```
 
-Once deployed, provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
+Once deployed, provide the generated public URL in your Slack APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
 
 ...you should now be able to interact with you Slack bot.
+
+## Run the project locally
+
+Once installed/configured all the modules, you can run them using the provided Makefile:
+
+- `make crawl`: create source content (`scraped.csv`) from Notion pages
+- `make embeddings`: generate the relevant embeddings
+- `make bot`: start Slack bot (localhost:8080)
+- `make expose-bot` expose Slack bot as a public url
+
+Slack bot public url should be provided to Slack APP page configuration (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
