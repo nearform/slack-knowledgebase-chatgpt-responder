@@ -108,7 +108,7 @@ def create_context(question, df, max_len=1800, size="ada"):
 
 def answer_question(
     df,
-    model="gpt-3.5-turbo",
+    model="gpt-4",
     question="What is NearForm?",
     max_len=1800,
     size="ada",
