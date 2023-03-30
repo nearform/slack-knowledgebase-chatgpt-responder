@@ -1,10 +1,11 @@
 import pandas as pd
 import numpy as np
 import openai
-from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
+from openai.embeddings_utils import distances_from_embeddings
 import os
 from dotenv import load_dotenv
 from google.cloud import storage, pubsub_v1
+from init_utils import get_mock_embeddings_file
 
 load_dotenv()  # take environment variables from .env.
 
@@ -19,7 +20,7 @@ is_module_initialized = False
 df = None
 
 
-def initialize_module_if_necessary():
+def initialize():
     global is_module_initialized
     global df
 
@@ -27,7 +28,7 @@ def initialize_module_if_necessary():
         make_cache_folder()
 
         if os.environ.get("PY_ENV") == "test":
-            df = get_test_embeddings_file()
+            df = get_mock_embeddings_file(local_embeddings_file)
         else:
             df = get_embeddings_file()
             subscribe_to_embedding_changes()
@@ -52,22 +53,6 @@ def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
 
     # Downloads the file to path
     blob.download_to_filename(destination)
-
-
-def get_test_embeddings_file():
-    embeddingsFileMock = (
-        ",text,n_tokens,embeddings\n"
-        '0,"NearForm is a software development company.",500,"[0.017733527347445488, -0.01051256712526083, -0.004159081261605024, -0.037195149809122086, -0.029185574501752853]"'
-    )
-
-    with open("./.cache/embeddings.csv", "w") as f:
-        f.write(embeddingsFileMock)
-
-    df = pd.read_csv(local_embeddings_file, index_col=0)
-
-    df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
-
-    return df
 
 
 # Most of the code taken from:
@@ -178,7 +163,7 @@ def answer_question(
         return ""
 
 
-initialize_module_if_necessary()
+initialize()
 
 
 def get_answer(question):
