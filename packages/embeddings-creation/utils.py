@@ -13,7 +13,7 @@ current_directory = pathlib.Path(__file__).parent.resolve()
 global_cache_folder = pathlib.Path(current_directory).parent.parent.resolve().joinpath(".cache")
 
 
-def download_scraped(bucket_name, file_name, destination):
+def download(bucket_name, file_name, destination):
     if is_local_environment():
         shutil.copyfile(pathlib.Path(global_cache_folder).joinpath(file_name), destination)
     else:
@@ -24,7 +24,7 @@ def download_scraped(bucket_name, file_name, destination):
         print("Downloaded storage object {} from bucket {} to local file {}.".format(file_name, bucket, destination))
 
 
-def upload_scraped(bucket_name, source_file_path):
+def upload(bucket_name, source_file_path):
     if is_local_environment():
         shutil.copyfile(source_file_path, pathlib.Path(global_cache_folder).joinpath(source_file_path))
     else:

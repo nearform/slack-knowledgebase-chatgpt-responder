@@ -5,7 +5,7 @@ import pandas as pd
 import openai
 import backoff
 import numpy as np
-from utils import download_scraped, upload_scraped
+from utils import download, upload
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,7 +43,7 @@ def create_embeddings(cloud_event):
         print("Skipping processing of file {}".format(name))
         return
 
-    download_scraped(bucket, name, scraped_file)
+    download(bucket, name, scraped_file)
 
     df = pd.read_csv(scraped_file, index_col=0)
     df.columns = ["title", "text"]
@@ -76,7 +76,7 @@ def create_embeddings(cloud_event):
 
     df.to_csv(embeddings_file)
 
-    upload_scraped(bucket, embeddings_file)
+    upload(bucket, embeddings_file)
 
 
 # Function to split the text into chunks of a maximum number of tokens
