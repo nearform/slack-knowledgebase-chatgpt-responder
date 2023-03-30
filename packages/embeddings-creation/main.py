@@ -106,7 +106,7 @@ def create_embeddings(cloud_event):
 
     df.to_csv(embeddings_file)
     
-    upload_from_path_to_bucket(bucket,embeddings_file)
+    upload_from_path_to_bucket(bucket, embeddings_file)
 
 
 # Function to split the text into chunks of a maximum number of tokens
