@@ -24,10 +24,15 @@ def initialize_module_if_necessary():
     global df
 
     if is_module_initialized == False:
-        is_module_initialized = True
         make_cache_folder()
-        df = get_embeddings_file()
-        subscribe_to_embedding_changes()
+
+        if os.environ.get("TEST") == "1":
+            df = get_test_embeddings_file()
+        else:
+            df = get_embeddings_file()
+            subscribe_to_embedding_changes()
+
+        is_module_initialized = True
 
 
 def make_cache_folder():
@@ -47,6 +52,22 @@ def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
 
     # Downloads the file to path
     blob.download_to_filename(destination)
+
+
+def get_test_embeddings_file():
+    embeddingsFileMock = (
+        ",text,n_tokens,embeddings\n"
+        '0,"NearForm is a software development company.",500,"[0.017733527347445488, -0.01051256712526083, -0.004159081261605024, -0.037195149809122086, -0.029185574501752853]"'
+    )
+
+    with open("./.cache/embeddings.csv", "w") as f:
+        f.write(embeddingsFileMock)
+
+    df = pd.read_csv(local_embeddings_file, index_col=0)
+
+    df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
+
+    return df
 
 
 # Most of the code taken from:
@@ -157,6 +178,8 @@ def answer_question(
         return ""
 
 
+initialize_module_if_necessary()
+
+
 def get_answer(question):
-    initialize_module_if_necessary()
-    return answer_question(df, question=question, debug=True)
+    return answer_question(df, question=question)

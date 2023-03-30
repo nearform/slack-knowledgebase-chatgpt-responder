@@ -73,7 +73,7 @@ class TestRateLimitErrorAnswer(unittest.TestCase):
         event = {"channel_type": "im", "text": "hello!"}
         knowledge_base.get_answer = MagicMock(side_effect=RateLimitError())
         main.handle_message(event, say_mock)
-        say_mock.assert_called_with("I'm having a :coffee:️, I'll be back later")
+        say_mock.assert_called_with("I'm having a :coffee:, I'll be back later")
 
 
 if __name__ == "__main__":

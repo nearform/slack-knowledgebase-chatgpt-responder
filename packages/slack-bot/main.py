@@ -22,7 +22,7 @@ def handle_message(event, say):
             answer = knowledge_base.get_answer(text)
             say(answer)
         except RateLimitError:
-            say("I'm having a :coffee:️, I'll be back later")
+            say("I'm having a :coffee:, I'll be back later")
 
 
 @app.event("message")
