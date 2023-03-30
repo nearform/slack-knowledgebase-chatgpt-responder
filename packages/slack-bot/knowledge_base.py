@@ -1,12 +1,13 @@
 import pandas as pd
 import numpy as np
 import openai
-from openai.embeddings_utils import distances_from_embeddings, cosine_similarity
+from openai.embeddings_utils import distances_from_embeddings
 import os
 from dotenv import load_dotenv
 from google.cloud import storage, pubsub_v1
+from init_utils import get_mock_embeddings_file
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv()
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 project_name = os.environ.get("GCP_PROJECT_NAME")
@@ -15,17 +16,17 @@ bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
 embeddings_subscription = os.environ.get("GCP_EMBEDDING_SUBSCRIPTION")
 local_embeddings_file = ".cache/embeddings.csv"
 
-is_module_initialized = False
 df = None
 
 
-def initialize_module_if_necessary():
-    global is_module_initialized
+def initialize():
     global df
 
-    if is_module_initialized == False:
-        is_module_initialized = True
-        make_cache_folder()
+    make_cache_folder()
+
+    if os.environ.get("PY_ENV") == "test":
+        df = get_mock_embeddings_file(local_embeddings_file)
+    else:
         df = get_embeddings_file()
         subscribe_to_embedding_changes()
 
@@ -157,6 +158,8 @@ def answer_question(
         return ""
 
 
+initialize()
+
+
 def get_answer(question):
-    initialize_module_if_necessary()
-    return answer_question(df, question=question, debug=True)
+    return answer_question(df, question=question)

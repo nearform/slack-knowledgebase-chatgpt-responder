@@ -1,4 +1,3 @@
-import os
 import unittest
 from unittest.mock import MagicMock
 import openai
@@ -8,27 +7,6 @@ import slack_bolt as slack_bolt
 
 slack_bolt.App = MagicMock()
 import main
-
-
-def make_cache_folder():
-    if not os.path.exists(".cache"):
-        os.makedirs(".cache")
-
-
-# Create .cache/embeddings.csv mock
-def createEmbeddingFile():
-    embeddingsFileMock = (
-        ",text,n_tokens,embeddings\n"
-        '0,"NearForm is a software development company.",500,"[0.017733527347445488, -0.01051256712526083, -0.004159081261605024, -0.037195149809122086, -0.029185574501752853]"'
-    )
-    make_cache_folder()
-    with open("./.cache/embeddings.csv", "w") as f:
-        f.write(embeddingsFileMock)
-
-
-# Mock out some internal methods
-knowledge_base.subscribe_to_embedding_changes = MagicMock()
-knowledge_base.download_csv_from_bucket_to_path = MagicMock(side_effect=createEmbeddingFile())
 
 
 # OPEN AI mocks
@@ -73,7 +51,7 @@ class TestRateLimitErrorAnswer(unittest.TestCase):
         event = {"channel_type": "im", "text": "hello!"}
         knowledge_base.get_answer = MagicMock(side_effect=RateLimitError())
         main.handle_message(event, say_mock)
-        say_mock.assert_called_with("I'm having a :coffee:️, I'll be back later")
+        say_mock.assert_called_with("I'm having a :coffee:, I'll be back later")
 
 
 if __name__ == "__main__":
