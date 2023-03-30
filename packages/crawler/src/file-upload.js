@@ -7,7 +7,7 @@ import { Storage } from '@google-cloud/storage'
 function isLocalEnvironment() {
   // @TODO Find an appropriate env var to tell prod environment
   const { FUNCTION_REGION } = process.env
-  return FUNCTION_REGION === undefined
+  return !FUNCTION_REGION
 }
 
 function getCurrentDirectoryPath() {
