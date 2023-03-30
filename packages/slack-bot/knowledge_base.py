@@ -7,7 +7,7 @@ from dotenv import load_dotenv
 from google.cloud import storage, pubsub_v1
 from init_utils import get_mock_embeddings_file
 
-load_dotenv()  # take environment variables from .env.
+load_dotenv()
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 project_name = os.environ.get("GCP_PROJECT_NAME")
