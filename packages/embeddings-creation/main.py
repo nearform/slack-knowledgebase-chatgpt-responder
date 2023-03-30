@@ -1,33 +1,3 @@
-# Example of message received from notification
-#
-#   {
-#    "attributes":{
-#       "specversion":"1.0",
-#       "id":"123451234512345",
-#       "source":"//storage.googleapis.com/projects/_/buckets/MY-BUCKET-NAME",
-#       "type":"google.cloud.storage.object.v1.finalized",
-#       "datacontenttype":"application/json",
-#       "subject":"objects/MY_FILE.txt",
-#       "time":"2020-01-02T12:34:56.789Z"
-#    },
-#    "data":{
-#       "bucket":"MY_BUCKET",
-#       "contentType":"text/plain",
-#       "kind":"storage#object",
-#       "md5Hash":"...",
-#       "metageneration":"1",
-#       "name":"MY_FILE.txt",
-#       "size":"352",
-#       "storageClass":"MULTI_REGIONAL",
-#       "timeCreated":"2020-04-23T07:38:57.230Z",
-#       "timeStorageClassUpdated":"2020-04-23T07:38:57.230Z",
-#       "updated":"2020-04-23T07:38:57.230Z"
-#    }
-# }
-#
-# https://cloud.google.com/storage/docs/json_api/v1/objects#resource
-# see https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/functions/v2/storage/main.py
-
 import os
 import functions_framework
 import tiktoken
@@ -35,7 +5,7 @@ import pandas as pd
 import openai
 import backoff
 import numpy as np
-from utils import download_from_bucket_to_path, upload_from_path_to_bucket
+from utils import download_scraped, upload_scraped
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -73,7 +43,7 @@ def create_embeddings(cloud_event):
         print("Skipping processing of file {}".format(name))
         return
 
-    download_from_bucket_to_path(bucket, name, scraped_file)
+    download_scraped(bucket, name, scraped_file)
 
     df = pd.read_csv(scraped_file, index_col=0)
     df.columns = ["title", "text"]
@@ -105,8 +75,8 @@ def create_embeddings(cloud_event):
     )
 
     df.to_csv(embeddings_file)
-    
-    upload_from_path_to_bucket(bucket, embeddings_file)
+
+    upload_scraped(bucket, embeddings_file)
 
 
 # Function to split the text into chunks of a maximum number of tokens

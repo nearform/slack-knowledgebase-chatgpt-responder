@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 import { fileURLToPath } from 'url'
 import fs from 'fs'
 import stream from 'stream'
@@ -16,8 +16,10 @@ function getCurrentDirectoryPath() {
 }
 
 function writeFileToSharedCache(content, fileName) {
-  const cachePath = getCurrentDirectoryPath() + '/../../../.cache/'
-  fs.writeFileSync(cachePath + fileName, content)
+  fs.writeFileSync(
+    path.resolve(getCurrentDirectoryPath(), '../../../.cache/', fileName),
+    content
+  )
 }
 
 export const upload = csv => {

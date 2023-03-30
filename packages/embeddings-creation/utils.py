@@ -3,28 +3,32 @@ from google.cloud import storage
 import shutil
 import pathlib
 
+
 def is_local_environment():
-  #  @TODO Find an appropriate env var to tell prod environment
-  return os.environ.get("FUNCTION_REGION") == None
+    #  @TODO Find an appropriate env var to tell prod environment
+    return os.environ.get("FUNCTION_REGION") == None
+
 
 current_directory = pathlib.Path(__file__).parent.resolve()
-global_cache_folder = pathlib.Path(current_directory).parent.parent.resolve().joinpath('.cache')
+global_cache_folder = pathlib.Path(current_directory).parent.parent.resolve().joinpath(".cache")
 
-def download_from_bucket_to_path(bucket_name, file_name, destination):
-    if is_local_environment():
-      shutil.copyfile(pathlib.Path(global_cache_folder).joinpath(file_name), destination)
-    else:
-      storage_client = storage.Client()
-      bucket = storage_client.bucket(bucket_name)
-      blob = bucket.blob(file_name)
-      blob.download_to_filename(destination)
-      print("Downloaded storage object {} from bucket {} to local file {}.".format(file_name, bucket, destination))
 
-def upload_from_path_to_bucket(bucket_name, source_file_path):
+def download_scraped(bucket_name, file_name, destination):
     if is_local_environment():
-      shutil.copyfile(source_file_path, pathlib.Path(global_cache_folder).joinpath(source_file_path))
+        shutil.copyfile(pathlib.Path(global_cache_folder).joinpath(file_name), destination)
     else:
-      storage_client = storage.Client()
-      bucket = storage_client.bucket(bucket_name)
-      blob = bucket.blob(source_file_path)
-      blob.upload_from_filename(source_file_path, if_generation_match=None)
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(file_name)
+        blob.download_to_filename(destination)
+        print("Downloaded storage object {} from bucket {} to local file {}.".format(file_name, bucket, destination))
+
+
+def upload_scraped(bucket_name, source_file_path):
+    if is_local_environment():
+        shutil.copyfile(source_file_path, pathlib.Path(global_cache_folder).joinpath(source_file_path))
+    else:
+        storage_client = storage.Client()
+        bucket = storage_client.bucket(bucket_name)
+        blob = bucket.blob(source_file_path)
+        blob.upload_from_filename(source_file_path, if_generation_match=None)
