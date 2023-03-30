@@ -16,24 +16,19 @@ bucket_embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
 embeddings_subscription = os.environ.get("GCP_EMBEDDING_SUBSCRIPTION")
 local_embeddings_file = ".cache/embeddings.csv"
 
-is_module_initialized = False
 df = None
 
 
 def initialize():
-    global is_module_initialized
     global df
 
-    if is_module_initialized == False:
-        make_cache_folder()
+    make_cache_folder()
 
-        if os.environ.get("PY_ENV") == "test":
-            df = get_mock_embeddings_file(local_embeddings_file)
-        else:
-            df = get_embeddings_file()
-            subscribe_to_embedding_changes()
-
-        is_module_initialized = True
+    if os.environ.get("PY_ENV") == "test":
+        df = get_mock_embeddings_file(local_embeddings_file)
+    else:
+        df = get_embeddings_file()
+        subscribe_to_embedding_changes()
 
 
 def make_cache_folder():
