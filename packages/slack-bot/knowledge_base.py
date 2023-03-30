@@ -26,7 +26,7 @@ def initialize_module_if_necessary():
     if is_module_initialized == False:
         make_cache_folder()
 
-        if os.environ.get("TEST") == "1":
+        if os.environ.get("PY_ENV") == "test":
             df = get_test_embeddings_file()
         else:
             df = get_embeddings_file()

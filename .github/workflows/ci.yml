@@ -43,7 +43,7 @@ jobs:
       - name: Run tests
         working-directory: ./packages/slack-bot
         run: |
-          TEST=1 python test.py
+          PY_ENV=test python test.py
 
   test-embeddings-creation:
     name: Test embeddings creation
