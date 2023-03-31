@@ -28,7 +28,7 @@ tap.test('fetchData returns correct parsed data', async t => {
     }
   })
 
-  t.matchSnapshot(await fetchData(), 'fetchData() result does not match!')
+  t.matchSnapshot(await fetchData())
 })
 
 tap.test('getPages works correctly with pagination', async t => {
