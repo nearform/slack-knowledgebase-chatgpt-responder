@@ -110,12 +110,14 @@ const getRecursiveBlockContent = async blockId => {
 
   let childrenContents = []
   for (let i = 0; i < blocksToProcess.length; i++) {
-    await delay(500)
-    const id = blocksToProcess[i].id
-    childrenContents = [
-      ...childrenContents,
-      ...(await getRecursiveBlockContent(id))
-    ]
+    const block = blocksToProcess[i]
+    if (block.has_children) {
+      await delay(500)
+      childrenContents = [
+        ...childrenContents,
+        ...(await getRecursiveBlockContent(block.id))
+      ]
+    }
   }
 
   return [...blockContent, ...childrenContents.flat()]
