@@ -16,8 +16,8 @@ const configuration = new Configuration({
 const openai = new OpenAIApi(configuration);
 
 async function createEmbeddings(cloudEvent) {
-  const SCRAPED_FILE_NAME = os.getenv('GCP_STORAGE_SCRAPED_FILE_NAME')
-  const EMBEDDINGS_FILE_NAME = os.getenv('GCP_STORAGE_EMBEDDING_FILE_NAME')
+  const SCRAPED_FILE_NAME = process.env.GCP_STORAGE_SCRAPED_FILE_NAME
+  const EMBEDDINGS_FILE_NAME = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 
   const storage = new Storage()
 

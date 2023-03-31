@@ -3,8 +3,11 @@
   "version": "1.0.0",
   "description": "Generate embeddings for scraped text and write them to a GCP bucket",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--loader=esmock tap"
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
+    "lint": "eslint .",
+    "prepare": "husky install"
   },
   "repository": {
     "type": "git",
