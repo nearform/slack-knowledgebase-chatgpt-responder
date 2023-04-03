@@ -5,9 +5,9 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap --snapshot",
     "lint": "eslint .",
-    "start": "functions-framework --target=crawl --signature-type=cloudevent"
+    "start": "node ./src/index.js"
   },
   "repository": {
     "type": "git",
@@ -20,8 +20,7 @@
   },
   "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.1.3",
-    "@google-cloud/storage": "^6.9.5",
+    "@google-cloud/storage": "^6.9.4",
     "@notionhq/client": "^2.2.3",
     "dotenv": "^16.0.3",
     "json-2-csv": "^4.0.0",

@@ -41,25 +41,50 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
+          install_components: 'beta'
 
-      - name: Update topic and scheduler
-        run: |
-          if ! gcloud pubsub topics describe crawler-topic; then
-            gcloud pubsub topics create crawler-topic
+      - name: Create crawler image
+        run: |-
+          gcloud builds submit ./packages/crawler --suppress-logs --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA
+
+      - name: Deploy crawler to cloud run
+        run: |-
+          if ! gcloud beta run jobs describe crawler-job --region=europe-west1; then
+            gcloud beta run jobs create crawler-job \
+            --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
+            --tasks 1 \
+            --max-retries 1 \
+            --region europe-west1 \
+            --task-timeout 60m \
+            --set-secrets NOTION_TOKEN=notion-token:latest \
+            --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
+            --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
+          else
+            gcloud beta run jobs update crawler-job \
+            --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
+            --tasks 1 \
+            --max-retries 1 \
+            --region europe-west1 \
+            --task-timeout 60m \
+            --set-secrets NOTION_TOKEN=notion-token:latest \
+            --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
+            --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
           fi
 
-          if ! gcloud scheduler jobs describe crawl-job --location=europe-west1; then
-            gcloud scheduler jobs create pubsub crawl-job \
-            --schedule="0 1 * * *" \
-            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
-            --message-body="start_crawl"\
-            --location=europe-west1
+      - name: Update scheduler
+        run: |-
+          if ! gcloud scheduler jobs describe crawl-schedule-job --location=europe-west1; then
+            gcloud scheduler jobs create http crawl-schedule-job \
+            --location europe-west1 \
+            --schedule="0 0 * * 1" \
+            --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
+            --http-method POST
           else
-            gcloud scheduler jobs update pubsub crawl-job \
-            --schedule="0 1 * * *" \
-            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
-            --message-body="start_crawl"\
-            --location=europe-west1
+            gcloud scheduler jobs update http crawl-schedule-job \
+            --location europe-west1 \
+            --schedule="0 0 * * 1" \
+            --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
+            --http-method POST
           fi
 
       - name: Update secrets in GCP Secret Manager
@@ -71,22 +96,7 @@ jobs:
             slack-signing-secret:"${{ secrets.SLACK_SIGNING_SECRET }}"
             openai-api-key:"${{ secrets.OPENAI_API_KEY }}"
 
-      - name: 'Deploy crawl to Cloud Run'
-        id: deploy-crawl
-        run: >-
-          gcloud functions deploy crawl
-          --runtime=nodejs18
-          --region=europe-west1
-          --memory=256Mb
-          --gen2
-          --source=./packages/crawler
-          --entry-point crawl
-          --trigger-topic=crawler-topic
-          --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
-          --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --set-env-vars=GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
-
-      - name: 'Deploy slackBot to Cloud Run'
+      - name: Deploy slackBot to Cloud Run
         id: deploy-slack-bot
         run: >-
           gcloud functions deploy slackbot
