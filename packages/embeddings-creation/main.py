@@ -27,7 +27,6 @@ def create_embeddings(cloud_event):
 
     bucket = data["bucket"]
     name = data["name"]
-    metageneration = data["metageneration"]
     timeCreated = data["timeCreated"]
     updated = data["updated"]
 
@@ -35,7 +34,6 @@ def create_embeddings(cloud_event):
     print(f"Event type: {event_type}")
     print(f"Bucket: {bucket}")
     print(f"File: {name}")
-    print(f"Metageneration: {metageneration}")
     print(f"Created: {timeCreated}")
     print(f"Updated: {updated}")
 

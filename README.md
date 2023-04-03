@@ -107,6 +107,14 @@ If you are not logged in yet, use `gcloud auth application-default login`.
 
 ### Installation
 
+#### Local environment
+
+Set the following environment variable on your local machine to avoid [this runtime error](https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr):
+
+```
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY="YES"
+```
+
 #### Python setup
 
 - Install virtual environment with `python3 -m venv .venv`
@@ -239,10 +247,10 @@ Once deployed, provide the generated public URL in your Slack APP page (`api.sla
 
 Once installed/configured all the modules, you can run them using the provided Makefile:
 
-- `make crawler-start`: start Crawler service
 - `make crawl`: create source content (`scraped.csv`) from Notion pages
+- `make embeddings-start`: start Embeddings creation service (`localhost:3002`)
 - `make embeddings`: generate the relevant embeddings
-- `make bot`: start Slack bot (localhost:8080)
-- `make expose-bot` expose Slack bot as a public url
+- `make bot-start`: start Slack bot (`localhost:3003`)
+- `make bot-expose` expose Slack bot as a public url
 
 Slack bot public url should be provided to Slack APP page configuration (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
