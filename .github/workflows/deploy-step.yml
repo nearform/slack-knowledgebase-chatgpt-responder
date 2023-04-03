@@ -43,10 +43,12 @@ jobs:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
           install_components: 'beta'
 
-      - name: Create image
+      - name: Create crawler image
         run: |-
           gcloud builds submit --suppress-logs --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA
 
+      - name: Deploy crawler to cloud run
+        run: |-
           if ! gcloud beta run jobs describe crawler-job --region=europe-west1; then
             gcloud beta run jobs create crawler-job \
             --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
@@ -70,7 +72,7 @@ jobs:
           fi
 
       - name: Update scheduler
-        run: |
+        run: |-
           if ! gcloud scheduler jobs describe crawl-schedule-job --location=europe-west1; then
             gcloud scheduler jobs create http crawl-schedule-job \
             --location europe-west1 \
@@ -94,22 +96,7 @@ jobs:
             slack-signing-secret:"${{ secrets.SLACK_SIGNING_SECRET }}"
             openai-api-key:"${{ secrets.OPENAI_API_KEY }}"
 
-      - name: 'Deploy crawl to Cloud Run'
-        id: deploy-crawl
-        run: >-
-          gcloud functions deploy crawl
-          --runtime=nodejs18
-          --region=europe-west1
-          --memory=256Mb
-          --gen2
-          --source=./packages/crawler
-          --entry-point crawl
-          --trigger-topic=crawler-topic
-          --set-secrets=NOTION_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/notion-token:latest
-          --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
-          --set-env-vars=GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
-
-      - name: 'Deploy slackBot to Cloud Run'
+      - name: Deploy slackBot to Cloud Run
         id: deploy-slack-bot
         run: >-
           gcloud functions deploy slackbot
