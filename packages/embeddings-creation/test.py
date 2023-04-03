@@ -43,19 +43,20 @@ def createScrapedFile(_, __, ___):
 class TestEmbeddingsCreation(unittest.TestCase):
     @patch("openai.Embedding.create")
     @patch("main.download")
+    @patch("main.upload")
     @mock.patch.dict(
         "os.environ",
         {"GCP_STORAGE_SCRAPED_FILE_NAME": scraped_file_name, "GCP_STORAGE_EMBEDDING_FILE_NAME": embeddings_file_name},
         clear=True,
     )
-    def test_embeddings_creations(self, download_mock, openai_Embedding_create_mock):
+    def test_embeddings_creations(self, upload_mock, download_mock, openai_Embedding_create_mock):
         openai_Embedding_create_mock.return_value = openAIEmbeddingsResponseMock
-
         download_mock.side_effect = createScrapedFile
 
         cloud_event = CloudEventMock()
         main.create_embeddings(cloud_event)
 
+        upload_mock.assert_called_with("bucket", embeddings_file_name)
         with open(embeddings_file_name, "r") as f:
             actualEmbeddings = f.read()
             expectedEmbeddings = ",text,n_tokens,embeddings\n0,Page content,2,[-0.010027382522821426]\n"
