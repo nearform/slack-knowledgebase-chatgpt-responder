@@ -252,6 +252,6 @@ Once installed/configured all the modules, you can run them using the provided M
 - `make embeddings`: generate the relevant embeddings
 - `make bot-start`: start Slack bot (`localhost:3003`)
 - `make bot-expose`: expose Slack bot as a public url
-- `make bot-try question="My question?"`: query the chatbot programmatically
+- `make bot-ask q="My question?"`: query the chatbot programmatically
 
 Slack bot public url should be provided to Slack APP page configuration (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`

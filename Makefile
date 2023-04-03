@@ -28,5 +28,6 @@ bot-start:
 bot-expose:
 	ngrok http 3003
 
-bot-test:
-	cd ./packages/slack-bot && source ./.venv/bin/activate && python -c 'from knowledge_base import get_answer; print(get_answer("$(question)"))'
+# make bot-ask q="What is NearForm?"
+bot-ask:
+	cd ./packages/slack-bot && source ./.venv/bin/activate && python -c 'from knowledge_base import get_answer; print(get_answer("$(q)"))'
