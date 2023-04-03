@@ -44,7 +44,7 @@ jobs:
 
       - name: Create image
         run: |-
-          gcloud builds submit --quiet --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job
+          gcloud builds submit --suppress-logs --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job
 
           gcloud beta run jobs create crawler-job \
           --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job \
@@ -61,13 +61,13 @@ jobs:
           if ! gcloud scheduler jobs describe crawl-schedule-job --location=europe-west1; then
             gcloud scheduler jobs create http crawl-schedule-job \
             --location europe-west1 \
-            --schedule="* * 1 * *" \
+            --schedule="0 0 * * 1" \
             --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
             --http-method POST
           else
             gcloud scheduler jobs update http crawl-schedule-job \
             --location europe-west1 \
-            --schedule="* * 1 * *" \
+            --schedule="0 0 * * 1" \
             --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
             --http-method POST
           fi
