@@ -42,24 +42,36 @@ jobs:
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
 
-      - name: Update topic and scheduler
-        run: |
-          if ! gcloud pubsub topics describe crawler-topic; then
-            gcloud pubsub topics create crawler-topic
-          fi
+      - name: Create image
+        run: |-
+          gcloud builds submit \
+          --quiet \
+          --tag "gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA"
 
-          if ! gcloud scheduler jobs describe crawl-job --location=europe-west1; then
-            gcloud scheduler jobs create pubsub crawl-job \
-            --schedule="0 1 * * *" \
-            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
-            --message-body="start_crawl"\
-            --location=europe-west1
+          gcloud beta run jobs create crawler-job \
+          --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
+          --tasks 1 \
+          --max-retries 1 \
+          --region europe-west1 \
+          --task-timeout 60m \
+          --set-secrets NOTION_TOKEN=notion-token:latest \
+          --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
+          --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+
+      - name: Update scheduler
+        run: |
+          if ! gcloud scheduler jobs describe crawl-schedule-job --location=europe-west1; then
+            gcloud scheduler jobs create http crawl-schedule-job \
+            --location europe-west1 \
+            --schedule="* * 1 * *" \
+            --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
+            --http-method POST
           else
-            gcloud scheduler jobs update pubsub crawl-job \
-            --schedule="0 1 * * *" \
-            --topic=projects/slack-kb-chatgpt-responder/topics/crawler-topic \
-            --message-body="start_crawl"\
-            --location=europe-west1
+            gcloud scheduler jobs update http crawl-schedule-job \
+            --location europe-west1 \
+            --schedule="* * 1 * *" \
+            --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
+            --http-method POST
           fi
 
       - name: Update secrets in GCP Secret Manager
