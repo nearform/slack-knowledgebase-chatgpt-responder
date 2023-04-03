@@ -6,7 +6,7 @@ import os
 from dotenv import load_dotenv
 from init_utils import get_mock_embeddings_file
 from google.cloud import pubsub_v1
-from utils import download_from_bucket_to_path
+from utils import download
 
 load_dotenv()
 
@@ -40,7 +40,7 @@ def make_cache_folder():
 # Most of the code taken from:
 # https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a
 def get_embeddings_file():
-    download_from_bucket_to_path(bucket_name, bucket_embeddings_file, local_embeddings_file)
+    download(bucket_name, bucket_embeddings_file, local_embeddings_file)
     df = pd.read_csv(local_embeddings_file, index_col=0)
     df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
 

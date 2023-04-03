@@ -13,7 +13,7 @@ if is_local_environment():
   rootCache = os.path.join(rootDir, '.cache') 
 
 
-def download_from_bucket_to_path(bucket_name, file_name, destination):
+def download(bucket_name, file_name, destination):
     if is_local_environment():
       shutil.copyfile(os.path.join(rootCache, file_name), destination)
       return
