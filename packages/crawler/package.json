@@ -7,14 +7,7 @@
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap --snapshot",
     "lint": "eslint .",
-<<<<<<< HEAD
     "start": "node ./src/index.js"
-||||||| parent of 92ba64c (chore: split crawler-start and crawl commands)
-    "start": "functions-framework --target=crawl --signature-type=cloudevent",
-    "run-locally": "node ./src/run-locally"
-=======
-    "start": "functions-framework --target=crawl --signature-type=cloudevent"
->>>>>>> 92ba64c (chore: split crawler-start and crawl commands)
   },
   "repository": {
     "type": "git",
@@ -27,7 +20,8 @@
   },
   "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "dependencies": {
-    "@google-cloud/storage": "^6.9.4",
+    "@google-cloud/storage": "^6.9.5",
+    "@manypkg/find-root": "^2.1.0",
     "@notionhq/client": "^2.2.3",
     "dotenv": "^16.0.3",
     "json-2-csv": "^4.0.0",

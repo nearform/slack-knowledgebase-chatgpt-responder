@@ -1,8 +1,11 @@
 import path from 'node:path'
-import { fileURLToPath } from 'url'
 import fs from 'fs'
 import stream from 'stream'
 import { Storage } from '@google-cloud/storage'
+import { findRootSync } from '@manypkg/find-root'
+
+const { rootDir } = findRootSync(process.cwd())
+const rootCache = path.join(rootDir, '.cache')
 
 function isLocalEnvironment() {
   // @TODO Find an appropriate env var to tell prod environment
@@ -10,21 +13,13 @@ function isLocalEnvironment() {
   return !FUNCTION_REGION
 }
 
-function getCurrentDirectoryPath() {
-  const __filename = fileURLToPath(import.meta.url)
-  return path.dirname(__filename)
-}
-
-function writeFileToSharedCache(content, fileName) {
-  fs.writeFileSync(
-    path.resolve(getCurrentDirectoryPath(), '../../../.cache/', fileName),
-    content
-  )
+function writeFileToRootCache(content, fileName) {
+  fs.writeFileSync(path.resolve(rootCache, fileName), content)
 }
 
 export const upload = csv => {
   if (isLocalEnvironment()) {
-    writeFileToSharedCache(csv, 'scraped.csv')
+    writeFileToRootCache(csv, 'scraped.csv')
     return
   }
 
