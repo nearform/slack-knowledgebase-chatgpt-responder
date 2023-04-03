@@ -78,7 +78,7 @@ gcloud beta run jobs create crawler-job \
 gcloud scheduler jobs create http crawl-schedule-job \
   --location europe-west1 \
   --schedule="* * 1 * *" \
-  --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawl-job:run" \
+  --uri="https://europe-west1-run.googleapis.com/apis/run.googleapis.com/v1/namespaces/slack-kb-chatgpt-responder/jobs/crawler-job:run" \
   --http-method POST
 ```
 
