@@ -41,6 +41,7 @@ jobs:
         uses: google-github-actions/setup-gcloud@v1
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
+          install_components: 'beta'
 
       - name: Create image
         run: |-
