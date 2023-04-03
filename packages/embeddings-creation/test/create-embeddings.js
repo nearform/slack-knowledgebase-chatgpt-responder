@@ -4,35 +4,24 @@ import sinon from 'sinon'
 import { Readable } from 'node:stream'
 import { readFile } from 'fs/promises'
 
-// from google.cloud import storage
-// import unittest
-// import main
-// import openai
-// from unittest import mock
-// from unittest.mock import MagicMock, patch
-
 const scrapedFileName = 'scraped.csv'
 const embeddingsFileName = 'embeddings.csv'
 
-const scrapedFileMock = "index,title,text\n0,Title,Page content"
+const scrapedFileMock = 'index,title,text\n0,Title,Page content'
 const openAIEmbeddingsResponseMock = {
-  "data": [
-    {
-      "embedding": [
-        -0.010027382522821426,
-      ]
-    }
+  data: [
+    { embedding: [-0.010027382522821426] }
   ]
 }
 
-const expectedEmbeddings = ",text,n_tokens,embeddings\n0,Page content,2,[-0.010027382522821426]\n"
+const expectedEmbeddings = ',text,n_tokens,embeddings\n0,Page content,2,[-0.010027382522821426]\n'
 
 const testEvent = {
   id: 'event_id',
   type: 'event_type',
   data: {
     bucket: 'bucket',
-    name: process.env,
+    name: scrapedFileName,
     metageneration: 'metageneration',
     timeCreated: 'timeCreated',
     updated: 'updated',
@@ -57,14 +46,13 @@ function Storage() {
 function OpenAI() {
   this.getEmbeddings = () => Promise.resolve(openAIEmbeddingsResponseMock)
 }
-
-tap.test('embeddings creation', async t => {
+tap.test('embeddings creation', async (t) => {
   const { createEmbeddings } = await esmock('../src/index.js', {
     '@google-cloud/storage': { Storage },
     'openai': { OpenAI }
   });
 
-  await createEmbeddings(testEvent)
-  const result = await readFile(embeddingsFileName)
+  const done = await createEmbeddings(testEvent)
+  const result = await readFile(embeddingsFileName, 'utf-8')
   t.equal(result, expectedEmbeddings)
 })

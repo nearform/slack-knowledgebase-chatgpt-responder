@@ -15,7 +15,7 @@ const configuration = new Configuration({
 });
 const openai = new OpenAIApi(configuration);
 
-async function createEmbeddings(cloudEvent) {
+export async function createEmbeddings(cloudEvent) {
   const SCRAPED_FILE_NAME = process.env.GCP_STORAGE_SCRAPED_FILE_NAME
   const EMBEDDINGS_FILE_NAME = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 
@@ -30,15 +30,6 @@ async function createEmbeddings(cloudEvent) {
   const metageneration = data.metageneration
   const timeCreated = data.timeCreated
   const updated = data.update
-  console.log({
-    eventId,
-    eventType,
-    bucket: bucketName,
-    file: name,
-    metageneration,
-    created: timeCreated,
-    updated
-  })
 
   if (name !== SCRAPED_FILE_NAME) {
       console.log(`Skipping processing of file ${name}`)
@@ -46,7 +37,7 @@ async function createEmbeddings(cloudEvent) {
   }
   const parser = parse()
   const rows = []
-  parser.on('readable', function() {
+  parser.on('readable', async function() {
     let record
     while ((record = parser.read()) !== null) {
       if (!record.text) {
@@ -66,15 +57,17 @@ async function createEmbeddings(cloudEvent) {
     }
   })
 
-  parser.on('end', function() {
-    const stringifier = stringify(rows, { header: true, columns: ['text', 'n_tokens', 'embeddings']})
-    const embeddingsFileWriter = bucket.file(EMBEDDINGS_FILE_NAME).createWriteStream()
-    stringifier.pipe(embeddingsFileWriter)
-  })
-
   const bucket = storage.bucket(bucketName)
   const file = bucket.file(name)
-  file.createReadStream().pipe(parser)
+  return new Promise((resolve, reject) => {
+    parser.on('end', function() {
+      const stringifier = stringify(rows, { header: true, columns: ['text', 'n_tokens', 'embeddings']})
+      const embeddingsFileWriter = bucket.file(EMBEDDINGS_FILE_NAME).createWriteStream()
+      stringifier.pipe(embeddingsFileWriter)
+      resolve()
+    })
+    file.createReadStream().pipe(parser)
+  })
 }
 
 async function splitText(text) {
