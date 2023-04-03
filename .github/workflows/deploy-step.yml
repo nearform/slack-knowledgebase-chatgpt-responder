@@ -44,12 +44,10 @@ jobs:
 
       - name: Create image
         run: |-
-          gcloud builds submit \
-          --quiet \
-          --tag "gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA"
+          gcloud builds submit --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job
 
           gcloud beta run jobs create crawler-job \
-          --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
+          --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job \
           --tasks 1 \
           --max-retries 1 \
           --region europe-west1 \
