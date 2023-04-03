@@ -44,7 +44,7 @@ jobs:
 
       - name: Create image
         run: |-
-          gcloud builds submit --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job
+          gcloud builds submit --quiet --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job
 
           gcloud beta run jobs create crawler-job \
           --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job \
