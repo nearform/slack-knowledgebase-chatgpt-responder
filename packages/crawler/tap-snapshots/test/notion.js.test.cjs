@@ -12,10 +12,5 @@ Array [
     "text": "At NearForm everyone is happy at Christmas, you will receive an amazon gift card! Only the Grinch is sad about Christmas.",
     "title": "Christmas",
   },
-  Object {
-    "index": 1,
-    "text": "",
-    "title": "Remote working support",
-  },
 ]
 `

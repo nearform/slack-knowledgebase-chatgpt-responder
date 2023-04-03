@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap --snapshot",
     "lint": "eslint .",
     "start": "node ./src/index.js"
   },
