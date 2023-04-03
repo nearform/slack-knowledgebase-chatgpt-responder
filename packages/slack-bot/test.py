@@ -1,11 +1,11 @@
 import unittest
 from unittest.mock import MagicMock, patch
-import openai
 from openai.error import RateLimitError
 import slack_bolt as slack_bolt
 
 slack_bolt.App = MagicMock()
 
+embeddings_file_name = "embeddings.csv"
 
 # OPEN AI mocks
 openAIEmbeddingsResponseMock = {
@@ -32,9 +32,10 @@ class TestAnswer(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         # Set up the environment variables mock
+        # @NOTE: we currently need "PY_ENV" to be set to "test"
         cls.env_patch = patch.dict(
             "os.environ",
-            {"GCP_STORAGE_EMBEDDING_FILE_NAME": "embeddings.csv"},
+            {"PY_ENV": "test", "GCP_STORAGE_EMBEDDING_FILE_NAME": "embeddings.csv"},
             clear=True,
         )
         cls.env_patch.start()
