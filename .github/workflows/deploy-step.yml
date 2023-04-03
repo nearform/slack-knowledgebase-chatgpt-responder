@@ -45,7 +45,7 @@ jobs:
 
       - name: Create crawler image
         run: |-
-          gcloud builds submit --suppress-logs --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA
+          gcloud builds submit ./packages/crawler --suppress-logs --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA
 
       - name: Deploy crawler to cloud run
         run: |-
