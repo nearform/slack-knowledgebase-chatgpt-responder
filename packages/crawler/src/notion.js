@@ -1,3 +1,4 @@
+import { promisify } from 'node:util'
 import { Client } from '@notionhq/client'
 import pMap from 'p-map'
 
@@ -71,7 +72,7 @@ export const fetchData = async () => {
 }
 
 const getRecursiveBlockContent = async blockId => {
-  const delay = ms => new Promise(resolve => setTimeout(resolve, ms))
+  const delay = promisify(setTimeout)
 
   let blocks
   try {
