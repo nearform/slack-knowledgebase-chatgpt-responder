@@ -47,15 +47,27 @@ jobs:
         run: |-
           gcloud builds submit --suppress-logs --pack image=gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA
 
-          gcloud beta run jobs create crawler-job \
-          --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
-          --tasks 1 \
-          --max-retries 1 \
-          --region europe-west1 \
-          --task-timeout 60m \
-          --set-secrets NOTION_TOKEN=notion-token:latest \
-          --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
-          --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_FILE_NAME }}
+          if ! gcloud beta run jobs describe crawler-job --region=europe-west1; then
+            gcloud beta run jobs create crawler-job \
+            --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
+            --tasks 1 \
+            --max-retries 1 \
+            --region europe-west1 \
+            --task-timeout 60m \
+            --set-secrets NOTION_TOKEN=notion-token:latest \
+            --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
+            --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
+          else
+            gcloud beta run jobs update crawler-job \
+            --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
+            --tasks 1 \
+            --max-retries 1 \
+            --region europe-west1 \
+            --task-timeout 60m \
+            --set-secrets NOTION_TOKEN=notion-token:latest \
+            --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
+            --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
+          fi
 
       - name: Update scheduler
         run: |
