@@ -16,8 +16,9 @@ if is_local_environment():
 def download_from_bucket_to_path(bucket_name, file_name, destination):
     if is_local_environment():
       shutil.copyfile(os.path.join(rootCache, file_name), destination)
-    else:
-      storage_client = storage.Client()
-      bucket = storage_client.bucket(bucket_name)
-      blob = bucket.blob(file_name)
-      blob.download_to_filename(destination)
+      return
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+    blob.download_to_filename(destination)

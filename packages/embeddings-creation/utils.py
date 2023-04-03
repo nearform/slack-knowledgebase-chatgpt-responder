@@ -16,19 +16,21 @@ if is_local_environment():
 def download(bucket_name, file_name, destination):
     if is_local_environment():
         shutil.copyfile(os.path.join(rootCache, file_name), destination)
-    else:
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(file_name)
-        blob.download_to_filename(destination)
-        print("Downloaded storage object {} from bucket {} to local file {}.".format(file_name, bucket, destination))
+        return
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(file_name)
+    blob.download_to_filename(destination)
+    print("Downloaded storage object {} from bucket {} to local file {}.".format(file_name, bucket, destination))
 
 
 def upload(bucket_name, source_file_path):
     if is_local_environment():
         shutil.copyfile(source_file_path, os.path.join(rootCache, source_file_path))
-    else:
-        storage_client = storage.Client()
-        bucket = storage_client.bucket(bucket_name)
-        blob = bucket.blob(source_file_path)
-        blob.upload_from_filename(source_file_path, if_generation_match=None)
+        return
+
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_file_path)
+    blob.upload_from_filename(source_file_path, if_generation_match=None)
