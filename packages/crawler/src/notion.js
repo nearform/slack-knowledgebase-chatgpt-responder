@@ -67,7 +67,7 @@ export const fetchData = async () => {
 
   const results = await pMap(pages, mapper, { concurrency: 3 })
 
-  return results
+  return results.filter(page => page.text)
 }
 
 const getRecursiveBlockContent = async blockId => {
