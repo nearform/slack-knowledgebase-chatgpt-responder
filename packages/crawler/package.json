@@ -7,7 +7,14 @@
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap --snapshot",
     "lint": "eslint .",
+<<<<<<< HEAD
     "start": "node ./src/index.js"
+||||||| parent of 92ba64c (chore: split crawler-start and crawl commands)
+    "start": "functions-framework --target=crawl --signature-type=cloudevent",
+    "run-locally": "node ./src/run-locally"
+=======
+    "start": "functions-framework --target=crawl --signature-type=cloudevent"
+>>>>>>> 92ba64c (chore: split crawler-start and crawl commands)
   },
   "repository": {
     "type": "git",

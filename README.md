@@ -239,6 +239,7 @@ Once deployed, provide the generated public URL in your Slack APP page (`api.sla
 
 Once installed/configured all the modules, you can run them using the provided Makefile:
 
+- `make crawler-start`: start Crawler service
 - `make crawl`: create source content (`scraped.csv`) from Notion pages
 - `make embeddings`: generate the relevant embeddings
 - `make bot`: start Slack bot (localhost:8080)

@@ -4,6 +4,9 @@ init:
 clear-bot-port:
 	kill -9 $$(lsof -t -i:8080)
 
+crawler-start:
+	npm start --workspace=crawler
+
 crawl: init
 	curl localhost:8080 -X POST \
   -H "Content-Type: application/json" \
