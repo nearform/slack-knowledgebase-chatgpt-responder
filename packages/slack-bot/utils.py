@@ -1,18 +1,21 @@
 import os
 from google.cloud import storage
 import shutil
-import pathlib
+from walk_up import walk_up_until
 
 def is_local_environment():
-  #  @TODO Find an appropriate env var to tell prod environment
-  return os.environ.get("FUNCTION_REGION") == None
+    #  @TODO Find an appropriate env var to tell prod environment
+    return os.environ.get("FUNCTION_REGION") == None
 
-current_directory = pathlib.Path(__file__).parent.resolve()
-global_cache_folder = pathlib.Path(current_directory).parent.parent.resolve().joinpath('.cache')
+if is_local_environment():
+  rootPackage = walk_up_until("package.json")
+  rootDir = os.path.dirname(rootPackage)
+  rootCache = os.path.join(rootDir, '.cache') 
+
 
 def download_from_bucket_to_path(bucket_name, file_name, destination):
     if is_local_environment():
-      shutil.copyfile(pathlib.Path(global_cache_folder).joinpath(file_name), destination)
+      shutil.copyfile(os.path.join(rootCache, file_name), destination)
     else:
       storage_client = storage.Client()
       bucket = storage_client.bucket(bucket_name)
