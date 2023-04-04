@@ -1,7 +1,7 @@
-const { processEvent } = require('./bot.js')
+import { processEvent } from './bot.js'
 
-function main(req, res) {
+function slackBot(req, res) {
   processEvent(req, res)
 }
 
-module.exports.main = main
+export { slackBot }

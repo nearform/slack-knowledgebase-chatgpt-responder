@@ -1,8 +1,9 @@
 // https://github.com/seratch/slack-app-examples/blob/86bd224476814a42c41c133f9009ea66c0717517/serverless-bolt-template/gcp-js/app.js
-const dotenv = require('dotenv')
-const { App, ExpressReceiver } = require('@slack/bolt')
-const { getAnswer } = require('./getAnswer.js')
+import dotenv from 'dotenv'
+import bolt from '@slack/bolt'
+import { getAnswer } from './getAnswer.js'
 
+const { App, ExpressReceiver } = bolt
 dotenv.config()
 
 const expressReceiver = new ExpressReceiver({
@@ -37,4 +38,4 @@ function processEvent(req, res) {
   expressApp(req, res)
 }
 
-module.exports.processEvent = processEvent
+export { processEvent }
