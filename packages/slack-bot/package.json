@@ -29,7 +29,10 @@
     "tap": "^16.3.4"
   },
   "dependencies": {
+    "@google-cloud/storage": "^6.9.5",
+    "@manypkg/find-root": "^2.1.0",
     "@slack/bolt": "^3.12.2",
+    "csv-parse": "^5.3.6",
     "dotenv": "^16.0.3"
   }
 }
