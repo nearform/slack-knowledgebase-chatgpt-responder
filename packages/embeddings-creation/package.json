@@ -6,8 +6,7 @@
   "type": "module",
   "scripts": {
     "test": "NODE_OPTIONS=--loader=esmock tap",
-    "lint": "eslint .",
-    "prepare": "husky install"
+    "lint": "eslint ."
   },
   "repository": {
     "type": "git",
