@@ -29,6 +29,7 @@ export async function createEmbeddings(cloudEvent) {
     console.log(`Skipping processing of file ${name}`)
     return
   }
+
   const parser = parse()
   const rows = []
   parser.on('readable', async function () {
