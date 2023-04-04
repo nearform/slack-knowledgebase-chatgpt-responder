@@ -1,3 +1,4 @@
+import { promisify } from 'node:util'
 import { Client } from '@notionhq/client'
 import pMap from 'p-map'
 
@@ -51,23 +52,13 @@ export const getPages = async () => {
   return data
 }
 
-const getPageContent = async id => {
-  const blocks = await notion.blocks.children.list({ block_id: id })
-  return blocks.results
-    .filter(item => 'type' in item)
-    .flatMap(item => {
-      const blockObject = item
-      const blockType = blockObject.type
-      return blockObject[blockType]?.rich_text?.map(text => text.plain_text)
-    })
-    .filter(Boolean)
-}
-
 export const fetchData = async () => {
   const pages = await getPages()
 
   const mapper = async (page, i) => {
-    const content = await getPageContent(page.id)
+    console.log(`Fetching page ${page.id}, ${i + 1} of ${pages.length}`)
+    const content = await getRecursiveBlockContent(page.id)
+
     return {
       index: i,
       title: page.title,
@@ -75,7 +66,60 @@ export const fetchData = async () => {
     }
   }
 
-  const results = await pMap(pages, mapper, { concurrency: 5 })
+  const results = await pMap(pages, mapper, { concurrency: 3 })
 
   return results.filter(page => page.text)
+}
+
+const getRecursiveBlockContent = async blockId => {
+  const delay = promisify(setTimeout)
+
+  let blocks
+  try {
+    blocks = await notion.blocks.children.list({ block_id: blockId })
+  } catch (e) {
+    console.log(`Cannot fetch children of block ${blockId}...`)
+    let retryCount = 1
+
+    while (retryCount < 4) {
+      console.log(`Retry #${retryCount}`)
+      try {
+        blocks = await notion.blocks.children.list({ block_id: blockId })
+        console.log(`Succeded after #${retryCount} retry`)
+        break
+      } catch (e) {
+        retryCount++
+      }
+    }
+  }
+
+  if (!blocks || blocks.results.length === 0) {
+    return []
+  }
+
+  const blocksToProcess = blocks.results.filter(
+    item => 'type' in item && item.id
+  )
+
+  const blockContent = blocksToProcess
+    .flatMap(item => {
+      const blockObject = item
+      const blockType = blockObject.type
+      return blockObject[blockType]?.rich_text?.map(text => text.plain_text)
+    })
+    .filter(Boolean)
+
+  let childrenContents = []
+  for (let i = 0; i < blocksToProcess.length; i++) {
+    const block = blocksToProcess[i]
+    if (block.has_children) {
+      await delay(500)
+      childrenContents = [
+        ...childrenContents,
+        ...(await getRecursiveBlockContent(block.id))
+      ]
+    }
+  }
+
+  return [...blockContent, ...childrenContents.flat()]
 }
