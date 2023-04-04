@@ -21,12 +21,6 @@ We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-craw
 
 ## Initial setup
 
-### Monorepo
-
-- `cd` to the root of the repo
-- Make sure you use the expected node version with `nvm use`
-- Install monorepo dependencies with `npm ci`
-
 ### Notion: create a access token
 
 Create a new notion integration and add it to a section. Please refer to https://www.notion.so/my-integrations.
