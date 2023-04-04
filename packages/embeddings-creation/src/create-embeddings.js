@@ -57,15 +57,18 @@ export async function createEmbeddings(cloudEvent) {
 
   const bucket = storage.bucket(bucketName)
   const file = bucket.file(name)
+
   return new Promise(resolve => {
     parser.on('end', function () {
       const stringifier = stringify(rows, {
         header: true,
         columns: ['text', 'n_tokens', 'embeddings']
       })
+
       const embeddingsFileWriter = bucket
         .file(EMBEDDINGS_FILE_NAME)
         .createWriteStream()
+
       stringifier.pipe(embeddingsFileWriter)
       resolve()
     })

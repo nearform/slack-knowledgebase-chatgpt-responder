@@ -34,5 +34,8 @@
   "workspaces": [
     "packages/crawler",
     "packages/embeddings-creation"
-  ]
+  ],
+  "dependencies": {
+    "@manypkg/find-root": "^2.1.0"
+  }
 }
