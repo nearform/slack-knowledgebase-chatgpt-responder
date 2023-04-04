@@ -1,0 +1,30 @@
+{
+  "name": "slack-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "src/index.js",
+  "type": "module",
+  "scripts": {
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
+    "lint": "eslint .",
+    "start": "node ./src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nearform/slack-knowledgebase-chatgpt-responder.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder/issues"
+  },
+  "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
+  "devDependencies": {
+    "@babel/eslint-parser": "^7.21.3",
+    "@babel/plugin-syntax-import-assertions": "^7.20.0",
+    "cross-env": "^7.0.3",
+    "esmock": "^2.2.1",
+    "sinon": "^15.0.3",
+    "tap": "^16.3.4"
+  }
+}

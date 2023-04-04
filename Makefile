@@ -23,6 +23,9 @@ embeddings: init
       }'
 
 bot-start:
+	npm start --workspace=slack-bot
+
+bot-p-start:
 	cd ./packages/slack-bot-python && source ./.venv/bin/activate && functions-framework --target=slack_bot --port=3003
 
 bot-expose:

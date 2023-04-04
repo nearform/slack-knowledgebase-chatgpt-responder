@@ -33,6 +33,7 @@
   },
   "workspaces": [
     "packages/crawler",
-    "packages/embeddings-creation"
+    "packages/embeddings-creation",
+    "packages/slack-bot"
   ]
 }
