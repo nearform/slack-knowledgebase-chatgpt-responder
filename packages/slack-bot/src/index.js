@@ -1,3 +1,7 @@
-import { crawl } from '../src/crawl.js'
+const { processEvent } = require('./bot.js')
 
-crawl()
+function main(req, res) {
+  processEvent(req, res)
+}
+
+module.exports.main = main
