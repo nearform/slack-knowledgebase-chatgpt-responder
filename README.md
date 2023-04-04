@@ -17,10 +17,11 @@ We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-craw
 - [Crawler](#crawler)
 - [Embeddings creation](#embeddings-creation)
 - [Slack bot](#slack-bot)
+- [Run the project locally](#run-the-project-locally)
 
 ## Initial setup
 
-### Notion setup
+### Notion: create a access token
 
 Create a new notion integration and add it to a section. Please refer to https://www.notion.so/my-integrations.
 Click on "New Integration", set `slack-kb-chatgpt-responder` as name. Under the "Capabilities" section, make sure that all the "Content Capabilities" are checked. No "Comment Capabilities" are required, same for the "User Capabilities".
@@ -36,15 +37,15 @@ Create the project and enable all the required pieces: https://cloud.google.com/
 
 ## Crawler
 
-### Environment variables
+### Installation
 
-Head to https://www.notion.so/my-integrations/ and select your. Then copy/paste the following values in an `.env` file:
+#### Environment variables
 
-| Env var                         |                                |
-| ------------------------------- | ------------------------------ |
-| `NOTION_TOKEN`                  | secret_y0uR_1n73gr4710n_S3cr37 |
-| `GCP_STORAGE_BUCKET_NAME`       | your_bucket_name               |
-| `GCP_STORAGE_SCRAPED_FILE_NAME` | fallback on "scraped.csv"      |
+| Env var                         |                                         |
+| ------------------------------- | --------------------------------------- |
+| `NOTION_TOKEN`                  | Notion token created in intial setup    |
+| `GCP_STORAGE_BUCKET_NAME`       | GCP bucket name hosting embeddings file |
+| `GCP_STORAGE_SCRAPED_FILE_NAME` | Scraped data file name on the bucket    |
 
 ### Deploying
 
@@ -98,7 +99,24 @@ If you are not logged in yet, use `gcloud auth application-default login`.
 
 ## Embeddings creation
 
-### Environment variables
+### Installation
+
+#### Local environment
+
+Set the following environment variable on your local machine to avoid [this runtime error](https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr):
+
+```
+export OBJC_DISABLE_INITIALIZE_FORK_SAFETY="YES"
+```
+
+#### Python setup
+
+- Install virtual environment with `python3 -m venv .venv`
+- Activate the environment with `source .venv/bin/activate`
+- Install pip: `python3 -m ensurepip --upgrade`
+- Install project dependencies with `pip3 install -r requirements.txt`
+
+#### Environment variables
 
 Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
 
@@ -178,10 +196,10 @@ Login to GCP with `gcloud auth application-default login`.
 
 #### Python setup
 
-- Install virtual environment with `python -m venv .venv`
+- Install virtual environment with `python3 -m venv .venv`
 - Activate the environment with `source .venv/bin/activate`
 - Install pip: `python3 -m ensurepip --upgrade`
-- Install project dependencies with `pip install -r requirements.txt`
+- Install project dependencies with `pip3 install -r requirements.txt`
 - Run the project with `functions-framework --target=slack_bot` (default port 8080, check (here)[https://cloud.google.com/functions/docs/running/function-frameworks#functions-local-ff-install-python] for customize it)
 
 #### Slack setup
@@ -215,6 +233,19 @@ Create the subscription for the topic:
 See .github/workflows/deploy-step.yml
 ```
 
-Once deployed, provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
+Once deployed, provide the generated public URL in your Slack APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
 
 ...you should now be able to interact with you Slack bot.
+
+## Run the project locally
+
+Once installed/configured all the modules, you can run them using the provided Makefile:
+
+- `make crawl`: create source content (`scraped.csv`) from Notion pages
+- `make embeddings-start`: start Embeddings creation service (`localhost:3002`)
+- `make embeddings`: generate the relevant embeddings
+- `make bot-start`: start Slack bot (`localhost:3003`)
+- `make bot-expose`: expose Slack bot as a public url
+- `make bot-ask q="My question?"`: query the chatbot programmatically
+
+Slack bot public url should be provided to Slack APP page configuration (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`

@@ -1,7 +1,28 @@
+import path from 'node:path'
+import fs from 'fs'
 import stream from 'stream'
 import { Storage } from '@google-cloud/storage'
+import { findRootSync } from '@manypkg/find-root'
+
+const { rootDir } = findRootSync(process.cwd())
+const rootCache = path.join(rootDir, '.cache')
+
+function isLocalEnvironment() {
+  // @TODO Find an appropriate env var to tell prod environment
+  const { FUNCTION_REGION } = process.env
+  return !FUNCTION_REGION
+}
+
+function writeFileToRootCache(content, fileName) {
+  fs.writeFileSync(path.resolve(rootCache, fileName), content)
+}
 
 export const upload = csv => {
+  if (isLocalEnvironment()) {
+    writeFileToRootCache(csv, 'scraped.csv')
+    return
+  }
+
   const bucketName = process.env.GCP_STORAGE_BUCKET_NAME || ''
   const destFileName =
     process.env.GCP_STORAGE_SCRAPED_FILE_NAME || 'scraped.csv'

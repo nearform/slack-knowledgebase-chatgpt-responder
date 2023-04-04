@@ -4,8 +4,9 @@ import openai
 from openai.embeddings_utils import distances_from_embeddings
 import os
 from dotenv import load_dotenv
-from google.cloud import storage, pubsub_v1
 from init_utils import get_mock_embeddings_file
+from google.cloud import pubsub_v1
+from utils import download
 
 load_dotenv()
 
@@ -36,24 +37,10 @@ def make_cache_folder():
         os.makedirs(".cache")
 
 
-def download_csv_from_bucket_to_path(bucket_name, file_name, destination):
-    # Instantiates a client
-    storage_client = storage.Client()
-
-    # Gets the bucket
-    bucket = storage_client.bucket(bucket_name)
-
-    # Gets the blob (file)
-    blob = bucket.blob(file_name)
-
-    # Downloads the file to path
-    blob.download_to_filename(destination)
-
-
 # Most of the code taken from:
 # https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a
 def get_embeddings_file():
-    download_csv_from_bucket_to_path(bucket_name, bucket_embeddings_file, local_embeddings_file)
+    download(bucket_name, bucket_embeddings_file, local_embeddings_file)
     df = pd.read_csv(local_embeddings_file, index_col=0)
     df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
 

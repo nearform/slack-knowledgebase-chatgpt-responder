@@ -1,41 +1,14 @@
-# Example of message received from notification
-#
-#   {
-#    "attributes":{
-#       "specversion":"1.0",
-#       "id":"123451234512345",
-#       "source":"//storage.googleapis.com/projects/_/buckets/MY-BUCKET-NAME",
-#       "type":"google.cloud.storage.object.v1.finalized",
-#       "datacontenttype":"application/json",
-#       "subject":"objects/MY_FILE.txt",
-#       "time":"2020-01-02T12:34:56.789Z"
-#    },
-#    "data":{
-#       "bucket":"MY_BUCKET",
-#       "contentType":"text/plain",
-#       "kind":"storage#object",
-#       "md5Hash":"...",
-#       "metageneration":"1",
-#       "name":"MY_FILE.txt",
-#       "size":"352",
-#       "storageClass":"MULTI_REGIONAL",
-#       "timeCreated":"2020-04-23T07:38:57.230Z",
-#       "timeStorageClassUpdated":"2020-04-23T07:38:57.230Z",
-#       "updated":"2020-04-23T07:38:57.230Z"
-#    }
-# }
-#
-# https://cloud.google.com/storage/docs/json_api/v1/objects#resource
-# see https://github.com/GoogleCloudPlatform/python-docs-samples/blob/main/functions/v2/storage/main.py
-
 import os
 import functions_framework
-from google.cloud import storage
 import tiktoken
 import pandas as pd
 import openai
 import backoff
 import numpy as np
+from utils import download, upload
+from dotenv import load_dotenv
+
+load_dotenv()
 
 openai.api_key = os.environ.get("OPENAI_API_KEY")
 tokenizer = tiktoken.get_encoding("cl100k_base")
@@ -48,15 +21,12 @@ def create_embeddings(cloud_event):
     scraped_file = os.environ.get("GCP_STORAGE_SCRAPED_FILE_NAME")
     embeddings_file = os.environ.get("GCP_STORAGE_EMBEDDING_FILE_NAME")
 
-    storage_client = storage.Client()
-
     data = cloud_event.data
     event_id = cloud_event["id"]
     event_type = cloud_event["type"]
 
     bucket = data["bucket"]
     name = data["name"]
-    metageneration = data["metageneration"]
     timeCreated = data["timeCreated"]
     updated = data["updated"]
 
@@ -64,7 +34,6 @@ def create_embeddings(cloud_event):
     print(f"Event type: {event_type}")
     print(f"Bucket: {bucket}")
     print(f"File: {name}")
-    print(f"Metageneration: {metageneration}")
     print(f"Created: {timeCreated}")
     print(f"Updated: {updated}")
 
@@ -72,18 +41,13 @@ def create_embeddings(cloud_event):
         print("Skipping processing of file {}".format(name))
         return
 
-    bucket = storage_client.bucket(bucket)
-
-    blob = bucket.blob(name)
-    blob.download_to_filename(scraped_file)
+    download(bucket, name, scraped_file)
 
     df = pd.read_csv(scraped_file, index_col=0)
     df.columns = ["title", "text"]
 
     # Tokenize the text and save the number of tokens to a new column
     df["n_tokens"] = df.text.apply(lambda x: len(tokenizer.encode(x)))
-
-    print("Downloaded storage object {} from bucket {} to local file {}.".format(name, bucket, scraped_file))
 
     shortened = []
 
@@ -110,8 +74,7 @@ def create_embeddings(cloud_event):
 
     df.to_csv(embeddings_file)
 
-    destination_blob = bucket.blob(embeddings_file)
-    destination_blob.upload_from_filename(embeddings_file, if_generation_match=None)
+    upload(bucket, embeddings_file)
 
 
 # Function to split the text into chunks of a maximum number of tokens
