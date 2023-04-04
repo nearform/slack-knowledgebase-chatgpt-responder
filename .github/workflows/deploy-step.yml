@@ -109,7 +109,7 @@ jobs:
           --memory=512MB
           --region=europe-west1
           --gen2
-          --source=./packages/slack-bot
+          --source=./packages/slack-bot-python
           --entry-point=slack_bot 
           --trigger-http 
           --allow-unauthenticated
