@@ -1,7 +1,13 @@
 import fs from 'node:fs'
 import { Configuration, OpenAIApi } from 'openai'
 import dotenv from 'dotenv'
-import { download, parseCsv, distancesFromEmbeddings } from './utils.js'
+import { PubSub } from '@google-cloud/pubsub'
+import {
+  download,
+  parseCsv,
+  distancesFromEmbeddings,
+  isLocalEnvironment
+} from './utils.js'
 
 dotenv.config()
 
@@ -24,11 +30,11 @@ const openai = new OpenAIApi(
 
 async function initialize() {
   makeLocalCacheFolder()
-
   df = await getEmbeddingsFile()
 
-  // @TODO Subscribe to embedding changes
-  // subscribe_to_embedding_changes()
+  if (!isLocalEnvironment()) {
+    subscribeToEmbeddingChanges()
+  }
 }
 
 function makeLocalCacheFolder() {
@@ -62,6 +68,25 @@ async function getEmbeddingsFile() {
   })
 
   return df
+}
+
+function subscribeToEmbeddingChanges() {
+  const pubSubClient = new PubSub()
+
+  const messageHandler = async message => {
+    if (
+      message.attributes.objectId == bucketEmbeddingsFile &&
+      message.attributes.eventType == 'OBJECT_FINALIZE'
+    ) {
+      df = await getEmbeddingsFile()
+    }
+
+    message.ack()
+  }
+
+  const subName = `projects/${projectName}/subscriptions/${embeddingsSubscription}`
+  const subscription = pubSubClient.subscription(subName)
+  subscription.on('message', messageHandler)
 }
 
 /**

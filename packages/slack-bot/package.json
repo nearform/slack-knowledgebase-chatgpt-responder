@@ -29,6 +29,7 @@
     "tap": "^16.3.4"
   },
   "dependencies": {
+    "@google-cloud/pubsub": "^3.4.1",
     "@google-cloud/storage": "^6.9.5",
     "@manypkg/find-root": "^2.1.0",
     "@slack/bolt": "^3.12.2",

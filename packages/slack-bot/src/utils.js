@@ -8,7 +8,7 @@ import cosineSimilarity from 'compute-cosine-similarity'
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
-function isLocalEnvironment() {
+export function isLocalEnvironment() {
   const { FUNCTION_REGION } = process.env
   return !FUNCTION_REGION
 }
