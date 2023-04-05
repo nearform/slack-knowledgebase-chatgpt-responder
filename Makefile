@@ -30,4 +30,4 @@ bot-expose:
 
 # make bot-ask q="What is NearForm?"
 bot-ask:
-	cd ./packages/slack-bot-python && source ./.venv/bin/activate && python -c 'from knowledge_base import get_answer; print(get_answer("$(q)"))'
+	cd ./packages/slack-bot && node -e 'import("./src/getAnswer.js").then(mod => mod.getAnswer({question: "$(q)"})).then(answer => {console.log(answer)})'
