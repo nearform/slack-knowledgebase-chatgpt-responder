@@ -50,19 +50,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v4
+      - uses: actions/setup-node@v3
         with:
-          python-version: '3.11'
-      - name: Install dependencies
+          node-version-file: '.nvmrc'
+      - run: |
+          npm ci
+      - name: Lint
         working-directory: ./packages/embeddings-creation
         run: |
-          python -m pip install --upgrade pip
-          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+          npm run lint
       - name: Run tests
         working-directory: ./packages/embeddings-creation
         run: |
-          python test.py
+          npm test
 
   automerge:
     name: Merge dependabot's PRs

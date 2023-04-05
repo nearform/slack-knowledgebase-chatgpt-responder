@@ -3,8 +3,6 @@ node_modules
 .cache/
 packages/embeddings-creation/embeddings.csv
 packages/embeddings-creation/scraped.csv
-packages/embeddings-creation/test/embeddings.csv
-packages/embeddings-creation/test/scraped.csv
 
 # JetBrains IDEs
 .idea
