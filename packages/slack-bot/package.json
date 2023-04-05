@@ -1,13 +1,13 @@
 {
   "name": "slack-bot",
   "version": "1.0.0",
-  "description": "",
+  "description": "Slack bot configured to respond to direct messages with NearForm knowledge base answers retrieved via chatGPT APIs",
   "main": "src/index.js",
   "type": "module",
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint .",
-    "start": "npx @google-cloud/functions-framework --target=slackBot --port=3003"
+    "start": "functions-framework --target=slackBot --port=3003"
   },
   "repository": {
     "type": "git",

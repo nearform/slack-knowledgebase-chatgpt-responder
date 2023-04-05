@@ -105,15 +105,14 @@ jobs:
         id: deploy-slack-bot
         run: >-
           gcloud functions deploy slackbot
-          --runtime python39 
+          --runtime nodejs18 
           --memory=512MB
           --region=europe-west1
           --gen2
-          --source=./packages/slack-bot-python
-          --entry-point=slack_bot 
+          --source=./packages/slack-bot
+          --entry-point=slackBot 
           --trigger-http 
           --allow-unauthenticated
-          --set-env-vars=SKLEARN_ALLOW_DEPRECATED_SKLEARN_PACKAGE_INSTALL=True
           --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
