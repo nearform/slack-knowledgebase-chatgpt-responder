@@ -99,23 +99,6 @@ If you are not logged in yet, use `gcloud auth application-default login`.
 
 ## Embeddings creation
 
-### Installation
-
-#### Local environment
-
-Set the following environment variable on your local machine to avoid [this runtime error](https://stackoverflow.com/questions/50168647/multiprocessing-causes-python-to-crash-and-gives-an-error-may-have-been-in-progr):
-
-```
-export OBJC_DISABLE_INITIALIZE_FORK_SAFETY="YES"
-```
-
-#### Python setup
-
-- Install virtual environment with `python3 -m venv .venv`
-- Activate the environment with `source .venv/bin/activate`
-- Install pip: `python3 -m ensurepip --upgrade`
-- Install project dependencies with `pip3 install -r requirements.txt`
-
 #### Environment variables
 
 Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
