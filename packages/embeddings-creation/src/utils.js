@@ -29,6 +29,6 @@ export async function upload(bucketName, fileName) {
     const storage = new Storage()
     const bucket = storage.bucket(bucketName)
     await bucket.upload(fileName)
-    console.log('Upload completed!')
   }
+  console.log('Upload completed!')
 }
