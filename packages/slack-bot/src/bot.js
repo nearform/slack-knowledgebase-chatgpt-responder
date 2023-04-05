@@ -19,7 +19,7 @@ const expressApp = expressReceiver.app
 
 app.event('message', async ({ event, client }) => {
   try {
-    const answer = await getAnswer(event.text)
+    const answer = await getAnswer({ question: event.text })
     await client.chat.postMessage({
       channel: event.channel,
       text: answer

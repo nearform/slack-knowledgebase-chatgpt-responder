@@ -5,7 +5,7 @@ import { download, parseCsv, distancesFromEmbeddings } from './utils.js'
 
 dotenv.config()
 
-const EMBEDDING_MODEL = 'text-embedding-ada-002'
+const DEFAULT_EMBEDDING_MODEL = 'text-embedding-ada-002'
 const projectName = process.env.GCP_PROJECT_NAME
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
@@ -26,7 +26,7 @@ async function initialize() {
   makeLocalCacheFolder()
 
   df = await getEmbeddingsFile()
-  console.log(df)
+
   // @TODO Subscribe to embedding changes
   // subscribe_to_embedding_changes()
 }
@@ -46,7 +46,7 @@ async function getEmbeddingsFile() {
 
   /*
    * Python implementation forced the embedding values to be transformed to python entities (in case they are strings)
-   * and tranforms emeddings array into numbpy.array entities:
+   * and transforms embeddings array into `numbpy.array` entities:
    * df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
    */
 
@@ -68,10 +68,15 @@ async function getEmbeddingsFile() {
 /**
  * Create a context for a question by finding the most similar context from the dataframe
  */
-async function createContext({ question, df, maxLenght = 1800 }) {
+async function createContext({
+  question,
+  df,
+  maxLength = 1800,
+  embeddingModel = DEFAULT_EMBEDDING_MODEL
+}) {
   // Get the embeddings for the question
   const response = await openai.createEmbedding({
-    model: EMBEDDING_MODEL,
+    model: embeddingModel,
     input: question
   })
 
@@ -91,7 +96,7 @@ async function createContext({ question, df, maxLenght = 1800 }) {
     const contentEmbedding = df[index]
     contextLength += contentEmbedding['n_tokens'] + 4
 
-    if (contextLength > maxLenght) {
+    if (contextLength > maxLength) {
       break
     }
 
@@ -102,18 +107,47 @@ async function createContext({ question, df, maxLenght = 1800 }) {
 }
 
 async function getAnswer({
-  df = 'as',
-  model = 'ass',
+  df: customDf,
+  model = 'gpt-4',
   question = 'What is NearForm?',
-  maxLenght = 1800,
-  size = 'ada',
-  debug = false,
+  maxLength = 1800,
+  embeddingModel = DEFAULT_EMBEDDING_MODEL,
   maxTokens = 150,
-  stopSequence = undefined
+  stopSequence
 }) {
-  const context = await createContext({ question, df, maxLenght, size })
+  const dataFrame = customDf ?? df
+  if (!dataFrame) {
+    // @TODO shall we validate the date frame?
+    throw new Error('No data frame provided')
+  }
 
-  return `You said: ${question}`
+  const context = await createContext({
+    question,
+    df: dataFrame,
+    maxLength,
+    embeddingModel
+  })
+
+  const response = await openai.createChatCompletion({
+    messages: [
+      { role: 'system', content: 'You are a helpful assistant' },
+      {
+        role: 'assistant',
+        content: `I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I'm sorry but I can only provide answers to questions related to NearForm': ${context}`
+      },
+      {
+        role: 'user',
+        content: question
+      }
+    ],
+    temperature: 0,
+    top_p: 1,
+    stop: stopSequence,
+    max_tokens: maxTokens,
+    model
+  })
+
+  return response.data.choices[0].message.content.trim()
 }
 
 export { getAnswer }
