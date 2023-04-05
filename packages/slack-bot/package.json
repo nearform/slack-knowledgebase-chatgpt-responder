@@ -32,7 +32,9 @@
     "@google-cloud/storage": "^6.9.5",
     "@manypkg/find-root": "^2.1.0",
     "@slack/bolt": "^3.12.2",
+    "compute-cosine-similarity": "^1.0.0",
     "csv-parse": "^5.3.6",
-    "dotenv": "^16.0.3"
+    "dotenv": "^16.0.3",
+    "openai": "^3.2.1"
   }
 }

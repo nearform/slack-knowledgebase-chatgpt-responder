@@ -3,6 +3,7 @@ import path from 'node:path'
 import { Storage } from '@google-cloud/storage'
 import { findRootSync } from '@manypkg/find-root'
 import { parse } from 'csv-parse/sync'
+import cosineSimilarity from 'compute-cosine-similarity'
 
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
@@ -12,6 +13,9 @@ function isLocalEnvironment() {
   return !FUNCTION_REGION
 }
 
+/**
+ * Download a remote bucket file to a local destination
+ */
 export async function download(bucketName, fileName, destination) {
   if (isLocalEnvironment()) {
     fs.copyFileSync(path.join(rootCache, fileName), destination)
@@ -33,4 +37,18 @@ export async function parseCsv(input) {
     skip_empty_lines: true
   })
   return records
+}
+
+/**
+ * Return the distances between a query embedding and a list of embeddings
+ * @param queryEmbedding {number[]}
+ * @param embeddings {number[][]}
+ * @returns {index: number, distance: number}[]
+ */
+export function distancesFromEmbeddings(queryEmbedding, embeddings) {
+  const distance = embeddings.map((embedding, index) => ({
+    index,
+    distance: cosineSimilarity(queryEmbedding, embedding)
+  }))
+  return distance
 }
