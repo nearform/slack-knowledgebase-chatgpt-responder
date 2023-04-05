@@ -1,19 +1,16 @@
 import tap from 'tap'
 import esmock from 'esmock'
-import { Readable } from 'node:stream'
 import { readFile } from 'fs/promises'
-import { createWriteStream } from 'node:fs'
+import fs from 'fs/promises'
+import sinon from 'sinon'
 
 const scrapedFileName = 'scraped.csv'
 const embeddingsFileName = 'embeddings.csv'
 
 const scrapedFileMock = 'index,title,text\n0,Title,Page content'
-const openAIEmbeddingsResponseMock = {
-  data: [{ embedding: [-0.010027382522821426] }]
-}
 
 const expectedEmbeddings =
-  ',text,n_tokens,embeddings\n0,Page content,2,[-0.010027382522821426]\n'
+  'index,text,n_tokens,embeddings\n0,Page content,2,[-0.010027382522821426]'
 
 const testEvent = {
   id: 'event_id',
@@ -27,28 +24,35 @@ const testEvent = {
   }
 }
 
-const fileObjectMock = {
-  createReadStream: () => Readable.from(scrapedFileMock),
-  createWriteStream: () => createWriteStream(embeddingsFileName)
+class ConfigurationMock {
+  constructor() {}
 }
 
-function Storage() {
-  this.bucket = {
-    file: () => fileObjectMock
+class OpenAIApiMock {
+  constructor() {}
+
+  createEmbedding = () => {
+    return Promise.resolve({
+      data: {
+        data: [{ embedding: [-0.010027382522821426] }]
+      }
+    })
   }
 }
 
-function OpenAI() {
-  this.getEmbeddings = () => Promise.resolve(openAIEmbeddingsResponseMock)
-}
-
 tap.test('embeddings creation', async t => {
+  const downloadMock = async () =>
+    fs.writeFile(scrapedFileName, scrapedFileMock)
+
+  const uploadMock = sinon.fake()
+
   const { createEmbeddings } = await esmock('../src/create-embeddings.js', {
-    '@google-cloud/storage': { Storage },
-    openai: { OpenAI }
+    '../src/utils.js': { download: downloadMock, upload: uploadMock },
+    openai: { Configuration: ConfigurationMock, OpenAIApi: OpenAIApiMock }
   })
 
   await createEmbeddings(testEvent)
   const result = await readFile(embeddingsFileName, 'utf-8')
   t.equal(result, expectedEmbeddings)
+  t.ok(uploadMock.calledOnce)
 })

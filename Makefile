@@ -5,7 +5,7 @@ crawl: init
 	npm start --workspace=crawler
 
 embeddings-start: init
-	cd ./packages/embeddings-creation && source ./.venv/bin/activate && functions-framework --target=create_embeddings --signature-type=cloudevent --port=3002
+	cd ./packages/embeddings-creation && PORT=3002 npm start
 
 embeddings: init
 	curl localhost:3002 -X POST \
