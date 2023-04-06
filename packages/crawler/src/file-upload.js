@@ -8,12 +8,7 @@ const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
 export const isOnGoogleCloud = () => {
-  console.log(
-    'env vars:',
-    process.env.FUNCTION_REGION,
-    process.env.K_SERVICE,
-    process.env.K_REVISION
-  )
+  console.log('env vars:', process.env)
   return Boolean(process.env.K_SERVICE && process.env.K_REVISION)
 }
 
