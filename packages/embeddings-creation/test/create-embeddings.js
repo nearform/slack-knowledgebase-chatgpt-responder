@@ -4,8 +4,8 @@ import { readFile } from 'fs/promises'
 import fs from 'fs/promises'
 import sinon from 'sinon'
 
-const scrapedFileName = 'scraped.csv'
-const embeddingsFileName = 'embeddings.csv'
+const scrapedFileName = process.env.GCP_STORAGE_SCRAPED_FILE_NAME
+const embeddingsFileName = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 
 const scrapedFileMock = 'index,title,text\n0,Title,Page content'
 
@@ -24,13 +24,9 @@ const testEvent = {
   }
 }
 
-class ConfigurationMock {
-  constructor() {}
-}
+class ConfigurationMock {}
 
 class OpenAIApiMock {
-  constructor() {}
-
   createEmbedding = () => {
     return Promise.resolve({
       data: {
