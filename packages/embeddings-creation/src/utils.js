@@ -13,7 +13,7 @@ function isLocalEnvironment() {
 
 export async function download(bucketName, fileName, destination) {
   if (isLocalEnvironment()) {
-    await fs.copyFile(path.resolve(rootCache, fileName), scrapedFileName)
+    await fs.copyFile(path.resolve(rootCache, fileName), destination)
   } else {
     const storage = new Storage()
     const bucket = storage.bucket(bucketName)
