@@ -32,8 +32,9 @@ const getOpenAIApiMock = (createEmbeddingMock = () => {}) =>
   }
 
 tap.test('embeddings creation', async t => {
-  const downloadMock = async () =>
+  const downloadMock = sinon.spy(async () =>
     fs.writeFile(scrapedFileName, scrapedFileMock)
+  )
 
   const uploadMock = sinon.fake()
   const createEmbeddingMock = sinon.stub().returns(
@@ -57,6 +58,19 @@ tap.test('embeddings creation', async t => {
 
   t.equal(result, expectedEmbeddings)
   t.ok(createEmbeddingMock.calledOnce)
-  t.ok(uploadMock.calledOnce)
-  t.ok(uploadMock.calledWith('bucket', embeddingsFileName))
+
+  sinon.assert.calledOnce(createEmbeddingMock)
+
+  sinon.assert.calledOnceWithExactly(
+    uploadMock,
+    testEvent.data.bucket,
+    embeddingsFileName
+  )
+
+  sinon.assert.calledOnceWithExactly(
+    downloadMock,
+    testEvent.data.bucket,
+    scrapedFileName,
+    scrapedFileName
+  )
 })
