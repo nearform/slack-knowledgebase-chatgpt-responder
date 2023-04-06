@@ -5,7 +5,7 @@ import {
   download,
   parseCsv,
   distancesFromEmbeddings,
-  isLocalEnvironment
+  isOnGoogleCloud
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
@@ -29,7 +29,7 @@ async function initialize() {
   makeLocalCacheFolder()
   defaultDataSet = await getEmbeddingsFile()
 
-  if (!isLocalEnvironment) {
+  if (isOnGoogleCloud) {
     subscribeToEmbeddingChanges()
   }
 }
