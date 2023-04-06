@@ -7,8 +7,15 @@ import { findRootSync } from '@manypkg/find-root'
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
-export const isOnGoogleCloud = () =>
-  Boolean(process.env.K_SERVICE && process.env.K_REVISION)
+export const isOnGoogleCloud = () => {
+  console.log(
+    'env vars:',
+    process.env.FUNCTION_REGION,
+    process.env.K_SERVICE,
+    process.env.K_REVISION
+  )
+  return Boolean(process.env.K_SERVICE && process.env.K_REVISION)
+}
 
 function writeFileToRootCache(content, fileName) {
   fs.writeFileSync(path.resolve(rootCache, fileName), content)
