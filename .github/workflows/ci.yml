@@ -19,7 +19,7 @@ jobs:
           npm ci
       - name: Lint
         run: |
-          npm lint --workspace=crawler
+          npm run lint --workspace=crawler
       - name: Run tests
         run: |
           npm test --workspace=crawler
@@ -55,7 +55,7 @@ jobs:
           npm ci
       - name: Lint
         run: |
-          npm lint --workspace=embeddings-creation
+          npm run lint --workspace=embeddings-creation
       - name: Run tests
         run: |
           npm test --workspace=embeddings-creation
