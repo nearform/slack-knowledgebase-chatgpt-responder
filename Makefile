@@ -23,11 +23,11 @@ embeddings: init
       }'
 
 bot-start:
-	cd ./packages/slack-bot && source ./.venv/bin/activate && functions-framework --target=slack_bot --port=3003
+	npm start --workspace=slack-bot
 
 bot-expose:
 	ngrok http 3003
 
 # make bot-ask q="What is NearForm?"
 bot-ask:
-	cd ./packages/slack-bot && source ./.venv/bin/activate && python -c 'from knowledge_base import get_answer; print(get_answer("$(q)"))'
+	cd ./packages/slack-bot && node -r dotenv/config -e 'import("./src/getAnswer.js").then(mod => mod.getAnswer({question: "$(q)"})).then(answer => {console.log(answer)})'

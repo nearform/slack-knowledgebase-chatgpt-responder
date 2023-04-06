@@ -5,11 +5,11 @@
 
 1. **Crawler**: A function which crawls once a day data from Notion (The NearForm way section), and stores a csv file with the relevant page content
 2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI
-3. **Slack bot** A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base
+3. **Slack bot**: A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base
 
 ![alt text](./assets/schema.png 'Schema')
 
-We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) tutorial to write the OpenAI part.
+This project is based on this [official OpenAI documentation](https://platform.openai.com/docs/tutorials/web-qa-embeddings) and [relevant example](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) about using OpenAI api to build an AI that can answer questions about a custom set of data.
 
 ## Table of contents
 
@@ -40,6 +40,8 @@ Create the project and enable all the required pieces: https://cloud.google.com/
 ### Installation
 
 #### Environment variables
+
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                         |                                         |
 | ------------------------------- | --------------------------------------- |
@@ -101,7 +103,7 @@ If you are not logged in yet, use `gcloud auth application-default login`.
 
 #### Environment variables
 
-Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                           | Where is Slack App admin page        |
 | --------------------------------- | ------------------------------------ |
@@ -117,14 +119,14 @@ See .github/workflows/deploy-step.yml
 
 ## Slack bot
 
-Slack bots configured to respond to direct messages with NearForm knowledge base answers retrieved via chatGPT APIs.
+Slack bot configured to respond to direct messages with NearForm knowledge base answers retrieved via chatGPT APIs.
 
 ### Installation
 
 #### Slack application setup
 
 1. Create a new slack workspace and a new Slack application or use an existing one.
-2. Please refer to https://slack.dev/bolt-python/tutorial/getting-started-http to have a general understanding of how `bolt-python` works and how to setup a Slack app to interact with the bot.
+2. Please refer to https://slack.dev/bolt-js/tutorial/getting-started-http to have a general understanding of how `bolt` works and how to setup a Slack app to interact with the bot.
 3. Enable bot's direct messages in your APP page in `api.slack.com/apps/[id] > App Home > Show Tabs > Allow users to send Slash commands and messages from the messages tab`
 4. Copy paste the following JML configuration in `api.slack.com/apps/[id] > App Manifest` (you'll have to replace `<slack-bot-url>` with the actual slack-bot production url)
 
@@ -158,7 +160,7 @@ Once the BOT is deployed (or executed locally), you'll have to provide your Slac
 
 #### Environment variables
 
-Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                           | Where is Slack App admin page                                              |
 | --------------------------------- | -------------------------------------------------------------------------- |
@@ -177,24 +179,16 @@ Add the following values in `.env` (for local environment) and `.env.yaml` (for 
 
 Login to GCP with `gcloud auth application-default login`.
 
-#### Python setup
-
-- Install virtual environment with `python3 -m venv .venv`
-- Activate the environment with `source .venv/bin/activate`
-- Install pip: `python3 -m ensurepip --upgrade`
-- Install project dependencies with `pip3 install -r requirements.txt`
-- Run the project with `functions-framework --target=slack_bot` (default port 8080, check (here)[https://cloud.google.com/functions/docs/running/function-frameworks#functions-local-ff-install-python] for customize it)
-
 #### Slack setup
 
-Since Bolt runs on the local host and Slack needs a public URL to reach the app, you're going to need to [expose your local port as a public URL](https://slack.dev/bolt-python/tutorial/getting-started-http#setting-up-events).
+Since Bolt runs on the local host and Slack needs a public URL to reach the app, you're going to need to [expose your local port as a public URL](https://slack.dev/bolt-js/tutorial/getting-started-http#setting-up-events-with-http).
 
 You can do so with `ngrok`:
 
-- Run bot's local server with `functions-framework --target=slack_bot`
+- Run bot's local server with `functions-framework --target=slackBot`
 - Install `ngrok` globally on your local machine: `brew install --cask ngrok`
 - Run `ngrok`: `ngrok http <local-bolt-port>`
-- Provide the generated public URL in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
+- Provide the generated public URL as `<public-bot-url>/slack/events` in your APP page (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
 
 ...you should now be able to interact with you Slack bot locally.
 
@@ -231,4 +225,4 @@ Once installed/configured all the modules, you can run them using the provided M
 - `make bot-expose`: expose Slack bot as a public url
 - `make bot-ask q="My question?"`: query the chatbot programmatically
 
-Slack bot public url should be provided to Slack APP page configuration (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
+Slack bot public url should be provided as `<public-bot-url>/slack/events` to Slack APP page configuration (`api.slack.com/apps/[id]`) under `Event subscriptions` > `Request URL`
