@@ -38,7 +38,7 @@ async function initialize() {
 }
 
 function makeLocalCacheFolder() {
-  var cache = './.cache'
+  const cache = './.cache'
 
   if (!fs.existsSync(cache)) {
     fs.mkdirSync(cache)
