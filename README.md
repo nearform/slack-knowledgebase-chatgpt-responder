@@ -5,11 +5,11 @@
 
 1. **Crawler**: A function which crawls once a day data from Notion (The NearForm way section), and stores a csv file with the relevant page content
 2. **Embeddings creation**: A function which generates an embeddings file based on **Crawler**'s csv output and using OpenAI Apis. The embeddings file is meant to create a context for our AI
-3. **Slack bot** A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base
+3. **Slack bot**: A function that reads the embeddings files and uses OpenAI APIs to generate Slack bot-compliant answers about NearForm knowledge base
 
 ![alt text](./assets/schema.png 'Schema')
 
-We used [this](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) tutorial to write the OpenAI part.
+This project is based on this [official OpenAI documentation](https://platform.openai.com/docs/tutorials/web-qa-embeddings) and [relevant example](https://github.com/openai/openai-cookbook/tree/main/apps/web-crawl-q-and-a) about using OpenAI api to build an AI that can answer questions about a custom set of data.
 
 ## Table of contents
 
@@ -40,6 +40,8 @@ Create the project and enable all the required pieces: https://cloud.google.com/
 ### Installation
 
 #### Environment variables
+
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                         |                                         |
 | ------------------------------- | --------------------------------------- |
@@ -101,7 +103,7 @@ If you are not logged in yet, use `gcloud auth application-default login`.
 
 #### Environment variables
 
-Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                           | Where is Slack App admin page        |
 | --------------------------------- | ------------------------------------ |
@@ -158,7 +160,7 @@ Once the BOT is deployed (or executed locally), you'll have to provide your Slac
 
 #### Environment variables
 
-Add the following values in `.env` (for local environment) and `.env.yaml` (for gcloud) file:
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                           | Where is Slack App admin page                                              |
 | --------------------------------- | -------------------------------------------------------------------------- |
