@@ -5,7 +5,7 @@
   "main": "src/index.js",
   "type": "module",
   "scripts": {
-    "start": "functions-framework --target=create_embeddings --signature-type=cloudevent --port=PORT=3002",
+    "start": "functions-framework --target=create_embeddings --signature-type=cloudevent --port=3002",
     "test": "GCP_STORAGE_EMBEDDING_FILE_NAME=embeddings.csv GCP_STORAGE_SCRAPED_FILE_NAME=scraped.csv NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint ."
   },
