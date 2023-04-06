@@ -25,13 +25,22 @@ const openai = new OpenAIApi(
   })
 )
 
+// @TODO Since initialization is async, we expose a promise to avoid race conditions on getAnswer calls
+let initializationPromise = undefined
 async function initialize() {
-  makeLocalCacheFolder()
-  defaultDataSet = await getEmbeddingsFile()
-
-  if (isOnGoogleCloud()) {
-    subscribeToEmbeddingChanges()
-  }
+  initializationPromise = new Promise(resolve => {
+    makeLocalCacheFolder()
+    getEmbeddingsFile()
+      .then(result => {
+        defaultDataSet = result
+      })
+      // .then(() => {
+      //   if (isOnGoogleCloud) {
+      //     subscribeToEmbeddingChanges()
+      //   }
+      // })
+      .then(resolve)
+  })
 }
 
 function makeLocalCacheFolder() {
@@ -136,6 +145,8 @@ async function getAnswer({
   maxTokens = 150,
   stopSequence
 }) {
+  await initializationPromise
+
   const dataSet = customDataSet ?? defaultDataSet
   if (!dataSet) {
     // @TODO shall we validate the date frame?
