@@ -11,7 +11,7 @@ function isLocalEnvironment() {
   return !FUNCTION_REGION
 }
 
-export async function download(bucketName, fileName, scrapedFileName) {
+export async function download(bucketName, fileName, destination) {
   if (isLocalEnvironment()) {
     await fs.copyFile(path.resolve(rootCache, fileName), scrapedFileName)
   } else {
