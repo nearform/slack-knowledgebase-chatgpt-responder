@@ -40,12 +40,12 @@ export async function parseCsv(input) {
 }
 
 /**
- * Return the distances between a query embedding and a list of embeddings
- * @param queryEmbedding {number[]}
- * @param embeddings {number[][]}
+ * @param {Object} args
+ * @param {number[]} args.queryEmbedding
+ * @param {number[][]} args.embeddings
  * @returns {index: number, distance: number}[]
  */
-export function distancesFromEmbeddings(queryEmbedding, embeddings) {
+export function distancesFromEmbeddings({ queryEmbedding, embeddings }) {
   const distance = embeddings.map((embedding, index) => ({
     index,
     distance: cosineSimilarity(queryEmbedding, embedding)

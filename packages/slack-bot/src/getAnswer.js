@@ -104,13 +104,13 @@ async function createContext({
     input: question
   })
 
-  const questionEmbeddings = response.data.data[0].embedding
+  const queryEmbedding = response.data.data[0].embedding
 
   // Get the distances from the embeddings
-  const distances = distancesFromEmbeddings(
-    questionEmbeddings,
-    df.map(line => line.embeddings)
-  )
+  const distances = distancesFromEmbeddings({
+    queryEmbedding,
+    embeddings: df.map(line => line.embeddings)
+  })
 
   const sortedDistances = distances.sort((a, b) => a.distance - b.distance)
 
