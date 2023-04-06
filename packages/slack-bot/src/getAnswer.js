@@ -1,6 +1,5 @@
 import fs from 'node:fs'
 import { Configuration, OpenAIApi } from 'openai'
-import dotenv from 'dotenv'
 import { PubSub } from '@google-cloud/pubsub'
 import {
   download,
@@ -9,9 +8,7 @@ import {
   isLocalEnvironment
 } from './utils.js'
 
-dotenv.config()
-
-const DEFAULT_EMBEDDING_MODEL = 'text-embedding-ada-002'
+const defaultEmbeddingModel = 'text-embedding-ada-002'
 const projectName = process.env.GCP_PROJECT_NAME
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
@@ -32,7 +29,7 @@ async function initialize() {
   makeLocalCacheFolder()
   defaultDataSet = await getEmbeddingsFile()
 
-  if (!isLocalEnvironment()) {
+  if (!isLocalEnvironment) {
     subscribeToEmbeddingChanges()
   }
 }
@@ -96,7 +93,7 @@ async function createContext({
   question,
   dataSet,
   maxLength = 1800,
-  embeddingModel = DEFAULT_EMBEDDING_MODEL
+  embeddingModel = defaultEmbeddingModel
 }) {
   // Get the embeddings for the question
   const response = await openai.createEmbedding({
@@ -135,7 +132,7 @@ async function getAnswer({
   model = 'gpt-4',
   question = 'What is NearForm?',
   maxLength = 1800,
-  embeddingModel = DEFAULT_EMBEDDING_MODEL,
+  embeddingModel = defaultEmbeddingModel,
   maxTokens = 150,
   stopSequence
 }) {

@@ -30,4 +30,4 @@ bot-expose:
 
 # make bot-ask q="What is NearForm?"
 bot-ask:
-	cd ./packages/slack-bot && node -e 'import("./src/getAnswer.js").then(mod => mod.getAnswer({question: "$(q)"})).then(answer => {console.log(answer)})'
+	cd ./packages/slack-bot && node -r dotenv/config -e 'import("./src/getAnswer.js").then(mod => mod.getAnswer({question: "$(q)"})).then(answer => {console.log(answer)})'

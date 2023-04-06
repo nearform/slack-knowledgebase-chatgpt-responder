@@ -4,21 +4,12 @@
   "description": "Slack bot configured to respond to direct messages with NearForm knowledge base answers retrieved via chatGPT APIs",
   "main": "src/index.js",
   "type": "module",
+  "private": true,
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint .",
     "start": "functions-framework --target=slackBot --port=3003"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nearform/slack-knowledgebase-chatgpt-responder.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder/issues"
-  },
-  "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.3",
     "@babel/plugin-syntax-import-assertions": "^7.20.0",

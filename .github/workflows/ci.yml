@@ -35,13 +35,11 @@ jobs:
       - run: |
           npm ci
       - name: Lint
-        working-directory: ./packages/slack-bot
         run: |
-          npm run lint
+          npm run lint --workspace=slack-bot
       - name: Run tests
-        working-directory: ./packages/slack-bot
         run: |
-          npm test
+          npm test --workspace=slack-bot
 
   test-embeddings-creation:
     name: Test embeddings creation
@@ -62,7 +60,7 @@ jobs:
 
   automerge:
     name: Merge dependabot's PRs
-    needs: [test-crawler, test-slack-bot]
+    needs: [test-crawler, test-slack-bot, test-embeddings-creation]
     runs-on: ubuntu-latest
     permissions:
       pull-requests: write

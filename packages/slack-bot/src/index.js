@@ -1,3 +1,4 @@
+import 'dotenv/config'
 import { processEvent } from './bot.js'
 
 function slackBot(req, res) {
