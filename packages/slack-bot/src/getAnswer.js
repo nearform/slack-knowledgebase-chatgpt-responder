@@ -20,7 +20,7 @@ const localEmbeddingsFile = '.cache/embeddings.csv'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
-let df = undefined
+let defaultDataSet = undefined
 
 const openai = new OpenAIApi(
   new Configuration({
@@ -30,7 +30,7 @@ const openai = new OpenAIApi(
 
 async function initialize() {
   makeLocalCacheFolder()
-  df = await getEmbeddingsFile()
+  defaultDataSet = await getEmbeddingsFile()
 
   if (!isLocalEnvironment()) {
     subscribeToEmbeddingChanges()
@@ -48,16 +48,16 @@ function makeLocalCacheFolder() {
 async function getEmbeddingsFile() {
   await download(bucketName, bucketEmbeddingsFile, localEmbeddingsFile)
   const csv = fs.readFileSync(localEmbeddingsFile)
-  const df = await parseCsv(csv, { encoding: 'utf8' })
+  const dataSet = await parseCsv(csv, { encoding: 'utf8' })
   /*
    * Python implementation forced the embedding values to be transformed to python entities (in case they are strings)
    * and transforms embeddings array into `numbpy.array` entities:
-   * df["embeddings"] = df["embeddings"].apply(eval).apply(np.array)
+   * dataSet["embeddings"] = dataSet["embeddings"].apply(eval).apply(np.array)
    */
 
   // Parse csv columns
   // @NOTE shall we parse all columns?
-  df.forEach(line => {
+  dataSet.forEach(line => {
     const { embeddings, n_tokens } = line
     if (embeddings) {
       line['embeddings'] = JSON.parse(embeddings)
@@ -67,7 +67,7 @@ async function getEmbeddingsFile() {
     }
   })
 
-  return df
+  return dataSet
 }
 
 function subscribeToEmbeddingChanges() {
@@ -78,7 +78,7 @@ function subscribeToEmbeddingChanges() {
       message.attributes.objectId == bucketEmbeddingsFile &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
     ) {
-      df = await getEmbeddingsFile()
+      defaultDataSet = await getEmbeddingsFile()
     }
 
     message.ack()
@@ -94,7 +94,7 @@ function subscribeToEmbeddingChanges() {
  */
 async function createContext({
   question,
-  df,
+  dataSet,
   maxLength = 1800,
   embeddingModel = DEFAULT_EMBEDDING_MODEL
 }) {
@@ -109,7 +109,7 @@ async function createContext({
   // Get the distances from the embeddings
   const distances = distancesFromEmbeddings({
     queryEmbedding,
-    embeddings: df.map(line => line.embeddings)
+    embeddings: dataSet.map(line => line.embeddings)
   })
 
   const sortedDistances = distances.sort((a, b) => a.distance - b.distance)
@@ -117,7 +117,7 @@ async function createContext({
   const context = []
   let contextLength = 0
   for (const { index } of sortedDistances) {
-    const contentEmbedding = df[index]
+    const contentEmbedding = dataSet[index]
     contextLength += contentEmbedding['n_tokens'] + 4
 
     if (contextLength > maxLength) {
@@ -131,7 +131,7 @@ async function createContext({
 }
 
 async function getAnswer({
-  df: customDf,
+  dataSet: customDataSet,
   model = 'gpt-4',
   question = 'What is NearForm?',
   maxLength = 1800,
@@ -139,15 +139,15 @@ async function getAnswer({
   maxTokens = 150,
   stopSequence
 }) {
-  const dataFrame = customDf ?? df
-  if (!dataFrame) {
+  const dataSet = customDataSet ?? defaultDataSet
+  if (!dataSet) {
     // @TODO shall we validate the date frame?
     throw new Error('No data frame provided')
   }
 
   const context = await createContext({
     question,
-    df: dataFrame,
+    dataSet,
     maxLength,
     embeddingModel
   })
