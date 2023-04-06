@@ -84,18 +84,27 @@ export async function createEmbeddings(event) {
     }, [])
 
   const embeddingRequestMapper = async (short, i) => {
-    const response = await backOff(() =>
-      openai.createEmbedding({
-        model: EMBEDDING_MODEL,
-        input: short
-      })
-    )
+    try {
+      const response = await backOff(
+        () =>
+          openai.createEmbedding({
+            model: EMBEDDING_MODEL,
+            input: short
+          }),
+        {
+          numOfAttempts: 5,
+          maxDelay: 5000
+        }
+      )
 
-    return {
-      index: i,
-      text: short,
-      n_tokens: tokenizer.encode(short).length,
-      embeddings: response.data.data[0].embedding
+      return {
+        index: i,
+        text: short,
+        n_tokens: tokenizer.encode(short).length,
+        embeddings: response.data.data[0].embedding
+      }
+    } catch (err) {
+      console.log(`Cannot fetch embeddings for ${short.substring(0, 2)}...`)
     }
   }
 
@@ -103,7 +112,7 @@ export async function createEmbeddings(event) {
     concurrency: 10
   })
 
-  const embeddingsCsv = await json2csv(embeddings)
+  const embeddingsCsv = await json2csv(embeddings.filter(Boolean))
   await fs.writeFile(EMBEDDINGS_FILE_NAME, embeddingsCsv)
   await upload(bucketName, EMBEDDINGS_FILE_NAME)
 }
