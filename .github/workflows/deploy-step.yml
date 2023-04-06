@@ -115,11 +115,11 @@ jobs:
           --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/openai-api-key:latest
 
-      - name: 'Deploy embedding-creation to Cloud Run'
+      - name: Deploy embedding-creation to Cloud Run
         id: deploy-embedding-creation
         run: >-
           gcloud functions deploy embedding-creation 
-          --runtime=python311 
+          --runtime=nodejs18
           --memory=512MB
           --region=europe-west1
           --gen2

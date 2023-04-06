@@ -32,6 +32,7 @@
     "*.{js,jsx}": "eslint --cache --fix"
   },
   "workspaces": [
-    "packages/crawler"
+    "packages/crawler",
+    "packages/embeddings-creation"
   ]
 }
