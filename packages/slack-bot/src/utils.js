@@ -8,15 +8,14 @@ import cosineSimilarity from 'compute-cosine-similarity'
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
-export const isOnGoogleCloud = Boolean(
-  process.env.K_SERVICE && process.env.K_REVISION
-)
+export const isOnGoogleCloud = () =>
+  Boolean(process.env.K_SERVICE && process.env.K_REVISION)
 
 /**
  * Download a remote bucket file to a local destination
  */
 export async function download(bucketName, fileName, destination) {
-  if (!isOnGoogleCloud) {
+  if (!isOnGoogleCloud()) {
     fs.copyFileSync(path.join(rootCache, fileName), destination)
     return
   }

@@ -7,16 +7,15 @@ import { findRootSync } from '@manypkg/find-root'
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
-export const isOnGoogleCloud = Boolean(
-  process.env.K_SERVICE && process.env.K_REVISION
-)
+export const isOnGoogleCloud = () =>
+  Boolean(process.env.K_SERVICE && process.env.K_REVISION)
 
 function writeFileToRootCache(content, fileName) {
   fs.writeFileSync(path.resolve(rootCache, fileName), content)
 }
 
 export const upload = csv => {
-  if (!isOnGoogleCloud) {
+  if (!isOnGoogleCloud()) {
     writeFileToRootCache(csv, 'scraped.csv')
     return
   }

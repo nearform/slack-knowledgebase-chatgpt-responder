@@ -29,7 +29,7 @@ async function initialize() {
   makeLocalCacheFolder()
   defaultDataSet = await getEmbeddingsFile()
 
-  if (isOnGoogleCloud) {
+  if (isOnGoogleCloud()) {
     subscribeToEmbeddingChanges()
   }
 }
