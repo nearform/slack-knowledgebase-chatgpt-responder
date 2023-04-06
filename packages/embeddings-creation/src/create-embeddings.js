@@ -1,3 +1,4 @@
+import pMap from 'p-map'
 import { csv2json, json2csv } from 'json-2-csv'
 import fs from 'node:fs/promises'
 import tiktoken from 'tiktoken-node'
@@ -82,13 +83,18 @@ export async function createEmbeddings(event) {
       }
     }, [])
 
-  const embeddings = await Promise.all(
-    shortened.map(async (short, i) => {
-      const response = await backOff(() =>
-        openai.createEmbedding({
-          model: EMBEDDING_MODEL,
-          input: short
-        })
+  const embeddingRequestMapper = async (short, i) => {
+    try {
+      const response = await backOff(
+        () =>
+          openai.createEmbedding({
+            model: EMBEDDING_MODEL,
+            input: short
+          }),
+        {
+          numOfAttempts: 5,
+          maxDelay: 5000
+        }
       )
 
       return {
@@ -97,10 +103,16 @@ export async function createEmbeddings(event) {
         n_tokens: tokenizer.encode(short).length,
         embeddings: response.data.data[0].embedding
       }
-    })
-  )
+    } catch (err) {
+      console.log(`Cannot fetch embeddings for ${short.substring(0, 20)}...`)
+    }
+  }
 
-  const embeddingsCsv = await json2csv(embeddings)
+  const embeddings = await pMap(shortened, embeddingRequestMapper, {
+    concurrency: 10
+  })
+
+  const embeddingsCsv = await json2csv(embeddings.filter(Boolean))
   await fs.writeFile(EMBEDDINGS_FILE_NAME, embeddingsCsv)
   await upload(bucketName, EMBEDDINGS_FILE_NAME)
 }

@@ -5,7 +5,7 @@ crawl: init
 	npm start --workspace=crawler
 
 embeddings-start: init
-	PORT=3002 npm start --workspace=embeddings-creation
+	npm start --workspace=embeddings-creation
 
 embeddings: init
 	curl localhost:3002 -X POST \
