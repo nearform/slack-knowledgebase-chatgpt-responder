@@ -4,21 +4,12 @@
   "description": "Crawl data from Notion and write the csv file to a gcp bucket",
   "main": "src/index.js",
   "type": "module",
+  "private": true,
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint .",
     "start": "node ./src/index.js"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/nearform/slack-knowledgebase-chatgpt-responder.git"
-  },
-  "author": "",
-  "license": "ISC",
-  "bugs": {
-    "url": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder/issues"
-  },
-  "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "dependencies": {
     "@google-cloud/storage": "^6.9.5",
     "@manypkg/find-root": "^2.1.0",
