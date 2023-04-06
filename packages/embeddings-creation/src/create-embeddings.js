@@ -105,14 +105,20 @@ export async function createEmbeddings(event) {
       }
     } catch (err) {
       console.log(`Cannot fetch embeddings for ${short.substring(0, 20)}...`)
+      throw err
     }
   }
 
-  const embeddings = await pMap(shortened, embeddingRequestMapper, {
-    concurrency: 10
-  })
+  try {
+    const embeddings = await pMap(shortened, embeddingRequestMapper, {
+      concurrency: 10
+    })
 
-  const embeddingsCsv = await json2csv(embeddings.filter(Boolean))
-  await fs.writeFile(EMBEDDINGS_FILE_NAME, embeddingsCsv)
-  await upload(bucketName, EMBEDDINGS_FILE_NAME)
+    const embeddingsCsv = await json2csv(embeddings.filter(Boolean))
+    await fs.writeFile(EMBEDDINGS_FILE_NAME, embeddingsCsv)
+    await upload(bucketName, EMBEDDINGS_FILE_NAME)
+  } catch (err) {
+    console.error('Cannot create an embeddings.csv')
+    throw err
+  }
 }
