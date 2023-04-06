@@ -104,7 +104,7 @@ export async function createEmbeddings(event) {
         embeddings: response.data.data[0].embedding
       }
     } catch (err) {
-      console.log(`Cannot fetch embeddings for ${short.substring(0, 2)}...`)
+      console.log(`Cannot fetch embeddings for ${short.substring(0, 20)}...`)
     }
   }
 
