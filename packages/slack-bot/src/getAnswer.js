@@ -5,7 +5,7 @@ import {
   download,
   parseCsv,
   distancesFromEmbeddings,
-  isOnGoogleCloud
+  isLocalEnvironment
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
@@ -25,11 +25,12 @@ const openai = new OpenAIApi(
   })
 )
 
+// @TODO Since initialization is async, we might need to expose a promise to avoid race conditions on getAnswer calls
 async function initialize() {
   makeLocalCacheFolder()
   defaultDataSet = await getEmbeddingsFile()
 
-  if (isOnGoogleCloud) {
+  if (!isLocalEnvironment) {
     subscribeToEmbeddingChanges()
   }
 }

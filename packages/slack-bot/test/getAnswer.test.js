@@ -59,6 +59,11 @@ tap.test('getAnswer', async t => {
             createEmbedding = createEmbeddingMock
             createChatCompletion = createChatCompletionMock
           }
+        },
+        '@google-cloud/pubsub': {
+          PubSub: class PubSubMock {
+            subscription = () => ({ on: () => {} })
+          }
         }
       }
     )

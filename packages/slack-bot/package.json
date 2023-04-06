@@ -8,7 +8,8 @@
   "scripts": {
     "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint .",
-    "start": "functions-framework --target=slackBot --port=3003"
+    "start": "functions-framework --target=slackBot --port=3003",
+    "try:bot": "IS_LOCAL_ENVIRONMENT=true node ./src/tryBot.js"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.3",

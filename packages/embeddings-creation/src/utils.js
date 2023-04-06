@@ -6,10 +6,10 @@ import fs from 'node:fs/promises'
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
-const isOnGoogleCloud = Boolean(process.env.K_SERVICE && process.env.K_REVISION)
+export const isLocalEnvironment = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
 
 export async function download(bucketName, fileName, destination) {
-  if (!isOnGoogleCloud) {
+  if (isLocalEnvironment) {
     await fs.copyFile(path.resolve(rootCache, fileName), destination)
   } else {
     const storage = new Storage()
@@ -20,7 +20,7 @@ export async function download(bucketName, fileName, destination) {
 }
 
 export async function upload(bucketName, fileName) {
-  if (!isOnGoogleCloud) {
+  if (isLocalEnvironment) {
     await fs.copyFile(fileName, path.resolve(rootCache, fileName))
   } else {
     const storage = new Storage()
