@@ -10,7 +10,7 @@ const embeddingsFileName = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const scrapedFileMock = 'index,title,text\n0,Title,Page content'
 
 const expectedEmbeddings =
-  'index,text,n_tokens,embeddings\n0,Page content,2,[-0.010027382522821426]'
+  'index,text,n_tokens,embeddings\n0,Page content,2,"[-0.01002738,-0.03602738]"'
 
 const testEvent = {
   id: 'event_id',
@@ -39,7 +39,7 @@ tap.test('embeddings creation', async t => {
   const createEmbeddingMock = sinon.stub().returns(
     Promise.resolve({
       data: {
-        data: [{ embedding: [-0.010027382522821426] }]
+        data: [{ embedding: [-0.01002738, -0.03602738] }]
       }
     })
   )
