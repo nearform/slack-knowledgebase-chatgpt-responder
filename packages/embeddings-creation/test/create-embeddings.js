@@ -26,29 +26,37 @@ const testEvent = {
 
 class ConfigurationMock {}
 
-class OpenAIApiMock {
-  createEmbedding = () => {
-    return Promise.resolve({
-      data: {
-        data: [{ embedding: [-0.010027382522821426] }]
-      }
-    })
+const getOpenAIApiMock = (createEmbeddingMock = () => {}) =>
+  class OpenAIApiMock {
+    createEmbedding = createEmbeddingMock
   }
-}
 
 tap.test('embeddings creation', async t => {
   const downloadMock = async () =>
     fs.writeFile(scrapedFileName, scrapedFileMock)
 
   const uploadMock = sinon.fake()
+  const createEmbeddingMock = sinon.stub().returns(
+    Promise.resolve({
+      data: {
+        data: [{ embedding: [-0.010027382522821426] }]
+      }
+    })
+  )
 
   const { createEmbeddings } = await esmock('../src/create-embeddings.js', {
     '../src/utils.js': { download: downloadMock, upload: uploadMock },
-    openai: { Configuration: ConfigurationMock, OpenAIApi: OpenAIApiMock }
+    openai: {
+      Configuration: ConfigurationMock,
+      OpenAIApi: getOpenAIApiMock(createEmbeddingMock)
+    }
   })
 
   await createEmbeddings(testEvent)
   const result = await readFile(embeddingsFileName, 'utf-8')
+
   t.equal(result, expectedEmbeddings)
+  t.ok(createEmbeddingMock.calledOnce)
   t.ok(uploadMock.calledOnce)
+  t.ok(uploadMock.calledWith('bucket', embeddingsFileName))
 })
