@@ -82,6 +82,7 @@ function subscribeToEmbeddingChanges() {
   console.log('something is changed')
 
   const messageHandler = async message => {
+    console.log(message)
     if (
       message.attributes.objectId == bucketEmbeddingsFile &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
