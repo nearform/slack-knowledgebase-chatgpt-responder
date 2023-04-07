@@ -36,7 +36,7 @@ async function initialize() {
       })
       .then(() => {
         if (!isLocalEnvironment) {
-          subscribeToEmbeddingChanges()
+          // subscribeToEmbeddingChanges()
         }
       })
       .then(resolve)
