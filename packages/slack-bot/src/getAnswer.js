@@ -79,10 +79,7 @@ async function getEmbeddingsFile() {
 function subscribeToEmbeddingChanges() {
   const pubSubClient = new PubSub()
 
-  console.log('something is changed')
-
   const messageHandler = async message => {
-    console.log(message)
     if (
       message.attributes.objectId == bucketEmbeddingsFile &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
@@ -95,7 +92,7 @@ function subscribeToEmbeddingChanges() {
   }
 
   const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
-  console.log(subName)
+  console.log('SUBNAME', subName)
   const subscription = pubSubClient.subscription(subName)
   subscription.on('message', messageHandler)
 }
