@@ -1,6 +1,6 @@
 import fs from 'node:fs'
 import { Configuration, OpenAIApi } from 'openai'
-import { PubSub } from '@google-cloud/pubsub'
+// import { PubSub } from '@google-cloud/pubsub'
 import {
   download,
   parseCsv,
@@ -9,10 +9,10 @@ import {
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
-const projectName = process.env.GCP_PROJECT_NAME
+// const projectName = process.env.GCP_PROJECT_NAME
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
-const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
+// const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
 const localEmbeddingsFile = '.cache/embeddings.csv'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
@@ -76,24 +76,24 @@ async function getEmbeddingsFile() {
   return dataSet
 }
 
-function subscribeToEmbeddingChanges() {
-  const pubSubClient = new PubSub()
+// function subscribeToEmbeddingChanges() {
+//   const pubSubClient = new PubSub()
 
-  const messageHandler = async message => {
-    if (
-      message.attributes.objectId == bucketEmbeddingsFile &&
-      message.attributes.eventType == 'OBJECT_FINALIZE'
-    ) {
-      defaultDataSet = await getEmbeddingsFile()
-    }
+//   const messageHandler = async message => {
+//     if (
+//       message.attributes.objectId == bucketEmbeddingsFile &&
+//       message.attributes.eventType == 'OBJECT_FINALIZE'
+//     ) {
+//       defaultDataSet = await getEmbeddingsFile()
+//     }
 
-    message.ack()
-  }
+//     message.ack()
+//   }
 
-  const subName = `projects/${projectName}/subscriptions/${embeddingsSubscription}`
-  const subscription = pubSubClient.subscription(subName)
-  subscription.on('message', messageHandler)
-}
+//   const subName = `projects/${projectName}/subscriptions/${embeddingsSubscription}`
+//   const subscription = pubSubClient.subscription(subName)
+//   subscription.on('message', messageHandler)
+// }
 
 /**
  * Create a context for a question by finding the most similar context from the dataframe
