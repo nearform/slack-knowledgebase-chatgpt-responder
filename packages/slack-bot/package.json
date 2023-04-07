@@ -6,7 +6,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap --test-ignore=mocks",
     "lint": "eslint .",
     "start": "functions-framework --target=slackBot --port=3003",
     "try:bot": "IS_LOCAL_ENVIRONMENT=true node ./src/tryBot.js"
