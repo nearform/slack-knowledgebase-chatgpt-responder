@@ -84,7 +84,7 @@ function subscribeToEmbeddingChanges() {
       message.attributes.objectId == bucketEmbeddingsFile &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
     ) {
-      console.log('received correct file')
+      console.log('New embeddings.csv received...')
       defaultDataSet = await getEmbeddingsFile()
     }
 
@@ -92,7 +92,6 @@ function subscribeToEmbeddingChanges() {
   }
 
   const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
-  console.log('SUBNAME', subName)
   const subscription = pubSubClient.subscription(subName)
   subscription.on('message', messageHandler)
 }
