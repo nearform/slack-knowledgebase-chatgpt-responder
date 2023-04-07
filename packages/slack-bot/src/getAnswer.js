@@ -95,6 +95,7 @@ function subscribeToEmbeddingChanges() {
   }
 
   const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
+  console.log(subName)
   const subscription = pubSubClient.subscription(subName)
   subscription.on('message', messageHandler)
 }
