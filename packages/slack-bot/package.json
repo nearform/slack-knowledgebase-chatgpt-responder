@@ -23,7 +23,7 @@
     "@google-cloud/pubsub": "^3.4.1",
     "@google-cloud/storage": "^6.9.5",
     "@manypkg/find-root": "^2.1.0",
-    "@slack/bolt": "^3.12.2",
+    "@slack/bolt": "^3.13.0",
     "compute-cosine-similarity": "^1.0.0",
     "csv-parse": "^5.3.6",
     "dotenv": "^16.0.3",
