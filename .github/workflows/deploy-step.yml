@@ -113,8 +113,10 @@ jobs:
           --entry-point=slackBot 
           --trigger-http 
           --allow-unauthenticated
+          --set-env-vars=GCP_PROJECT_ID=${{ inputs.GCP_PROJECT_ID }}
           --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
+          --set-env-vars=GCP_EMBEDDING_SUBSCRIPTION=${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }}
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
           --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/openai-api-key:latest

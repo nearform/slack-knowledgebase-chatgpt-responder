@@ -9,7 +9,7 @@ import {
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
-const projectName = process.env.GCP_PROJECT_NAME
+const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
@@ -94,7 +94,7 @@ function subscribeToEmbeddingChanges() {
     message.ack()
   }
 
-  const subName = `projects/${projectName}/subscriptions/${embeddingsSubscription}`
+  const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
   const subscription = pubSubClient.subscription(subName)
   subscription.on('message', messageHandler)
 }
