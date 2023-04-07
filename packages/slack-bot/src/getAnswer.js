@@ -142,7 +142,7 @@ async function getAnswer({
   question = 'What is NearForm?',
   maxLength = 1800,
   embeddingModel = defaultEmbeddingModel,
-  maxTokens = 150,
+  maxTokens = 400,
   stopSequence
 }) {
   await initializationPromise
