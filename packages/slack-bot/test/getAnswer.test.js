@@ -77,7 +77,7 @@ tap.test('getAnswer', async t => {
       input: 'Question'
     })
 
-    const expectedContext = 'Content page 2\n\n###\n\nContent page 1'
+    const expectedContext = 'Content page 1\n\n###\n\nContent page 2'
     sinon.assert.calledOnceWithExactly(createChatCompletionMock, {
       messages: [
         { role: 'system', content: 'You are a helpful assistant' },

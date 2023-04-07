@@ -45,7 +45,9 @@ export async function parseCsv(input) {
 export function distancesFromEmbeddings({ queryEmbedding, embeddings }) {
   const distance = embeddings.map((embedding, index) => ({
     index,
-    distance: cosineSimilarity(queryEmbedding, embedding)
+    // We're replicating the output returned from Python's scipy library
+    // https://github.com/openai/openai-python/blob/cf03fe16a92cd01f2a8867537399c12e183ba58e/openai/embeddings_utils.py#L141
+    distance: 1 - cosineSimilarity(queryEmbedding, embedding)
   }))
   return distance
 }
