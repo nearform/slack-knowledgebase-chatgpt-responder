@@ -93,7 +93,7 @@ tap.test('getAnswer', async t => {
       temperature: 0,
       top_p: 1,
       stop: undefined,
-      max_tokens: 150,
+      max_tokens: 300,
       model: 'gpt-4'
     })
   })
