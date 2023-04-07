@@ -107,6 +107,9 @@ jobs:
           gcloud functions deploy slackbot
           --runtime nodejs18 
           --memory=512MB
+          --min-instances=1
+          --max-instances=5
+          --concurrency=5
           --region=europe-west1
           --gen2
           --source=./packages/slack-bot
