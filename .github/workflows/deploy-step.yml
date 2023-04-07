@@ -22,6 +22,9 @@ on:
       GCP_STORAGE_EMBEDDING_FILE_NAME:
         required: true
         type: string
+      GCP_EMBEDDING_SUBSCRIPTION:
+        required: true
+        type: string
 
 jobs:
   provision:
