@@ -2,10 +2,10 @@ init:
 	mkdir -p .cache
 
 crawl: init
-	npm start --workspace=crawler
+	IS_LOCAL_ENVIRONMENT=true npm start --workspace=crawler
 
 embeddings-start: init
-	npm start --workspace=embeddings-creation
+	IS_LOCAL_ENVIRONMENT=true npm start --workspace=embeddings-creation
 
 embeddings: init
 	curl localhost:3002 -X POST \
@@ -23,11 +23,11 @@ embeddings: init
       }'
 
 bot-start:
-	npm start --workspace=slack-bot
+	IS_LOCAL_ENVIRONMENT=true npm start --workspace=slack-bot
 
 bot-expose:
 	ngrok http 3003
 
 # make bot-ask q="What is NearForm?"
 bot-ask:
-	cd ./packages/slack-bot && node -r dotenv/config -e 'import("./src/getAnswer.js").then(mod => mod.getAnswer({question: "$(q)"})).then(answer => {console.log(answer)})'
+	npm run try:bot --question="$(q)" --workspace=slack-bot
