@@ -15,16 +15,13 @@ export const isLocalEnvironment = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
  */
 export async function download(bucketName, fileName, destination) {
   if (isLocalEnvironment) {
-    fs.copyFileSync(path.join(rootCache, fileName), destination)
-    return
+    await fs.copyFile(path.resolve(rootCache, fileName), destination)
+  } else {
+    const storage = new Storage()
+    const bucket = storage.bucket(bucketName)
+    const file = bucket.file(fileName)
+    await file.download({ destination: fileName })
   }
-
-  const storage = new Storage()
-  const options = {
-    destination
-  }
-
-  await storage.bucket(bucketName).file(fileName).download(options)
 }
 
 // @TODO Convert to Stream api if the case

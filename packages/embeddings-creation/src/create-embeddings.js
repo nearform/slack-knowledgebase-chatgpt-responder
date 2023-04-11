@@ -117,6 +117,7 @@ export async function createEmbeddings(event) {
     const embeddingsCsv = await json2csv(embeddings.filter(Boolean))
     await fs.writeFile(EMBEDDINGS_FILE_NAME, embeddingsCsv)
     await upload(bucketName, EMBEDDINGS_FILE_NAME)
+    console.log('Upload completed!')
   } catch (err) {
     console.error('Cannot create an embeddings.csv')
     throw err

@@ -8,6 +8,9 @@ const rootCache = path.join(rootDir, '.cache')
 
 export const isLocalEnvironment = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
 
+/**
+ * Download a remote bucket file to a local destination
+ */
 export async function download(bucketName, fileName, destination) {
   if (isLocalEnvironment) {
     await fs.copyFile(path.resolve(rootCache, fileName), destination)
@@ -19,6 +22,9 @@ export async function download(bucketName, fileName, destination) {
   }
 }
 
+/**
+ * Upload local file to a remote bucket
+ */
 export async function upload(bucketName, fileName) {
   if (isLocalEnvironment) {
     await fs.copyFile(fileName, path.resolve(rootCache, fileName))
@@ -27,5 +33,4 @@ export async function upload(bucketName, fileName) {
     const bucket = storage.bucket(bucketName)
     await bucket.upload(fileName)
   }
-  console.log('Upload completed!')
 }
