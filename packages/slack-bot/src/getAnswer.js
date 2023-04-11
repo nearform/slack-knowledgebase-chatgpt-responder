@@ -80,6 +80,7 @@ function subscribeToEmbeddingChanges() {
   const pubSubClient = new PubSub()
 
   const messageHandler = async message => {
+    message.ack()
     if (
       message.attributes.objectId == bucketEmbeddingsFile &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
@@ -87,8 +88,6 @@ function subscribeToEmbeddingChanges() {
       console.log('New embeddings.csv received...')
       defaultDataSet = await getEmbeddingsFile()
     }
-
-    message.ack()
   }
 
   const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
@@ -178,6 +177,8 @@ async function getAnswer({
     max_tokens: maxTokens,
     model
   })
+
+  console.timeEnd('completiomn')
 
   return response.data.choices[0].message.content.trim()
 }
