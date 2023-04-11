@@ -6,7 +6,7 @@ tap.afterEach(function () {
   sinon.restore()
 })
 
-tap.test('crawl', async t => {
+tap.test('crawl', async () => {
   const fetchDataMock = sinon.fake.returns(
     Promise.resolve([
       { index: 0, title: 'Super blog post', text: 'This is awesome!' }
@@ -25,11 +25,10 @@ tap.test('crawl', async t => {
 
   await crawl()
 
-  t.equal(uploadMock.callCount, 1)
-  t.ok(
-    uploadMock.calledWith(
-      'index,title,text\n0,Super blog post,This is awesome!'
-    )
+  sinon.assert.calledOnceWithExactly(
+    uploadMock,
+    'index,title,text\n0,Super blog post,This is awesome!'
   )
-  t.equal(fetchDataMock.callCount, 1)
+
+  sinon.assert.calledOnce(fetchDataMock)
 })

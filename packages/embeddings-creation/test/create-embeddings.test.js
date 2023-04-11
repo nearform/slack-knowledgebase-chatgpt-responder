@@ -57,7 +57,6 @@ tap.test('embeddings creation', async t => {
   const result = await readFile(embeddingsFileName, 'utf-8')
 
   t.equal(result, expectedEmbeddings)
-  t.ok(createEmbeddingMock.calledOnce)
 
   sinon.assert.calledOnce(createEmbeddingMock)
 

@@ -31,7 +31,7 @@ tap.test('notion', async t => {
     tt.matchSnapshot(await fetchData())
   })
 
-  t.test('getPages works correctly with pagination', async tt => {
+  t.test('getPages works correctly with pagination', async () => {
     const searchMock = sinon.stub()
     searchMock
       .onFirstCall()
@@ -170,28 +170,25 @@ tap.test('notion', async t => {
     })
 
     await getPages()
-    tt.equal(searchMock.callCount, 2)
 
-    tt.ok(
-      searchMock.getCall(0).calledWith({
-        filter: {
-          value: 'page',
-          property: 'object'
-        },
-        start_cursor: undefined,
-        page_size: 10
-      })
-    )
+    sinon.assert.calledTwice(searchMock)
 
-    tt.ok(
-      searchMock.getCall(1).calledWith({
-        filter: {
-          value: 'page',
-          property: 'object'
-        },
-        start_cursor: '03c88c3d-d32d-4af9-ab30-fe9792b1937f',
-        page_size: 10
-      })
-    )
+    sinon.assert.calledWith(searchMock.firstCall, {
+      filter: {
+        value: 'page',
+        property: 'object'
+      },
+      start_cursor: undefined,
+      page_size: 10
+    })
+
+    sinon.assert.calledWith(searchMock.secondCall, {
+      filter: {
+        value: 'page',
+        property: 'object'
+      },
+      start_cursor: '03c88c3d-d32d-4af9-ab30-fe9792b1937f',
+      page_size: 10
+    })
   })
 })
