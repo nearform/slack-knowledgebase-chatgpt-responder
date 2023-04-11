@@ -179,8 +179,6 @@ async function getAnswer({
     model
   })
 
-  console.timeEnd('completiomn')
-
   return response.data.choices[0].message.content.trim()
 }
 
