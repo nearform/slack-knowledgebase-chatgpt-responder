@@ -77,13 +77,35 @@ tap.test('getAnswer', async t => {
       input: 'Question'
     })
 
-    const expectedContext = 'Content page 1\n\n###\n\nContent page 2'
+    const expectedContext = ['Content page 1', 'Content page 2']
     sinon.assert.calledOnceWithExactly(createChatCompletionMock, {
       messages: [
         { role: 'system', content: 'You are a helpful assistant' },
         {
           role: 'assistant',
-          content: `I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I'm sorry but I can only provide answers to questions related to NearForm': ${expectedContext}`
+          content:
+            "You are providing information to NearForm employees asking questions about NearForm's knowledge base."
+        },
+        {
+          role: 'assistant',
+          content: `This is NearForm knowledge base:\n\n${expectedContext.join(
+            '\n\n###\n\n'
+          )}`
+        },
+        {
+          role: 'assistant',
+          content:
+            "You can only produce answers based on NearForm's knowledge base provided before. You must not use any other information source."
+        },
+        {
+          role: 'assistant',
+          content:
+            'If the question is about NearForm but you cannot find an answer in the provided knowledge base you will answer: "I\'m sorry I could not find relevant information."'
+        },
+        {
+          role: 'assistant',
+          content:
+            'If a question is not related to NearForm you will answer "I\'m sorry but I can only provide answers to questions related to NearForm."'
         },
         {
           role: 'user',
