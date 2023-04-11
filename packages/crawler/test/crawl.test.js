@@ -6,7 +6,7 @@ tap.afterEach(function () {
   sinon.restore()
 })
 
-tap.test('successful', async t => {
+tap.test('crawl', async t => {
   const fetchDataMock = sinon.fake.returns(
     Promise.resolve([
       { index: 0, title: 'Super blog post', text: 'This is awesome!' }

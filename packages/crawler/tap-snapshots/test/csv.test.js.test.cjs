@@ -5,7 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[`test/csv.js TAP csv2json works correctly > must match snapshot 1`] = `
+exports[`test/csv.test.js TAP csv2json works correctly > must match snapshot 1`] = `
 index,title,text
 0,Super blog post,This is awesome!
 1,Testing with snapshots,It is super simple!
