@@ -1,8 +1,12 @@
-node_modules
+.gitignorenode_modules
 .eslintcache
 .cache/
+packages/crawler/embeddings.csv
+packages/crawler/scraped.csv
 packages/embeddings-creation/embeddings.csv
 packages/embeddings-creation/scraped.csv
+packages/slack-bot/embeddings.csv
+packages/slack-bot/scraped.csv
 
 # JetBrains IDEs
 .idea

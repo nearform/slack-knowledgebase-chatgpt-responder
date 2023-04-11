@@ -13,7 +13,7 @@ const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
-const localEmbeddingsFile = '.cache/embeddings.csv'
+const localEmbeddingsFile = './embeddings.csv'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
@@ -29,7 +29,6 @@ const openai = new OpenAIApi(
 let initializationPromise = undefined
 async function initialize() {
   initializationPromise = new Promise(resolve => {
-    makeLocalCacheFolder()
     getEmbeddingsFile()
       .then(result => {
         defaultDataSet = result
@@ -41,14 +40,6 @@ async function initialize() {
       })
       .then(resolve)
   })
-}
-
-function makeLocalCacheFolder() {
-  const cache = './.cache'
-
-  if (!fs.existsSync(cache)) {
-    fs.mkdirSync(cache)
-  }
 }
 
 async function getEmbeddingsFile() {
