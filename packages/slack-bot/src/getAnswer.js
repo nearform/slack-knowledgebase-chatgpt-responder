@@ -80,6 +80,8 @@ function subscribeToEmbeddingChanges() {
   const pubSubClient = new PubSub()
 
   const messageHandler = async message => {
+    // send the ack as first operation to avoid receiving duplicate messages caused by getEmbeddingsFile: it might take a bit of time
+    message.ack()
     if (
       message.attributes.objectId == bucketEmbeddingsFile &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
@@ -87,8 +89,6 @@ function subscribeToEmbeddingChanges() {
       console.log('New embeddings.csv received...')
       defaultDataSet = await getEmbeddingsFile()
     }
-
-    message.ack()
   }
 
   const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
