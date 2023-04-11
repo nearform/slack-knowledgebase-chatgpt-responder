@@ -107,7 +107,7 @@ jobs:
       - name: Deploy slackBot to Cloud Run
         id: deploy-slack-bot
         run: >-
-          gcloud functions deploy slackbot
+          gcloud beta functions deploy slackbot
           --runtime nodejs18 
           --memory=512MB
           --min-instances=1
