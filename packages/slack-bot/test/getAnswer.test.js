@@ -68,26 +68,51 @@ tap.test('getAnswer', async t => {
       }
     )
 
-    const actual = await getAnswer({ question: 'Question' })
-    const expected = 'Actual chat response'
-    tt.equal(actual, expected)
+    const question = 'This is the question'
+
+    const actualAnswer = await getAnswer({ question })
+    const expectedAnswer = 'Actual chat response'
+    tt.equal(actualAnswer, expectedAnswer)
 
     sinon.assert.calledOnceWithExactly(createEmbeddingMock, {
       model: 'text-embedding-ada-002',
-      input: 'Question'
+      input: question
     })
 
-    const expectedContext = 'Content page 1\n\n###\n\nContent page 2'
+    const expectedContext = ['Content page 1', 'Content page 2']
     sinon.assert.calledOnceWithExactly(createChatCompletionMock, {
       messages: [
         { role: 'system', content: 'You are a helpful assistant' },
         {
-          role: 'assistant',
-          content: `I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I'm sorry but I can only provide answers to questions related to NearForm': ${expectedContext}`
+          role: 'user',
+          content: `The call the following set of information <CONTEXT>:\n\n${expectedContext.join(
+            '\n\n###\n\n'
+          )}`
         },
         {
           role: 'user',
-          content: 'Question'
+          content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
+        },
+        {
+          role: 'user',
+          content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
+        },
+        {
+          role: 'user',
+          content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
+        },
+        {
+          role: 'user',
+          content: `If you provide an answer, use only the information existing in <CONTEXT>. You must not use any other source of information."`
+        },
+        {
+          role: 'user',
+          content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
+        },
+        // @TODO add here last provided answers (as assistant) to enable a conversational interaction
+        {
+          role: 'user',
+          content: `Question: ${question}`
         }
       ],
       temperature: 0,

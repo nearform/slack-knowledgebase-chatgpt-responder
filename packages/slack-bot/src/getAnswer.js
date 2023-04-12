@@ -134,7 +134,7 @@ async function createContext({
     context.push(contentEmbedding.text)
   }
 
-  return context.join('\n\n###\n\n')
+  return context
 }
 
 async function getAnswer({
@@ -164,12 +164,35 @@ async function getAnswer({
     messages: [
       { role: 'system', content: 'You are a helpful assistant' },
       {
-        role: 'assistant',
-        content: `I can answer using only the following data, if a question contains something not related to NearForm I will answer 'I'm sorry but I can only provide answers to questions related to NearForm': ${context}`
+        role: 'user',
+        content: `The call the following set of information <CONTEXT>:\n\n${context.join(
+          '\n\n###\n\n'
+        )}`
       },
       {
         role: 'user',
-        content: question
+        content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
+      },
+      {
+        role: 'user',
+        content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
+      },
+      {
+        role: 'user',
+        content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
+      },
+      {
+        role: 'user',
+        content: `If you provide an answer, use only the information existing in <CONTEXT>. You must not use any other source of information."`
+      },
+      {
+        role: 'user',
+        content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
+      },
+      // @TODO add here last provided answers (as assistant) to enable a conversational interaction
+      {
+        role: 'user',
+        content: `Question: ${question}`
       }
     ],
     temperature: 0,
