@@ -1,10 +1,9 @@
 import pMap from 'p-map'
-import { csv2json, json2csv } from 'json-2-csv'
 import fs from 'node:fs/promises'
 import tiktoken from 'tiktoken-node'
 import { Configuration, OpenAIApi } from 'openai'
 import { backOff } from 'exponential-backoff'
-import { download, upload } from './utils.js'
+import { download, upload, createCsv, parseCsv } from './utils.js'
 
 const EMBEDDING_MODEL = 'text-embedding-ada-002'
 const SCRAPED_FILE_NAME = process.env.GCP_STORAGE_SCRAPED_FILE_NAME
@@ -64,7 +63,7 @@ export async function createEmbeddings(event) {
 
   await download(bucketName, name, SCRAPED_FILE_NAME)
 
-  const scrapedRecords = await csv2json(
+  const scrapedRecords = await parseCsv(
     (await fs.readFile(SCRAPED_FILE_NAME)).toString()
   )
 
@@ -114,7 +113,7 @@ export async function createEmbeddings(event) {
       concurrency: 10
     })
 
-    const embeddingsCsv = await json2csv(embeddings.filter(Boolean))
+    const embeddingsCsv = await createCsv(embeddings.filter(Boolean))
     await fs.writeFile(EMBEDDINGS_FILE_NAME, embeddingsCsv)
     await upload(bucketName, EMBEDDINGS_FILE_NAME)
     console.log('Upload completed!')

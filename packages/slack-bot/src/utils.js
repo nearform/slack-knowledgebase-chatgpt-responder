@@ -1,8 +1,8 @@
-import fs from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Storage } from '@google-cloud/storage'
 import { findRootSync } from '@manypkg/find-root'
-import { parse } from 'csv-parse/sync'
+import { csv2json } from 'json-2-csv'
 import cosineSimilarity from 'compute-cosine-similarity'
 
 const { rootDir } = findRootSync(process.cwd())
@@ -24,13 +24,8 @@ export async function download(bucketName, fileName, destination) {
   }
 }
 
-// @TODO Convert to Stream api if the case
-export async function parseCsv(input) {
-  const records = parse(input, {
-    columns: true,
-    skip_empty_lines: true
-  })
-  return records
+export async function parseCsv(data) {
+  return csv2json(data)
 }
 
 /**

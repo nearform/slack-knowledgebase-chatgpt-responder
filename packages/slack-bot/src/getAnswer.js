@@ -44,26 +44,14 @@ async function initialize() {
 
 async function getEmbeddingsFile() {
   await download(bucketName, bucketEmbeddingsFile, localEmbeddingsFile)
-  const csv = fs.readFileSync(localEmbeddingsFile)
-  const dataSet = await parseCsv(csv, { encoding: 'utf8' })
+  const csv = fs.readFileSync(localEmbeddingsFile).toString()
+  const dataSet = await parseCsv(csv)
+
   /*
    * Python implementation forced the embedding values to be transformed to python entities (in case they are strings)
    * and transforms embeddings array into `numbpy.array` entities:
    * dataSet["embeddings"] = dataSet["embeddings"].apply(eval).apply(np.array)
    */
-
-  // Parse csv columns
-  // @NOTE shall we parse all columns?
-  dataSet.forEach(line => {
-    const { embeddings, n_tokens } = line
-    if (embeddings) {
-      line['embeddings'] = JSON.parse(embeddings)
-    }
-    if (n_tokens) {
-      line['n_tokens'] = JSON.parse(n_tokens)
-    }
-  })
-
   return dataSet
 }
 

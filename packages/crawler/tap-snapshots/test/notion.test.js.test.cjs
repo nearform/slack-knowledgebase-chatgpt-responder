@@ -5,9 +5,7 @@
  * Make sure to inspect the output below.  Do not ignore changes!
  */
 'use strict'
-exports[
-  `test/notion.test.js TAP notion fetchData returns correct parsed data > must match snapshot 1`
-] = `
+exports[`test/notion.test.js TAP notion fetchData returns correct parsed data > must match snapshot 1`] = `
 Array [
   Object {
     "index": 0,
