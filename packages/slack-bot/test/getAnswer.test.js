@@ -95,8 +95,7 @@ tap.test('getAnswer', async t => {
         },
         {
           role: 'user',
-          content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country
-
+          content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:
 - Annual Leave policies
 - Employee Bonus Plan
 - Remote Working Support policies

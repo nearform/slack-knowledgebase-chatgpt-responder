@@ -7,6 +7,7 @@ import {
   distancesFromEmbeddings,
   isLocalEnvironment
 } from './utils.js'
+import { protectedPagesList } from './constants.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
 const projectId = process.env.GCP_PROJECT_ID
@@ -149,19 +150,7 @@ async function getAnswer({
       // Handle question about protected pages
       {
         role: 'user',
-        content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country
-
-- Annual Leave policies
-- Employee Bonus Plan
-- Remote Working Support policies
-- Sabbatical
-- Marriage leave
-- Compassionate Leave
-- COVID 19 Support
-- Jury Service
-- Public Holidays
-- Sick Leave
-- Probation period`
+        content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:\n${protectedPagesList}`
       },
       {
         role: 'user',
