@@ -137,10 +137,23 @@ async function createContext({
   return context
 }
 
+/**
+ * @param {Object} args
+ * @param {string} args.question
+ * @param {({role: "user", content: text} | {role: "assistant", content: text})[]} [args.conversationHistory]
+ * @param {{"": string; n_tokens: number; embeddings: number[]; text: string;}[]} [args.dataSet]
+ * @param {string} [args.model]
+ * @param {number} [args.maxLength]
+ * @param {string} [args.embeddingModel]
+ * @param {number} [args.maxTokens]
+ * @param {string} [args.stopSequence]
+ * @returns string
+ */
 async function getAnswer({
+  question,
+  conversationHistory = [],
   dataSet: customDataSet,
   model = 'gpt-4',
-  question = 'What is NearForm?',
   maxLength = 1800,
   embeddingModel = defaultEmbeddingModel,
   maxTokens = 300,
@@ -189,7 +202,7 @@ async function getAnswer({
         role: 'user',
         content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
       },
-      // @TODO add here last provided answers (as assistant) to enable a conversational interaction
+      ...conversationHistory,
       {
         role: 'user',
         content: `Question: ${question}`

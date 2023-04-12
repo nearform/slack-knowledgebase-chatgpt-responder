@@ -17,7 +17,30 @@ const expressApp = expressReceiver.app
 
 app.event('message', async ({ event, client }) => {
   try {
-    const answer = await getAnswer({ question: event.text })
+    const slackConversationHistory = await client.conversations.history({
+      channel: event.channel,
+      limit: 4
+    })
+
+    const conversationHistory = slackConversationHistory.messages.map(
+      ({ client_msg_id, text }) => {
+        if (client_msg_id) {
+          return {
+            role: 'user',
+            content: text
+          }
+        }
+        return {
+          role: 'assistant',
+          content: text
+        }
+      }
+    )
+
+    const answer = await getAnswer({
+      question: event.text,
+      conversationHistory
+    })
     await client.chat.postMessage({
       channel: event.channel,
       text: answer
