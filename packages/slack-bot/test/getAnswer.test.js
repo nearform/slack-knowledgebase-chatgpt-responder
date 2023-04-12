@@ -84,7 +84,7 @@ tap.test('getAnswer', async t => {
       messages: [
         { role: 'system', content: 'You are a helpful assistant' },
         {
-          role: 'user',
+          role: 'assistant',
           content: `We are going to call the following set of information <CONTEXT>:\n\n${expectedContext.join(
             '\n\n###\n\n'
           )}`
@@ -94,7 +94,7 @@ tap.test('getAnswer', async t => {
           content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
         },
         {
-          role: 'user',
+          role: 'assistant',
           content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:
 - Annual Leave policies
 - Employee Bonus Plan
@@ -109,19 +109,19 @@ tap.test('getAnswer', async t => {
 - Probation period`
         },
         {
-          role: 'user',
+          role: 'assistant',
           content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
         },
         {
-          role: 'user',
+          role: 'assistant',
           content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
         },
         {
-          role: 'user',
+          role: 'assistant',
           content: `If you provide an answer, use only the information existing in <CONTEXT>. You must not use any other source of information."`
         },
         {
-          role: 'user',
+          role: 'assistant',
           content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
         },
         // @TODO add here last provided answers (as assistant) to enable a conversational interaction
