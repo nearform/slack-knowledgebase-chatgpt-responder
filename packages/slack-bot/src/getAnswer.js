@@ -46,12 +46,6 @@ async function getEmbeddingsFile() {
   await download(bucketName, bucketEmbeddingsFile, localEmbeddingsFile)
   const csv = fs.readFileSync(localEmbeddingsFile).toString()
   const dataSet = await parseCsv(csv)
-
-  /*
-   * Python implementation forced the embedding values to be transformed to python entities (in case they are strings)
-   * and transforms embeddings array into `numbpy.array` entities:
-   * dataSet["embeddings"] = dataSet["embeddings"].apply(eval).apply(np.array)
-   */
   return dataSet
 }
 
