@@ -164,34 +164,35 @@ async function getAnswer({
     messages: [
       { role: 'system', content: 'You are a helpful assistant' },
       {
-        role: 'assistant',
-        content:
-          "You are providing information to NearForm employees asking questions about NearForm's knowledge base."
-      },
-      {
-        role: 'assistant',
-        content: `This is NearForm's knowledge base:\n\n${context.join(
+        role: 'user',
+        content: `The call the following set of information <CONTEXT>:\n\n${context.join(
           '\n\n###\n\n'
         )}`
       },
       {
-        role: 'assistant',
-        content:
-          "You can only produce answers based on NearForm's knowledge base provided before. You must not use any other information source."
-      },
-      {
-        role: 'assistant',
-        content:
-          'If the question is about NearForm but you cannot find an answer in the provided knowledge base you will answer: "I\'m sorry I could not find relevant information."'
-      },
-      {
-        role: 'assistant',
-        content:
-          'If a question is not related to NearForm you will answer "I\'m sorry but I can only provide answers to questions related to NearForm."'
+        role: 'user',
+        content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
       },
       {
         role: 'user',
-        content: question
+        content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
+      },
+      {
+        role: 'user',
+        content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
+      },
+      {
+        role: 'user',
+        content: `If you provide an answer, use only the information existing in <CONTEXT>. You must not use any other source of information."`
+      },
+      {
+        role: 'user',
+        content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
+      },
+      // @TODO add here last provided answers (as assistant) to enable a conversational interaction
+      {
+        role: 'user',
+        content: `Question: ${question}`
       }
     ],
     temperature: 0,
