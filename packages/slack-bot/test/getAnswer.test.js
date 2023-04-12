@@ -95,6 +95,22 @@ tap.test('getAnswer', async t => {
         },
         {
           role: 'user',
+          content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country
+
+- Annual Leave policies
+- Employee Bonus Plan
+- Remote Working Support policies
+- Sabbatical
+- Marriage leave
+- Compassionate Leave
+- COVID 19 Support
+- Jury Service
+- Public Holidays
+- Sick Leave
+- Probation period`
+        },
+        {
+          role: 'user',
           content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
         },
         {
