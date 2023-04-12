@@ -13,7 +13,7 @@ const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
-const localEmbeddingsFile = '.cache/embeddings.csv'
+const localEmbeddingsFile = './embeddings.csv'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
@@ -29,7 +29,6 @@ const openai = new OpenAIApi(
 let initializationPromise = undefined
 async function initialize() {
   initializationPromise = new Promise(resolve => {
-    makeLocalCacheFolder()
     getEmbeddingsFile()
       .then(result => {
         defaultDataSet = result
@@ -43,36 +42,10 @@ async function initialize() {
   })
 }
 
-function makeLocalCacheFolder() {
-  const cache = './.cache'
-
-  if (!fs.existsSync(cache)) {
-    fs.mkdirSync(cache)
-  }
-}
-
 async function getEmbeddingsFile() {
   await download(bucketName, bucketEmbeddingsFile, localEmbeddingsFile)
-  const csv = fs.readFileSync(localEmbeddingsFile)
-  const dataSet = await parseCsv(csv, { encoding: 'utf8' })
-  /*
-   * Python implementation forced the embedding values to be transformed to python entities (in case they are strings)
-   * and transforms embeddings array into `numbpy.array` entities:
-   * dataSet["embeddings"] = dataSet["embeddings"].apply(eval).apply(np.array)
-   */
-
-  // Parse csv columns
-  // @NOTE shall we parse all columns?
-  dataSet.forEach(line => {
-    const { embeddings, n_tokens } = line
-    if (embeddings) {
-      line['embeddings'] = JSON.parse(embeddings)
-    }
-    if (n_tokens) {
-      line['n_tokens'] = JSON.parse(n_tokens)
-    }
-  })
-
+  const csv = fs.readFileSync(localEmbeddingsFile).toString()
+  const dataSet = await parseCsv(csv)
   return dataSet
 }
 

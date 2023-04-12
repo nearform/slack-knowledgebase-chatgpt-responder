@@ -1,8 +1,6 @@
 node_modules
 .eslintcache
 .cache/
-packages/embeddings-creation/embeddings.csv
-packages/embeddings-creation/scraped.csv
 
 # JetBrains IDEs
 .idea
@@ -23,3 +21,8 @@ env
 *.env.yaml
 
 .nyc_output
+
+# Temp files
+embeddings.csv
+scraped.csv
+

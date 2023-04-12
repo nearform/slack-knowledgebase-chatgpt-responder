@@ -1,8 +1,8 @@
-import fs from 'node:fs'
+import fs from 'node:fs/promises'
 import path from 'node:path'
 import { Storage } from '@google-cloud/storage'
 import { findRootSync } from '@manypkg/find-root'
-import { parse } from 'csv-parse/sync'
+import { csv2json } from 'json-2-csv'
 import cosineSimilarity from 'compute-cosine-similarity'
 
 const { rootDir } = findRootSync(process.cwd())
@@ -15,25 +15,17 @@ export const isLocalEnvironment = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
  */
 export async function download(bucketName, fileName, destination) {
   if (isLocalEnvironment) {
-    fs.copyFileSync(path.join(rootCache, fileName), destination)
-    return
+    await fs.copyFile(path.resolve(rootCache, fileName), destination)
+  } else {
+    const storage = new Storage()
+    const bucket = storage.bucket(bucketName)
+    const file = bucket.file(fileName)
+    await file.download({ destination: fileName })
   }
-
-  const storage = new Storage()
-  const options = {
-    destination
-  }
-
-  await storage.bucket(bucketName).file(fileName).download(options)
 }
 
-// @TODO Convert to Stream api if the case
-export async function parseCsv(input) {
-  const records = parse(input, {
-    columns: true,
-    skip_empty_lines: true
-  })
-  return records
+export async function parseCsv(data) {
+  return csv2json(data)
 }
 
 /**
