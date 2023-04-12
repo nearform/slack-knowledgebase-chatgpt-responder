@@ -139,7 +139,7 @@ async function getAnswer({
       { role: 'system', content: 'You are a helpful assistant' },
       {
         role: 'user',
-        content: `The call the following set of information <CONTEXT>:\n\n${context.join(
+        content: `We are going to call the following set of information <CONTEXT>:\n\n${context.join(
           '\n\n###\n\n'
         )}`
       },

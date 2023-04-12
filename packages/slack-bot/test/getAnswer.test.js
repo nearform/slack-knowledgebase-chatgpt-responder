@@ -85,7 +85,7 @@ tap.test('getAnswer', async t => {
         { role: 'system', content: 'You are a helpful assistant' },
         {
           role: 'user',
-          content: `The call the following set of information <CONTEXT>:\n\n${expectedContext.join(
+          content: `We are going to call the following set of information <CONTEXT>:\n\n${expectedContext.join(
             '\n\n###\n\n'
           )}`
         },
