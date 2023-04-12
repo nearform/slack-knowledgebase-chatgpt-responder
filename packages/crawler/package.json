@@ -6,7 +6,7 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--loader=esmock tap --test-ignore=mocks",
+    "test": "cross-env NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint .",
     "start": "node ./src/index.js"
   },

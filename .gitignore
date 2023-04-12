@@ -1,12 +1,6 @@
-.gitignorenode_modules
+node_modules
 .eslintcache
 .cache/
-packages/crawler/embeddings.csv
-packages/crawler/scraped.csv
-packages/embeddings-creation/embeddings.csv
-packages/embeddings-creation/scraped.csv
-packages/slack-bot/embeddings.csv
-packages/slack-bot/scraped.csv
 
 # JetBrains IDEs
 .idea
@@ -27,3 +21,8 @@ env
 *.env.yaml
 
 .nyc_output
+
+# Temp files
+embeddings.csv
+scraped.csv
+
