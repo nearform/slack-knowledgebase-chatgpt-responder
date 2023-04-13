@@ -51,7 +51,7 @@ jobs:
 
       - name: Create bucket
         run: |-
-          if ! gcloud storage buckets describe gs://${{ GCP_STORAGE_BUCKET_NAME }}; then
+          if ! gcloud storage buckets describe gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }}; then
             gcloud storage buckets create gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }} --location=europe-west1 --public-access-prevention --uniform-bucket-level-access
           fi
 
