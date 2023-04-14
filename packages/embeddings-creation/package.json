@@ -19,7 +19,7 @@
     "json-2-csv": "^4.0.0",
     "openai": "^3.2.1",
     "p-map": "^5.5.0",
-    "tiktoken-node": "^0.0.5"
+    "tiktoken-node": "^0.0.6"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.3",
