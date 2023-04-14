@@ -25,6 +25,9 @@ on:
       GCP_EMBEDDING_SUBSCRIPTION:
         required: true
         type: string
+      GCP_EMBEDDING_TOPIC_NAME:
+        required: true
+        type: string
 
 jobs:
   provision:
@@ -62,7 +65,7 @@ jobs:
       - name: Create new embedding subscription
         run: |-
           if ! gcloud pubsub subscriptions describe ${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }}; then
-            gcloud pubsub subscriptions create ${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }} --topic=embeddings-update-topic
+            gcloud pubsub subscriptions create ${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }} --topic=${{ inputs.GCP_EMBEDDING_TOPIC_NAME }}
           fi
 
       - name: Create crawler image
