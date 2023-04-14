@@ -25,6 +25,9 @@ on:
       GCP_EMBEDDING_SUBSCRIPTION:
         required: true
         type: string
+      GCP_EMBEDDING_TOPIC_NAME:
+        required: true
+        type: string
 
 jobs:
   provision:
@@ -48,6 +51,22 @@ jobs:
         with:
           project_id: ${{ inputs.GCP_PROJECT_ID }}
           install_components: 'beta'
+
+      - name: Create bucket
+        run: |-
+          if ! gcloud storage buckets describe gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }}; then
+            gcloud storage buckets create gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }} --location=europe-west1 --public-access-prevention --uniform-bucket-level-access
+          fi
+
+      - name: Create bucket notification on new embeddings
+        run: |-
+          gcloud storage buckets notifications create gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }} --topic=${{ inputs.GCP_EMBEDDING_TOPIC_NAME }} --event-types=OBJECT_FINALIZE
+
+      - name: Create new embedding subscription
+        run: |-
+          if ! gcloud pubsub subscriptions describe ${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }}; then
+            gcloud pubsub subscriptions create ${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }} --topic=${{ inputs.GCP_EMBEDDING_TOPIC_NAME }}
+          fi
 
       - name: Create crawler image
         run: |-
