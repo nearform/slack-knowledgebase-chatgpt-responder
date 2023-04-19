@@ -65,7 +65,7 @@ Add the following values in an `.env` file (needed for local development):
 
 Add the following values in an `.env` file (needed for local development):
 
-| Env var                           | Where is Slack App admin page        |
+| Env var                           |                                      |
 | --------------------------------- | ------------------------------------ |
 | `OPENAI_API_KEY`                  | OpenAI API key                       |
 | `GCP_STORAGE_SCRAPED_FILE_NAME`   | Scraped data file name on the bucket |
@@ -112,7 +112,7 @@ settings:
 
 Add the following values in an `.env` file (needed for local development):
 
-| Env var                           | Where is Slack App admin page                                              |
+| Env var                           |                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------- |
 | `GCP_EMBEDDING_SUBSCRIPTION`      | Embedding file update subscription name                                    |
 | `GCP_STORAGE_BUCKET_NAME`         | GCP bucket name hosting embeddings file                                    |
