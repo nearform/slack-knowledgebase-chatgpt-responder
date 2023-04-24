@@ -16,7 +16,7 @@
     "@notionhq/client": "^2.2.4",
     "dotenv": "^16.0.3",
     "json-2-csv": "^4.0.0",
-    "p-map": "^5.5.0"
+    "p-map": "^6.0.0"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.21.3",
