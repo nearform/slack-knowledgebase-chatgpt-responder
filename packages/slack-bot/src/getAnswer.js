@@ -7,7 +7,6 @@ import {
   distancesFromEmbeddings,
   isLocalEnvironment
 } from './utils.js'
-import { protectedPagesList } from './constants.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
 const projectId = process.env.GCP_PROJECT_ID
@@ -118,7 +117,8 @@ async function getAnswer({
   maxLength = 1800,
   embeddingModel = defaultEmbeddingModel,
   maxTokens = 300,
-  stopSequence
+  stopSequence,
+  locale = 'en-IE'
 }) {
   await initializationPromise
   const dataSet = customDataSet ?? defaultDataSet
@@ -147,15 +147,19 @@ async function getAnswer({
         role: 'user',
         content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
       },
+      {
+        role: 'user',
+        content: `My current locale is ${locale} so please bear in mind I may be needing for information related to my country.`
+      },
       // Handle question about protected pages
-      {
-        role: 'assistant',
-        content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:\n${protectedPagesList}`
-      },
-      {
-        role: 'assistant',
-        content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
-      },
+      // {
+      //   role: 'assistant',
+      //   content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:\n${protectedPagesList}`
+      // },
+      // {
+      //   role: 'assistant',
+      //   content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
+      // },
       {
         role: 'assistant',
         content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
