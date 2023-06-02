@@ -92,10 +92,10 @@ features:
     display_name: NearForm Know-It-All
     always_online: true
   slash_commands:
-    - command: /test
+    - command: /know-it-all
       url: <slack-bot-url>
-      description: Test
-      usage_hint: Test
+      description: A chatbot that can answer questions on thenearformway.com content
+      usage_hint: Ask a question about the NearForm Way
       should_escape: false
 oauth_config:
   scopes:
