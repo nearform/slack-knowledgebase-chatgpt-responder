@@ -86,16 +86,25 @@ Add the following values in an `.env` file (needed for local development):
 display_information:
   name: NearForm Know-It-All
   description: A chatbot that can answer questions on thenearformway.com content
-  background_color: '#2165e3'
+  background_color: "#2165e3"
 features:
   bot_user:
     display_name: NearForm Know-It-All
     always_online: true
+  slash_commands:
+    - command: /know-it-all
+      url: <slack-bot-url>
+      description: A chatbot that can answer questions on thenearformway.com content
+      usage_hint: Ask a question about the NearForm Way
+      should_escape: false
 oauth_config:
   scopes:
     bot:
       - chat:write
+      - commands
       - im:history
+      - users.profile:read
+      - users:read
 settings:
   event_subscriptions:
     request_url: <slack-bot-url>

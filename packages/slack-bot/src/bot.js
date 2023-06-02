@@ -17,13 +17,28 @@ const expressApp = expressReceiver.app
 
 app.event('message', async ({ event, client }) => {
   try {
-    const answer = await getAnswer({ question: event.text })
+    let user = null
+    try {
+      const clientReq = await client.users.info({
+        user: event.user,
+        include_locale: true
+      })
+      user = clientReq.user
+    } catch (error) {
+      console.error('error', error)
+    }
+
+    const answer = await getAnswer({
+      question: event.text,
+      locale: user?.locale
+    })
+
     await client.chat.postMessage({
       channel: event.channel,
       text: answer
     })
   } catch (error) {
-    console.error(error)
+    console.error('message event error', error)
   }
 })
 

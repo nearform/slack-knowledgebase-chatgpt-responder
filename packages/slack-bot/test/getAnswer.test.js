@@ -69,6 +69,7 @@ tap.test('getAnswer', async t => {
     )
 
     const question = 'This is the question'
+    const locale = 'en-IE'
 
     const actualAnswer = await getAnswer({ question })
     const expectedAnswer = 'Actual chat response'
@@ -94,23 +95,8 @@ tap.test('getAnswer', async t => {
           content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
         },
         {
-          role: 'assistant',
-          content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:
-- Annual Leave policies
-- Employee Bonus Plan
-- Remote Working Support policies
-- Sabbatical
-- Marriage leave
-- Compassionate Leave
-- COVID 19 Support
-- Jury Service
-- Public Holidays
-- Sick Leave
-- Probation period`
-        },
-        {
-          role: 'assistant',
-          content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
+          role: 'user',
+          content: `My current locale is ${locale} so factor this in to the context of my questions so that information you provide relevant to my country.`
         },
         {
           role: 'assistant',
