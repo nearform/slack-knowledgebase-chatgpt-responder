@@ -119,7 +119,7 @@ settings:
 
 #### Environment variables
 
-Add the following values in an `.env` file (needed for local development). You can access these from Bitwarden, within the Hub content folder, except for the specific values you are using based on your setup from Slack.
+Add the following values in an `.env` file (needed for local development):
 
 | Env var                           |                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------- |
