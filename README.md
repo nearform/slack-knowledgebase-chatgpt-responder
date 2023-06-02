@@ -51,7 +51,7 @@ In order to run the slack bot locally you'll need to install `ngrok` globally on
 
 #### Environment variables
 
-Add the following values in an `.env` file (needed for local development):
+Add the following values in an `.env` file (needed for local development). You can access these from Bitwarden, within the Hub content folder.
 
 | Env var                         |                                         |
 | ------------------------------- | --------------------------------------- |
@@ -63,7 +63,7 @@ Add the following values in an `.env` file (needed for local development):
 
 #### Environment variables
 
-Add the following values in an `.env` file (needed for local development):
+Add the following values in an `.env` file (needed for local development). You can access these from Bitwarden, within the Hub content folder.
 
 | Env var                           |                                      |
 | --------------------------------- | ------------------------------------ |
@@ -110,7 +110,7 @@ settings:
 
 #### Environment variables
 
-Add the following values in an `.env` file (needed for local development):
+Add the following values in an `.env` file (needed for local development). You can access these from Bitwarden, within the Hub content folder, except for the specific values you are using based on your setup from Slack.
 
 | Env var                           |                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------- |

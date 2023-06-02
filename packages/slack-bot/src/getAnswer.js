@@ -149,17 +149,8 @@ async function getAnswer({
       },
       {
         role: 'user',
-        content: `My current locale is ${locale} so please bear in mind I may be needing for information related to my country.`
+        content: `My current locale is ${locale} so factor this in to the context of my questions so that information you provide relevant to my country.`
       },
-      // Handle question about protected pages
-      // {
-      //   role: 'assistant',
-      //   content: `If question is related to one of the following subjects, explain that you cannot provide an answer since the the answer could change depending on the country:\n${protectedPagesList}`
-      // },
-      // {
-      //   role: 'assistant',
-      //   content: `If question is NOT related to <CONTEXT> or NearForm respond with: "I'm sorry but I can only provide answers to questions related to NearForm."`
-      // },
       {
         role: 'assistant',
         content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
