@@ -60,7 +60,9 @@ jobs:
 
       - name: Create bucket notification on new embeddings
         run: |-
-          gcloud storage buckets notifications create gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }} --topic=${{ inputs.GCP_EMBEDDING_TOPIC_NAME }} --event-types=OBJECT_FINALIZE
+          if ! gcloud storage buckets describe gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }}; then
+            gcloud storage buckets notifications create gs://${{ inputs.GCP_STORAGE_BUCKET_NAME }} --topic=${{ inputs.GCP_EMBEDDING_TOPIC_NAME }} --event-types=OBJECT_FINALIZE
+          fi
 
       - name: Create new embedding subscription
         run: |-
