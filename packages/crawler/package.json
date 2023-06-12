@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@google-cloud/storage": "^6.11.0",
-    "@manypkg/find-root": "^2.1.0",
+    "@manypkg/find-root": "^2.2.0",
     "@notionhq/client": "^2.2.5",
     "dotenv": "^16.1.4",
     "json-2-csv": "^4.0.0",
