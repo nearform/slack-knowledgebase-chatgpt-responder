@@ -50,7 +50,6 @@ export async function downloadAudio(url, id) {
   return new Promise(resolve => {
     const u = new URL(url)
     const dest = `./${id}.mp4`
-    fs.writeFile(dest, '')
     https.get(
       {
         hostname: u.hostname,
