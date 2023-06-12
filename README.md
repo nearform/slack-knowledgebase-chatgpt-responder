@@ -102,10 +102,12 @@ oauth_config:
     bot:
       - chat:write
       - commands
+      - files:read
       - im:history
       - users.profile:read
       - users:read
-      - files:read
+      - users:read.email
+      - incoming-webhook
 settings:
   event_subscriptions:
     request_url: <slack-bot-url>
