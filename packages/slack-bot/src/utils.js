@@ -1,4 +1,5 @@
 import fs from 'node:fs/promises'
+import f from 'node:fs'
 import path from 'node:path'
 import https from 'node:https'
 import { Storage } from '@google-cloud/storage'
@@ -46,30 +47,23 @@ export function distancesFromEmbeddings({ queryEmbedding, embeddings }) {
 }
 
 export async function downloadAudio(url, id) {
-  return new Promise((resolve, reject) => {
+  return new Promise(resolve => {
     const u = new URL(url)
-    const dest = `./${id}.mp3`
+    const dest = `./${id}.mp4`
     fs.writeFile(dest, '')
-    https
-      .get(
-        {
-          hostname: u.hostname,
-          path: u.pathname,
-          headers: {
-            authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`
-          }
-        },
-        function (res) {
-          res.on('data', async function (data) {
-            fs.appendFile(dest, data)
-          })
-          res.on('end', () => {
-            resolve(`File downloaded and stored at: ./${id}`)
-          })
+    https.get(
+      {
+        hostname: u.hostname,
+        path: u.pathname,
+        headers: {
+          authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`
         }
-      )
-      .on('error', function (err) {
-        reject(err)
-      })
+      },
+      res => {
+        res.pipe(f.createWriteStream(dest)).on('finish', () => {
+          resolve(dest)
+        })
+      }
+    )
   })
 }

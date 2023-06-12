@@ -131,13 +131,14 @@ async function getAnswer({
 
   let questionText = question
   if (file) {
-    await downloadAudio(file.url_private_download, file.id)
+    const p = await downloadAudio(file.url_private_download, file.id)
     const transcribe = await openai.createTranscription(
-      fs.createReadStream(`./${file.id}.mp3`),
+      fs.createReadStream(p),
       'whisper-1',
       undefined,
       'text'
     )
+
     if (transcribe.data) {
       questionText = transcribe.data
     }
