@@ -105,6 +105,7 @@ oauth_config:
       - im:history
       - users.profile:read
       - users:read
+      - files:read
 settings:
   event_subscriptions:
     request_url: <slack-bot-url>

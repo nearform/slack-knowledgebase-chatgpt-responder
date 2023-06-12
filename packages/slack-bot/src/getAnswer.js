@@ -7,6 +7,7 @@ import {
   distancesFromEmbeddings,
   isLocalEnvironment
 } from './utils.js'
+import { downloadAudio } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
 const projectId = process.env.GCP_PROJECT_ID
@@ -118,7 +119,8 @@ async function getAnswer({
   embeddingModel = defaultEmbeddingModel,
   maxTokens = 300,
   stopSequence,
-  locale = 'en-IE'
+  locale = 'en-IE',
+  file
 }) {
   await initializationPromise
   const dataSet = customDataSet ?? defaultDataSet
@@ -127,8 +129,22 @@ async function getAnswer({
     throw new Error('No data frame provided')
   }
 
+  let questionText = question
+  if (file) {
+    await downloadAudio(file.url_private_download, file.id)
+    const transcribe = await openai.createTranscription(
+      fs.createReadStream(`./${file.id}.mp3`),
+      'whisper-1',
+      undefined,
+      'text'
+    )
+    if (transcribe.data) {
+      questionText = transcribe.data
+    }
+  }
+
   const context = await createContext({
-    question,
+    question: questionText,
     dataSet,
     maxLength,
     embeddingModel
@@ -166,7 +182,7 @@ async function getAnswer({
       // @TODO add here last provided answers (as assistant) to enable a conversational interaction
       {
         role: 'user',
-        content: `Question: ${question}`
+        content: `Question: ${questionText}`
       }
     ],
     temperature: 0,
