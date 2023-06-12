@@ -29,6 +29,7 @@ app.event('message', async ({ event, client }) => {
     }
 
     const answer = await getAnswer({
+      file: event.files?.[0],
       question: event.text,
       locale: user?.locale
     })

@@ -1,5 +1,7 @@
 import fs from 'node:fs/promises'
+import f from 'node:fs'
 import path from 'node:path'
+import https from 'node:https'
 import { Storage } from '@google-cloud/storage'
 import { findRootSync } from '@manypkg/find-root'
 import { csv2json } from 'json-2-csv'
@@ -42,4 +44,25 @@ export function distancesFromEmbeddings({ queryEmbedding, embeddings }) {
     distance: 1 - cosineSimilarity(queryEmbedding, embedding)
   }))
   return distance
+}
+
+export async function downloadAudio(url, id) {
+  return new Promise(resolve => {
+    const u = new URL(url)
+    const dest = `./${id}.mp4`
+    https.get(
+      {
+        hostname: u.hostname,
+        path: u.pathname,
+        headers: {
+          authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`
+        }
+      },
+      res => {
+        res.pipe(f.createWriteStream(dest)).on('finish', () => {
+          resolve(dest)
+        })
+      }
+    )
+  })
 }
