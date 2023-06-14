@@ -108,6 +108,7 @@ oauth_config:
       - users:read
       - users:read.email
       - incoming-webhook
+      - reactions:write
 settings:
   event_subscriptions:
     request_url: <slack-bot-url>
