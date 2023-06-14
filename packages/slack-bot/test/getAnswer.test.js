@@ -43,6 +43,15 @@ tap.test('getAnswer', async t => {
       return createChatCompletionResponse
     })
 
+    const openApiMock = {
+      Configuration: class OpenAIConfigurationMock {},
+      OpenAIApi: class OpenAIApiMock {
+        createEmbedding = createEmbeddingMock
+        createChatCompletion = createChatCompletionMock
+      }
+    }
+    const openai = new openApiMock.OpenAIApi()
+
     const { getAnswer } = await esmock(
       '../src/getAnswer.js',
       {
@@ -53,13 +62,7 @@ tap.test('getAnswer', async t => {
         }
       },
       {
-        openai: {
-          Configuration: class OpenAIConfigurationMock {},
-          OpenAIApi: class OpenAIApiMock {
-            createEmbedding = createEmbeddingMock
-            createChatCompletion = createChatCompletionMock
-          }
-        },
+        openai,
         '@google-cloud/pubsub': {
           PubSub: class PubSubMock {
             subscription = () => ({ on: () => {} })
@@ -71,7 +74,7 @@ tap.test('getAnswer', async t => {
     const question = 'This is the question'
     const locale = 'en-IE'
 
-    const actualAnswer = await getAnswer({ question })
+    const actualAnswer = await getAnswer({ openai, question })
     const expectedAnswer = 'Actual chat response'
     tt.equal(actualAnswer, expectedAnswer)
 

@@ -1,5 +1,4 @@
 import fs from 'node:fs'
-import { Configuration, OpenAIApi } from 'openai'
 import { PubSub } from '@google-cloud/pubsub'
 import {
   download,
@@ -7,7 +6,6 @@ import {
   distancesFromEmbeddings,
   isLocalEnvironment
 } from './utils.js'
-import { downloadAudio } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
 const projectId = process.env.GCP_PROJECT_ID
@@ -19,12 +17,6 @@ const localEmbeddingsFile = './embeddings.csv'
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
 let defaultDataSet = undefined
-
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY
-  })
-)
 
 // @TODO Since initialization is async, we expose a promise to avoid race conditions on getAnswer calls
 let initializationPromise = undefined
@@ -74,6 +66,7 @@ function subscribeToEmbeddingChanges() {
  * Create a context for a question by finding the most similar context from the dataframe
  */
 async function createContext({
+  openai,
   question,
   dataSet,
   maxLength = 1800,
@@ -120,7 +113,7 @@ async function getAnswer({
   maxTokens = 300,
   stopSequence,
   locale = 'en-IE',
-  file
+  openai
 }) {
   await initializationPromise
   const dataSet = customDataSet ?? defaultDataSet
@@ -129,23 +122,9 @@ async function getAnswer({
     throw new Error('No data frame provided')
   }
 
-  let questionText = question
-  if (file) {
-    const p = await downloadAudio(file.url_private_download, file.id)
-    const transcribe = await openai.createTranscription(
-      fs.createReadStream(p),
-      'whisper-1',
-      undefined,
-      'text'
-    )
-
-    if (transcribe.data) {
-      questionText = transcribe.data
-    }
-  }
-
   const context = await createContext({
-    question: questionText,
+    openai,
+    question,
     dataSet,
     maxLength,
     embeddingModel
@@ -183,7 +162,7 @@ async function getAnswer({
       // @TODO add here last provided answers (as assistant) to enable a conversational interaction
       {
         role: 'user',
-        content: `Question: ${questionText}`
+        content: `Question: ${question}`
       }
     ],
     temperature: 0,
