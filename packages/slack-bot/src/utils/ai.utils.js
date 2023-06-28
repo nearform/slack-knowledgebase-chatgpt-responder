@@ -6,17 +6,19 @@ import { Storage } from '@google-cloud/storage'
 import { findRootSync } from '@manypkg/find-root'
 import { csv2json } from 'json-2-csv'
 import cosineSimilarity from 'compute-cosine-similarity'
+import { IS_LOCAL_ENVIRONMENT, SLACK_BOT_TOKEN } from '../config.js'
 
 const { rootDir } = findRootSync(process.cwd())
 const rootCache = path.join(rootDir, '.cache')
 
-export const isLocalEnvironment = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
-
 /**
  * Download a remote bucket file to a local destination
+ * @param {string} bucketName
+ * @param {string} fileName
+ * @param {string} destination
  */
 export async function download(bucketName, fileName, destination) {
-  if (isLocalEnvironment) {
+  if (IS_LOCAL_ENVIRONMENT) {
     await fs.copyFile(path.resolve(rootCache, fileName), destination)
   } else {
     const storage = new Storage()
@@ -26,6 +28,11 @@ export async function download(bucketName, fileName, destination) {
   }
 }
 
+/**
+ * Parse csv string and return json
+ * @param {string} data
+ * @returns {Promise<object[]>}
+ */
 export async function parseCsv(data) {
   return csv2json(data)
 }
@@ -34,18 +41,25 @@ export async function parseCsv(data) {
  * @param {Object} args
  * @param {number[]} args.queryEmbedding
  * @param {number[][]} args.embeddings
- * @returns {index: number, distance: number}[]
+ * @returns {{index: number, distance: number}[]}
  */
 export function distancesFromEmbeddings({ queryEmbedding, embeddings }) {
   const distance = embeddings.map((embedding, index) => ({
     index,
     // We're replicating the output returned from Python's scipy library
     // https://github.com/openai/openai-python/blob/cf03fe16a92cd01f2a8867537399c12e183ba58e/openai/embeddings_utils.py#L141
+    // @ts-ignore
     distance: 1 - cosineSimilarity(queryEmbedding, embedding)
   }))
   return distance
 }
 
+/**
+ * Download mp4 by id
+ * @param {string} url
+ * @param {string} id
+ * @returns {Promise<any>}
+ */
 export async function downloadAudio(url, id) {
   return new Promise(resolve => {
     const u = new URL(url)
@@ -55,7 +69,7 @@ export async function downloadAudio(url, id) {
         hostname: u.hostname,
         path: u.pathname,
         headers: {
-          authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`
+          authorization: `Bearer ${SLACK_BOT_TOKEN}`
         }
       },
       res => {

@@ -3,19 +3,19 @@ import { PubSub } from '@google-cloud/pubsub'
 import {
   download,
   parseCsv,
-  distancesFromEmbeddings,
-  isLocalEnvironment
-} from './utils.js'
-
-const defaultEmbeddingModel = 'text-embedding-ada-002'
-const projectId = process.env.GCP_PROJECT_ID
-const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
-const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
-const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
-const localEmbeddingsFile = './embeddings.csv'
+  distancesFromEmbeddings
+} from '../utils/ai.utils.js'
+import {
+  GCP_STORAGE_BUCKET_NAME,
+  GCP_STORAGE_EMBEDDING_FILE_NAME,
+  DEFAULT_EMBEDDING_MODEL,
+  LOCAL_EMBEDDINGS_FILE,
+  GCP_SUB_NAME,
+  IS_LOCAL_ENVIRONMENT
+} from '../config.js'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
-/** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
+/** @type {{test: string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined} */
 let defaultDataSet = undefined
 
 // @TODO Since initialization is async, we expose a promise to avoid race conditions on getAnswer calls
@@ -27,7 +27,7 @@ async function initialize() {
         defaultDataSet = result
       })
       .then(() => {
-        if (!isLocalEnvironment) {
+        if (!IS_LOCAL_ENVIRONMENT) {
           subscribeToEmbeddingChanges()
         }
       })
@@ -36,8 +36,12 @@ async function initialize() {
 }
 
 async function getEmbeddingsFile() {
-  await download(bucketName, bucketEmbeddingsFile, localEmbeddingsFile)
-  const csv = fs.readFileSync(localEmbeddingsFile).toString()
+  await download(
+    GCP_STORAGE_BUCKET_NAME,
+    GCP_STORAGE_EMBEDDING_FILE_NAME,
+    LOCAL_EMBEDDINGS_FILE
+  )
+  const csv = fs.readFileSync(LOCAL_EMBEDDINGS_FILE).toString()
   const dataSet = await parseCsv(csv)
   return dataSet
 }
@@ -49,7 +53,7 @@ function subscribeToEmbeddingChanges() {
     // send the ack as first operation to avoid receiving duplicate messages caused by getEmbeddingsFile: it might take a bit of time
     message.ack()
     if (
-      message.attributes.objectId == bucketEmbeddingsFile &&
+      message.attributes.objectId == GCP_STORAGE_EMBEDDING_FILE_NAME &&
       message.attributes.eventType == 'OBJECT_FINALIZE'
     ) {
       console.log('New embeddings.csv received...')
@@ -57,8 +61,7 @@ function subscribeToEmbeddingChanges() {
     }
   }
 
-  const subName = `projects/${projectId}/subscriptions/${embeddingsSubscription}`
-  const subscription = pubSubClient.subscription(subName)
+  const subscription = pubSubClient.subscription(GCP_SUB_NAME)
   subscription.on('message', messageHandler)
 }
 
@@ -70,7 +73,7 @@ async function createContext({
   question,
   dataSet,
   maxLength = 1800,
-  embeddingModel = defaultEmbeddingModel
+  embeddingModel = DEFAULT_EMBEDDING_MODEL
 }) {
   // Get the embeddings for the question
   const response = await openai.createEmbedding({
@@ -104,12 +107,26 @@ async function createContext({
   return context
 }
 
+/**
+ * Get answer for question from openai
+ * @param {Object} options - The shape is the same as SpecialType above
+ * @param {string} [options.dataSet]
+ * @param {string} [options.model]
+ * @param {string} [options.question]
+ * @param {number} [options.maxLength]
+ * @param {string} [options.embeddingModel]
+ * @param {number} [options.maxTokens]
+ * @param {Object} [options.stopSequence]
+ * @param {string} [options.locale]
+ * @param {import('openai').OpenAIApi} options.openai
+ * @returns {Promise<string>}
+ */
 async function getAnswer({
   dataSet: customDataSet,
   model = 'gpt-4',
   question = 'What is NearForm?',
   maxLength = 1800,
-  embeddingModel = defaultEmbeddingModel,
+  embeddingModel = DEFAULT_EMBEDDING_MODEL,
   maxTokens = 300,
   stopSequence,
   locale = 'en-IE',
@@ -172,7 +189,7 @@ async function getAnswer({
     model
   })
 
-  return response.data.choices[0].message.content.trim()
+  return response.data.choices[0].message?.content?.trim() ?? ''
 }
 
 export { getAnswer }
