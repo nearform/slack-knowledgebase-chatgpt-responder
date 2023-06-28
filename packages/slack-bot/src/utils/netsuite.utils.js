@@ -16,7 +16,7 @@ import { createExpiryTimestamp } from './token.utils.js'
  * @property {string} access_token - Returned from NetSuite
  * @property {string} refresh_token - Returned from NetSuite
  * @property {string} token_type - Returned from NetSuite
- * @property {number} expires_in - Expires at in seconds (3600), returned from NetSuite
+ * @property {number} expires_in - Returned from NetSuite, default is 3600 seconds
  * @property {import('firebase/firestore').Timestamp | undefined} expires_at - Firebase Timestamp for token expiry
  * @property {string | undefined} employee_id - NetSuite Employee ID
  */
@@ -128,7 +128,7 @@ export const refreshToken = async (userId, refreshToken) => {
 // TODO: Refactor, pulled from POC repo
 /**
  * Querys NetSuite API
- * @param {*} param0
+ * @param {{q: string, authToken: string}} param0
  * @returns {Promise<any>}
  */
 export const query = async ({ q, authToken }) => {

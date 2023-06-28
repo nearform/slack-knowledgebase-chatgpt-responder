@@ -9,7 +9,7 @@ export const registerRoutes = (receiver, app) => {
       const jsonState = Buffer.from(state, 'base64').toString('ascii')
       const { /* nonce, */ user_id } = JSON.parse(jsonState)
 
-      //TODO: ADD CHECK FOR NONCE
+      //TODO: ADD CHECK FOR NONCE?
 
       //Only allow the base employee role acess
       if (!role || !NESUITE_ALLOWED_ROLE_IDS.includes(role.toString())) {

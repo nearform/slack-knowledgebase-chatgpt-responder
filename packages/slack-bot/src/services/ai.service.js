@@ -15,7 +15,7 @@ import {
 } from '../config.js'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
-/** @type {{test: string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined} */
+/** @type {{"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined} */
 let defaultDataSet = undefined
 
 // @TODO Since initialization is async, we expose a promise to avoid race conditions on getAnswer calls
