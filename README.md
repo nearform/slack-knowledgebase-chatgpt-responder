@@ -80,44 +80,7 @@ Add the following values in an `.env` file (needed for local development):
 1. Create a new slack workspace and a new Slack application or use an existing one.
 2. Please refer to https://slack.dev/bolt-js/tutorial/getting-started-http to have a general understanding of how `bolt` works and how to setup a Slack app to interact with the bot.
 3. Enable bot's direct messages in your APP page in `api.slack.com/apps/[id] > App Home > Show Tabs > Allow users to send Slash commands and messages from the messages tab`
-4. Copy paste the following JML configuration in `api.slack.com/apps/[id] > App Manifest` (you'll have to replace `<slack-bot-url>` with the actual slack-bot production url, see [Slack setup](#slack-setup))
-
-```yml
-display_information:
-  name: NearForm Know-It-All
-  description: A chatbot that can answer questions on thenearformway.com content
-  background_color: "#2165e3"
-features:
-  bot_user:
-    display_name: NearForm Know-It-All
-    always_online: true
-  slash_commands:
-    - command: /know-it-all
-      url: <slack-bot-url>
-      description: A chatbot that can answer questions on thenearformway.com content
-      usage_hint: Ask a question about the NearForm Way
-      should_escape: false
-oauth_config:
-  scopes:
-    bot:
-      - chat:write
-      - commands
-      - files:read
-      - im:history
-      - users.profile:read
-      - users:read
-      - users:read.email
-      - incoming-webhook
-      - reactions:write
-settings:
-  event_subscriptions:
-    request_url: <slack-bot-url>
-    bot_events:
-      - message.im
-  org_deploy_enabled: false
-  socket_mode_enabled: false
-  token_rotation_enabled: false
-```
+4. Copy and paste the contents of the `slack_manifest.yaml` from the root folder to `api.slack.com/apps/[id] > App Manifest` (you'll have to replace `<slack-bot-url>` with the actual slack-bot production url, see [Slack setup](#slack-setup) and `<dialogflow-slack-oauth-url>` with the OAuth URL, see https://cloud.google.com/dialogflow/es/docs/integrations/slack)
 
 > IMPORTANT NOTE: **we are NOT leveraging the Slack's web socket mode** but using the good old **HTTP setup**. This is necessary since the bot is meant to be deployed as a lambda.
 
