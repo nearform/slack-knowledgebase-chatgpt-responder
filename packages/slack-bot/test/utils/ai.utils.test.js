@@ -1,7 +1,7 @@
 import tap from 'tap'
 
-import { distancesFromEmbeddings } from '../src/utils.js'
-import { queryEmbedding, embeddings } from './mocks/embeddings.js'
+import { distancesFromEmbeddings } from '../../src/utils/ai.utils.js'
+import { queryEmbedding, embeddings } from '../mocks/embeddings.js'
 
 function approximate(number) {
   return Number(number.toFixed(3))
