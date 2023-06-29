@@ -2,7 +2,6 @@ import { Configuration, OpenAIApi } from 'openai'
 import { getAnswer } from '../services/ai.service.js'
 import { transcribe } from '../utils/ai.utils.js'
 import { openOAuthURL } from '../utils/netsuite.utils.js'
-import { isValidToken } from '../utils/token.utils.js'
 import { OPENAI_API_KEY } from '../config.js'
 
 const openai = new OpenAIApi(
@@ -91,13 +90,8 @@ export const registerEvents = app => {
     try {
       const netsuiteToken = context.netsuiteToken
 
-      // Display messaging when opening the app based on NetSuite token status
-      if (isValidToken(netsuiteToken)) {
-        await say(
-          `Welcome back <@${event.user}>! You are currently authenticated with NetSuite.`
-        )
-      } else {
-        // Display a button to prompt the user to connect
+      if (!netsuiteToken?.access_token) {
+        // Display a button to prompt the user to connect if no access token is present
         await say({
           blocks: [
             {
