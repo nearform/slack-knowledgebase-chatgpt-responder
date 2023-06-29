@@ -75,6 +75,37 @@ Add the following values in an `.env` file (needed for local development):
 
 ### Installation
 
+#### Firebase/Firestore setup
+
+Below are the steps to set up your own Firebase/Firestore project to locally test storing and retrieving NetSuite access tokens. 
+
+1. Visit https://console.firebase.google.com/u/0/ and click Add Project. Proceed through the project wizard.
+2. Click the settings cog next to `Project Overview` and select `Project settings`
+3. Under `Your apps` click the web app button and add a web app to your project. Enter an app name.
+4. Copy the `firebaseConfig` settings and assign them accordingly in your  `.env`
+5. Under `Build` select `Firestore Database` and then click Create database. Select `Start in test mode` for local testing.
+
+#### NetSuite Integration setup
+
+Before we configure our application, we need to make sure NetSuite is ready to
+accept our calls. Keep in mind that this guide assumes that you have a user with
+access to NetSuite, and also that you have an admin access or that someone with
+that level of access can help you out with the following steps. This can be tested
+using the NetSuite sandbox.
+
+Go to `Setup` > `Integration` > `Manage Integrations`, click `New` and give the
+integration a name. Under the Token-based Authentication section,
+uncheck `TBA: AUTHORIZATION FLOW` and `TOKEN-BASED AUTHENTICATION`.
+
+Under the Oauth 2.0 section, check `AUTHORIZATION CODE GRANT`and select 
+`REST WEB SERVICES` as the scope.
+
+For the `REDIRECT URI` paste in your ngrok tunnel or Firebase app domain followed
+by `/netsuite/oauth_redirect`. Example: `https://01c9-2001-569-7ffa-d100-50ea-39ad-9fb2-9d5.ngrok-free.app/netsuite/oauth_redirect`
+
+After clicking `Save`, make sure to copy the client ID / secret and save them in
+BitWarden.
+
 #### Slack application setup
 
 1. Create a new slack workspace and a new Slack application or use an existing one.
@@ -95,7 +126,20 @@ Add the following values in an `.env` file (needed for local development):
 | `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket                                         |
 | `SLACK_SIGNING_SECRET`            | `api.slack.com/apps/[id]` > `Basic information` > `Signing Secret`         |
 | `SLACK_BOT_TOKEN`                 | `api.slack.com/apps/[id]` > `OAuth & Permissions` > `Bot User OAuth Token` |
+| `SLACK_APP_URL`                   | `https://[workspace].slack.com/app_redirect?app=[appID]`                   |
 | `OPENAI_API_KEY`                  | Open API key                                                               |
+| `FIREBASE_PROJECT_ID`             | Firebase Project settings page under `Your apps`                           |
+| `FIREBASE_API_KEY`                | Firebase Project settings page under `Your apps`                           |
+| `FIREBASE_AUTH_DOMAIN`            | Firebase Project settings page under `Your apps`                           |
+| `FIREBASE_STORAGE_BUCKET`         | Firebase Project settings page under `Your apps`                           |
+| `FIREBASE_MESSAGING_ID`           | Firebase Project settings page under `Your apps`                           |
+| `FIREBASE_APP_ID`                 | Firebase Project settings page under `Your apps`                           |
+| `NETSUITE_ACCOUNT_ID`             | https://[account ID].app.netsuite.com/                                     |
+| `NETSUITE_CLIENT_ID`              | Client ID you got from NetSuite Integration setup                          |
+| `NETSUITE_REDIRECT_URI`           | `https://[slack-bot-url]/netsuite/oauth_redirect`                          |
+| `NETSUITE_SECRET`                 | Secret ID you got from NetSuite Integration setup                          |
+| `NESUITE_ALLOWED_ROLE_IDS`        | Whitelisted roles comma seperated, for Sandbox use (1136,1156)             |
+
 
 #### Slack setup
 
@@ -123,3 +167,20 @@ Once installed/configured all the modules, you can run locally executing the fol
 - `make bot-start`: start Slack bot (`localhost:3003`)
 - `make bot-expose`: expose Slack bot to a public url
 - `make bot-ask q="My question?"`: ask a question programmatically (no need to run the bot)
+
+## Slack Commands
+`/login` optional slash command to manually trigger the NetSuite OAuth login
+
+`/query` this runs a basic query against SuiteQL to retrieve employee information and displays the results
+
+## NetSuite Roles / OAuth Security
+
+When connecting to a NetSuite integration via OAuth 2.0, it consumes the role of the user authenticating with the integration/application.
+
+In order to secure the app and not expose user tokens with dangerous permissions users need to be setup for the appropriate secure roles within NetSuite and strongly enforced. By default the Administrator role includes permissions to login via OAuth 2.0.
+
+We use the `NESUITE_ALLOWED_ROLE_IDS` to whitelist the limited access `Employee Own` roles and validate the selected role matches on the redirect back from NetSuite.
+
+Each needs to have a `Employee Own` role with the `Log in using OAuth 2.0 Access Tokens` permission added.
+
+When you have multiple roles and your default role does not support OAuth2 login. The OAuth login page prompts you to select a different role to login with. The user would then select the OAuth2 Integration/Basic role with specific allowed permissions for the integration and click Allow.
