@@ -30,7 +30,7 @@ const authHeader = `Basic ${Buffer.from(
  * @param {string} state
  * @returns {string}
  */
-const getAuthEndpoint = state => {
+export const getAuthEndpoint = state => {
   const params = {
     scope: 'rest_webservices',
     response_type: 'code',
@@ -72,6 +72,10 @@ export const getAccessToken = async (userId, authCode, employeeId) => {
 
     const token = await response?.json()
 
+    if (!response.ok) {
+      throw new Error(token.error ?? response.statusText)
+    }
+
     //Decode token and get employee ID
     token.employee_id = employeeId
 
@@ -111,6 +115,10 @@ export const refreshToken = async (userId, refreshToken) => {
     const response = await fetch(NETSUITE_TOKEN_ENDPOINT, options)
 
     const newToken = await response?.json()
+
+    if (!response.ok) {
+      throw new Error(newToken.error ?? response.statusText)
+    }
 
     // Firebase stores dates as Timestamps
     newToken.expires_at = createExpiryTimestamp(newToken.expires_in)

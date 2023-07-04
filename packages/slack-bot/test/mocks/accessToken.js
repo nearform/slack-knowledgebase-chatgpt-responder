@@ -8,3 +8,10 @@ export const mockAccessToken = {
   refresh_token: 'eyJraWQiOiJjLjY5ODk5NDNfU0IyLjIDk5NDNfU0IyLjIwMjMtMDUt',
   token_type: 'Bearer'
 }
+
+export const mockNetSuiteResponse = {
+  access_token: 'ajTraWQiOiJjLjY5ODk5NDNfU0IyLjIwMjMtMDUtMTRfMDAtMTAtMDt',
+  expires_in: 3600,
+  refresh_token: 'ajTraWQiOiJjLjY5ODk5NDNfU0IyLjIDk5NDNfU0IyLjIwMjMtMDUq',
+  token_type: 'Bearer'
+}
