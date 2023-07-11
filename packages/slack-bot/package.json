@@ -27,10 +27,9 @@
     "@slack/bolt": "^3.13.1",
     "compute-cosine-similarity": "^1.0.0",
     "dotenv": "^16.3.1",
+    "firebase-admin": "^11.9.0",
     "json-2-csv": "^4.0.0",
-    "openai": "^3.3.0",
-    "firebase": "^9.23.0",
     "moment": "^2.29.4",
-    "open": "^9.1.0"
+    "openai": "^3.3.0"
   }
 }

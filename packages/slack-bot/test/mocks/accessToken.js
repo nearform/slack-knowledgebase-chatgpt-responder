@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp } from 'firebase-admin/firestore'
 
 export const mockAccessToken = {
   access_token: 'eyJraWQiOiJjLjY5ODk5NDNfU0IyLjIwMjMtMDUtMTRfMDAtMTAtMDc',

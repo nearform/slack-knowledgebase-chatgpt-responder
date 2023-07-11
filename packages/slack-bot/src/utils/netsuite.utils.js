@@ -6,7 +6,6 @@ import {
   NETSUITE_REDIRECT_URI
 } from '../config.js'
 import crypto from 'crypto'
-import open from 'open'
 import { setToken } from '../services/token.service.js'
 import { createExpiryTimestamp } from './token.utils.js'
 
@@ -17,7 +16,7 @@ import { createExpiryTimestamp } from './token.utils.js'
  * @property {string} refresh_token - Returned from NetSuite
  * @property {string} token_type - Returned from NetSuite
  * @property {number} expires_in - Returned from NetSuite, default is 3600 seconds
- * @property {import('firebase/firestore').Timestamp | undefined} expires_at - Firebase Timestamp for token expiry
+ * @property {import('firebase-admin/firestore').Timestamp | undefined} expires_at - Firebase Timestamp for token expiry
  * @property {string | undefined} employee_id - NetSuite Employee ID
  */
 
@@ -173,7 +172,7 @@ export const query = async ({ q, authToken }) => {
  * Open OAuth endpoint in a new browser tab
  * @param {string} userID
  */
-export const openOAuthURL = userID => {
+export const getOAuthURL = userID => {
   // Create a nonce and pass it with user_id as state to NetSuite
   const stateParams = {
     nonce: crypto.randomBytes(16).toString('base64'),
@@ -182,5 +181,5 @@ export const openOAuthURL = userID => {
   const state = Buffer.from(JSON.stringify(stateParams)).toString('base64')
 
   // Open OAuth endpoint in a new browser tab
-  open(getAuthEndpoint(state))
+  return getAuthEndpoint(state)
 }

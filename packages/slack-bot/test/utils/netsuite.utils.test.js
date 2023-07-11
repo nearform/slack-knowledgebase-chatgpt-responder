@@ -287,20 +287,18 @@ test('query', async t => {
   })
 })
 
-test('openOAuthURL should open with the correct uri and state params', async t => {
-  const openMock = sinon.fake()
+test('getOAuthURL should open with the correct uri and state params', async t => {
   const mockAccountId = 'mock-account-id'
   const mockClientId = 'mock-client-id'
   const mockReturnUri = 'http://fake-redirect.com/auth'
   const mockUserId = 'mock-user-id'
   const mockNonce = Buffer.from('123456789')
-  const { openOAuthURL } = await esmock('../../src/utils/netsuite.utils.js', {
+  const { getOAuthURL } = await esmock('../../src/utils/netsuite.utils.js', {
     '../../src/config.js': {
       NETSUITE_ACCOUNT_ID: mockAccountId,
       NETSUITE_CLIENT_ID: mockClientId,
       NETSUITE_REDIRECT_URI: 'http://fake-redirect.com/auth'
     },
-    open: openMock,
     crypto: {
       randomBytes: () => mockNonce
     }
@@ -310,10 +308,10 @@ test('openOAuthURL should open with the correct uri and state params', async t =
     JSON.stringify({ nonce: mockNonce.toString('base64'), user_id: mockUserId })
   ).toString('base64')
 
-  openOAuthURL(mockUserId)
+  const result = await getOAuthURL(mockUserId)
 
-  sinon.assert.calledOnceWithExactly(
-    openMock,
+  t.same(
+    result,
     `https://${mockAccountId}.app.netsuite.com/app/login/oauth2/authorize.nl?scope=rest_webservices&response_type=code&client_id=${mockClientId}&state=${expectedState}&redirect_uri=${mockReturnUri}`
   )
 

@@ -1,4 +1,4 @@
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp } from 'firebase-admin/firestore'
 import moment from 'moment'
 
 /**

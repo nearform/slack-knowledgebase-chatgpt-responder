@@ -1,7 +1,7 @@
 import { Configuration, OpenAIApi } from 'openai'
 import { getAnswer } from '../services/ai.service.js'
 import { transcribe } from '../utils/ai.utils.js'
-import { openOAuthURL } from '../utils/netsuite.utils.js'
+import { getOAuthURL } from '../utils/netsuite.utils.js'
 import { OPENAI_API_KEY } from '../config.js'
 
 const openai = new OpenAIApi(
@@ -90,7 +90,7 @@ export const registerEvents = app => {
     try {
       const netsuiteToken = context.netsuiteToken
 
-      if (!netsuiteToken?.access_token) {
+      if (!netsuiteToken?.access_token && event.user) {
         // Display a button to prompt the user to connect if no access token is present
         await say({
           blocks: [
@@ -106,7 +106,8 @@ export const registerEvents = app => {
                   type: 'plain_text',
                   text: 'Connect'
                 },
-                action_id: 'netsuite_connect_btn'
+                action_id: 'netsuite_connect_btn',
+                url: getOAuthURL(event.user)
               }
             }
           ],
@@ -118,16 +119,8 @@ export const registerEvents = app => {
     }
   })
 
-  app.action('netsuite_connect_btn', async ({ body, ack, respond }) => {
+  app.action('netsuite_connect_btn', async ({ ack }) => {
     // Acknowledge the action
     await ack()
-
-    // Verify the user.id exists on the body
-    if (body.user.id) {
-      openOAuthURL(body.user.id)
-      await respond(`Redirecting to NetSuite OAuth`)
-    } else {
-      await respond(`Could not determine your user_id`)
-    }
   })
 }

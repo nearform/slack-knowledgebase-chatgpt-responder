@@ -9,18 +9,6 @@ export const DEFAULT_EMBEDDING_MODEL = 'text-embedding-ada-002'
 export const LOCAL_EMBEDDINGS_FILE = './embeddings.csv'
 export const IS_LOCAL_ENVIRONMENT = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
 
-/* FIREBASE */
-export const FIREBASE_PROJECT_ID =
-  process.env.FIREBASE_PROJECT_ID || 'slack-netsuite-bot'
-export const FIREBASE_API_KEY = process.env.FIREBASE_API_KEY || ''
-export const FIREBASE_AUTH_DOMAIN =
-  process.env.FIREBASE_AUTH_DOMAIN || 'slack-netsuite-bot.firebaseapp.com'
-export const FIREBASE_STORAGE_BUCKET =
-  process.env.FIREBASE_STORAGE_BUCKET || 'slack-netsuite-bot.appspot.com'
-export const FIREBASE_MESSAGING_ID = process.env.FIREBASE_MESSAGING_ID || ''
-export const FIREBASE_APP_ID = process.env.FIREBASE_APP_ID || ''
-export const FIREBASE_MEASUREMENT_ID = process.env.FIREBASE_MEASUREMENT_ID || ''
-
 /* SLACK */
 export const SLACK_SIGNING_SECRET = process.env.SLACK_SIGNING_SECRET || ''
 export const SLACK_BOT_TOKEN = process.env.SLACK_BOT_TOKEN || ''

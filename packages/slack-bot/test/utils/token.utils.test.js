@@ -5,7 +5,7 @@ import {
   isValidToken
 } from '../../src/utils/token.utils.js'
 import { mockAccessToken } from '../mocks/accessToken.js'
-import { Timestamp } from 'firebase/firestore'
+import { Timestamp } from 'firebase-admin/firestore'
 
 test('createExpiryTimestamp', async t => {
   const mockDate = new Date('2019-07-06T20:00:00')

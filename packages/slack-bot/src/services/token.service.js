@@ -1,26 +1,8 @@
-import { doc, getDoc, setDoc } from 'firebase/firestore'
-import { initializeApp } from 'firebase/app'
-import { getFirestore } from 'firebase/firestore'
-import {
-  FIREBASE_API_KEY,
-  FIREBASE_APP_ID,
-  FIREBASE_AUTH_DOMAIN,
-  FIREBASE_MESSAGING_ID,
-  FIREBASE_PROJECT_ID,
-  FIREBASE_STORAGE_BUCKET,
-  FIREBASE_MEASUREMENT_ID
-} from '../config.js'
+import { initializeApp } from 'firebase-admin/app'
+import { getFirestore } from 'firebase-admin/firestore'
 
 // Initialize Firebase App
-const firebaseApp = initializeApp({
-  apiKey: FIREBASE_API_KEY,
-  projectId: FIREBASE_PROJECT_ID,
-  authDomain: FIREBASE_AUTH_DOMAIN,
-  storageBucket: FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: FIREBASE_MESSAGING_ID,
-  appId: FIREBASE_APP_ID,
-  measurementId: FIREBASE_MEASUREMENT_ID
-})
+const firebaseApp = initializeApp()
 
 // Create a Firestore for storing tokens
 const fireStore = getFirestore(firebaseApp)
@@ -31,9 +13,9 @@ const fireStore = getFirestore(firebaseApp)
  * @returns {Promise}
  */
 export const getToken = async userId => {
-  const result = await getDoc(doc(fireStore, 'tokens', userId))
+  const result = await fireStore.doc(`tokens/${userId}`).get()
 
-  if (result.exists()) {
+  if (result.exists) {
     return result.data()
   }
 
@@ -47,5 +29,5 @@ export const getToken = async userId => {
  * @returns {Promise}
  */
 export const setToken = async (userId, token) => {
-  return await setDoc(doc(fireStore, 'tokens', userId), token, { merge: true })
+  return await fireStore.doc(`tokens/${userId}`).set(token, { merge: true })
 }

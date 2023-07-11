@@ -79,11 +79,10 @@ Add the following values in an `.env` file (needed for local development):
 
 Below are the steps to set up your own Firebase/Firestore project to locally test storing and retrieving NetSuite access tokens. 
 
-1. Visit https://console.firebase.google.com/u/0/ and click Add Project. Proceed through the project wizard.
-2. Click the settings cog next to `Project Overview` and select `Project settings`
-3. Under `Your apps` click the web app button and add a web app to your project. Enter an app name.
-4. Copy the `firebaseConfig` settings and assign them accordingly in your  `.env`
-5. Under `Build` select `Firestore Database` and then click Create database. Select `Start in test mode` for local testing.
+1. Visit https://console.firebase.google.com/u/0/ and click Add Project. Select an existing project if you have a GCP one already created for the  cloud function. Proceed through the project wizard.
+2. Under `Build` select `Firestore Database` and then click Create database. Select `Start in production mode`.
+3. The `firebase-admin` SDK is used to avoid having to set any Firestore secruity rules as the cloud function service account will automatically communicate with the database and no additional permissions are required.
+4. Additional information at: https://firebase.google.com/docs/functions/local-emulator
 
 #### NetSuite Integration setup
 
@@ -128,12 +127,6 @@ Add the following values in an `.env` file (needed for local development):
 | `SLACK_BOT_TOKEN`                 | `api.slack.com/apps/[id]` > `OAuth & Permissions` > `Bot User OAuth Token` |
 | `SLACK_APP_URL`                   | `https://[workspace].slack.com/app_redirect?app=[appID]`                   |
 | `OPENAI_API_KEY`                  | Open API key                                                               |
-| `FIREBASE_PROJECT_ID`             | Firebase Project settings page under `Your apps`                           |
-| `FIREBASE_API_KEY`                | Firebase Project settings page under `Your apps`                           |
-| `FIREBASE_AUTH_DOMAIN`            | Firebase Project settings page under `Your apps`                           |
-| `FIREBASE_STORAGE_BUCKET`         | Firebase Project settings page under `Your apps`                           |
-| `FIREBASE_MESSAGING_ID`           | Firebase Project settings page under `Your apps`                           |
-| `FIREBASE_APP_ID`                 | Firebase Project settings page under `Your apps`                           |
 | `NETSUITE_ACCOUNT_ID`             | https://[account ID].app.netsuite.com/                                     |
 | `NETSUITE_CLIENT_ID`              | Client ID you got from NetSuite Integration setup                          |
 | `NETSUITE_REDIRECT_URI`           | `https://[slack-bot-url]/netsuite/oauth_redirect`                          |

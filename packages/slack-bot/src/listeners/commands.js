@@ -1,4 +1,4 @@
-import { query, openOAuthURL } from '../utils/netsuite.utils.js'
+import { query, getOAuthURL } from '../utils/netsuite.utils.js'
 import { isValidToken } from '../utils/token.utils.js'
 
 const login = async ({ payload, ack, respond }) => {
@@ -7,11 +7,30 @@ const login = async ({ payload, ack, respond }) => {
 
   // Verify the user_id exists on the payload
   if (payload.user_id) {
-    openOAuthURL(payload.user_id)
-    await respond(`Redirecting to NetSuite OAuth`)
+    await respond({
+      blocks: [
+        {
+          type: 'section',
+          text: {
+            type: 'mrkdwn',
+            text: `Hey <@${payload.user_id}>, please login to your NetSuite account to continue.`
+          },
+          accessory: {
+            type: 'button',
+            text: {
+              type: 'plain_text',
+              text: 'Connect'
+            },
+            action_id: 'netsuite_connect_btn',
+            url: getOAuthURL(payload.user_id)
+          }
+        }
+      ],
+      text: `Hey <@${payload.user_id}>, please connect your NetSuite account to continue.`
+    })
   } else {
     console.error('No user_id present in the payload', payload)
-    await respond(`Could not determine your user_id`)
+    await respond(`Could not determine your Slack user id.`)
   }
 }
 
@@ -37,7 +56,7 @@ const queryNetsuite = async ({ ack, respond, context }) => {
     }
   } catch (error) {
     console.log(error)
-    await respond('Failed to query NetSuite')
+    await respond('Failed to query NetSuite.')
   }
 }
 
