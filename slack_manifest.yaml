@@ -3,9 +3,22 @@ display_information:
   description: A chatbot that can answer questions on thenearformway.com content
   background_color: "#2165e3"
 features:
+  app_home:
+    home_tab_enabled: false
+    messages_tab_enabled: true
+    messages_tab_read_only_enabled: false
   bot_user:
     display_name: NearForm Know-It-All
     always_online: true
+  slash_commands:
+    - command: /login
+      url: https://<domain name>/slack/events
+      description: Login to NetSuite
+      should_escape: false
+    - command: /query
+      url: https://<domain name>/slack/events
+      description: Query NetSuite User Data
+      should_escape: false
 oauth_config:
   redirect_urls:
     - <dialogflow-slack-oauth-url>
@@ -25,6 +38,10 @@ settings:
     request_url: https://<slack-bot-url>/slack/events
     bot_events:
       - message.im
+      - app_home_opened
+  interactivity:
+    is_enabled: true
+    request_url: https://<domain name>/slack/events
   org_deploy_enabled: false
   socket_mode_enabled: false
   token_rotation_enabled: false

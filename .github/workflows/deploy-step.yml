@@ -28,7 +28,19 @@ on:
       GCP_EMBEDDING_TOPIC_NAME:
         required: true
         type: string
-
+      NETSUITE_ACCOUNT_ID:
+        required: true
+        type: string
+      NETSUITE_REDIRECT_URI:
+        required: true
+        type: string
+      NESUITE_ALLOWED_ROLE_IDS:
+        required: true
+        type: string
+      SLACK_APP_URL:
+        required: true
+        type: string
+                
 jobs:
   provision:
     name: 'Provision and deploy'
@@ -124,6 +136,8 @@ jobs:
             slack-bot-token:"${{ secrets.SLACK_BOT_TOKEN }}"
             slack-signing-secret:"${{ secrets.SLACK_SIGNING_SECRET }}"
             openai-api-key:"${{ secrets.OPENAI_API_KEY }}"
+            netsuite-client-id:"${{ secrets.NETSUITE_CLIENT_ID }}"
+            netsuite-secret:"${{ secrets.NETSUITE_SECRET }}"
 
       - name: Deploy slackBot to Cloud Run
         id: deploy-slack-bot
@@ -144,9 +158,15 @@ jobs:
           --set-env-vars=GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }}
           --set-env-vars=GCP_STORAGE_EMBEDDING_FILE_NAME=${{ inputs.GCP_STORAGE_EMBEDDING_FILE_NAME }}
           --set-env-vars=GCP_EMBEDDING_SUBSCRIPTION=${{ inputs.GCP_EMBEDDING_SUBSCRIPTION }}
+          --set-env-vars=NETSUITE_ACCOUNT_ID=${{ inputs.NETSUITE_ACCOUNT_ID }}
+          --set-env-vars=NETSUITE_REDIRECT_URI=${{ inputs.NETSUITE_REDIRECT_URI }}
+          --set-env-vars=NESUITE_ALLOWED_ROLE_IDS=${{ inputs.NESUITE_ALLOWED_ROLE_IDS }}
+          --set-env-vars=SLACK_APP_URL=${{ inputs.SLACK_APP_URL }}
           --set-secrets=SLACK_BOT_TOKEN=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-bot-token:latest
           --set-secrets=SLACK_SIGNING_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/slack-signing-secret:latest
           --set-secrets=OPENAI_API_KEY=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/openai-api-key:latest
+          --set-secrets=NETSUITE_CLIENT_ID=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/netsuite-client-id:latest
+          --set-secrets=NETSUITE_SECRET=projects/${{ inputs.GCP_PROJECT_ID }}/secrets/netsuite-secret:latest
 
       - name: Deploy embedding-creation to Cloud Run
         id: deploy-embedding-creation

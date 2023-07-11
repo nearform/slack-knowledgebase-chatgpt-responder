@@ -53,9 +53,9 @@ tap.test('getAnswer', async t => {
     const openai = new openApiMock.OpenAIApi()
 
     const { getAnswer } = await esmock(
-      '../src/getAnswer.js',
+      '../../src/services/ai.service.js',
       {
-        '../src/utils.js': {
+        '../../src/utils/ai.utils.js': {
           download: (_, __, destination) => {
             fs.writeFileSync(destination, embeddingsCsvMock)
           }
