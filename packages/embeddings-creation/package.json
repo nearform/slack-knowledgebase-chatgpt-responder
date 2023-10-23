@@ -16,7 +16,7 @@
     "@manypkg/find-root": "^2.2.1",
     "dotenv": "^16.3.1",
     "exponential-backoff": "^3.1.1",
-    "json-2-csv": "^4.1.0",
+    "json-2-csv": "^4.1.1",
     "openai": "^4.12.4",
     "p-map": "^6.0.0",
     "tiktoken-node": "^0.0.6"
