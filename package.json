@@ -20,7 +20,7 @@
   "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "devDependencies": {
     "@commitlint/cli": "^18.0.0",
-    "@commitlint/config-conventional": "^17.8.0",
+    "@commitlint/config-conventional": "^18.1.0",
     "eslint": "^8.51.0",
     "eslint-config-prettier": "^9.0.0",
     "eslint-plugin-prettier": "^5.0.1",
