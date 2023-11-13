@@ -20,7 +20,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.22.15",
-    "@babel/plugin-syntax-import-assertions": "^7.22.5",
+    "@babel/plugin-syntax-import-assertions": "^7.23.3",
     "cross-env": "^7.0.3",
     "esmock": "^2.5.6",
     "sinon": "^17.0.1",
