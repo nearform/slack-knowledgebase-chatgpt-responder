@@ -17,7 +17,7 @@
     "dotenv": "^16.4.1",
     "exponential-backoff": "^3.1.1",
     "json-2-csv": "^5.0.1",
-    "openai": "^4.25.0",
+    "openai": "^4.26.0",
     "p-map": "^7.0.1",
     "tiktoken-node": "^0.0.6"
   },
