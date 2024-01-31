@@ -67,13 +67,18 @@ export async function downloadAudio(url, id) {
   })
 }
 
+/**
+ *
+ * @param {*} file
+ * @param {import('openai').OpenAI} openai
+ * @returns
+ */
 export async function transcribe(file, openai) {
   const p = await downloadAudio(file.url_private_download, file.id)
-  const transcribe = await openai.createTranscription(
-    f.createReadStream(p),
-    'whisper-1',
-    undefined,
-    'text'
-  )
-  return transcribe.data
+  const transcribe = await openai.audio.transcriptions.create({
+    file: f.createReadStream(p),
+    model: 'whisper-1',
+    response_format: 'text'
+  })
+  return transcribe.text
 }

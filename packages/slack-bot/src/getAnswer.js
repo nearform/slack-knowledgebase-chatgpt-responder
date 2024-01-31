@@ -64,6 +64,8 @@ function subscribeToEmbeddingChanges() {
 
 /**
  * Create a context for a question by finding the most similar context from the dataframe
+ * @param {Object} args
+ * @param {import('openai').OpenAI} args.openai
  */
 async function createContext({
   openai,
@@ -73,12 +75,12 @@ async function createContext({
   embeddingModel = defaultEmbeddingModel
 }) {
   // Get the embeddings for the question
-  const response = await openai.createEmbedding({
+  const response = await openai.embeddings.create({
     model: embeddingModel,
     input: question
   })
 
-  const queryEmbedding = response.data.data[0].embedding
+  const queryEmbedding = response.data[0].embedding
 
   // Get the distances from the embeddings
   const distances = distancesFromEmbeddings({
@@ -104,6 +106,12 @@ async function createContext({
   return context
 }
 
+/**
+ *
+ * @param {Object} args
+ * @param {import('openai').OpenAI} args.openai
+ * @returns
+ */
 async function getAnswer({
   dataSet: customDataSet,
   model = 'gpt-4',
@@ -130,7 +138,7 @@ async function getAnswer({
     embeddingModel
   })
 
-  const response = await openai.createChatCompletion({
+  const response = await openai.chat.completions.create({
     messages: [
       { role: 'system', content: 'You are a helpful assistant' },
       {
@@ -172,7 +180,7 @@ async function getAnswer({
     model
   })
 
-  return response.data.choices[0].message.content.trim()
+  return response.choices[0].message.content.trim()
 }
 
 export { getAnswer }

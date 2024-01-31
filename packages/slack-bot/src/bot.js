@@ -1,6 +1,6 @@
 // https://github.com/seratch/slack-app-examples/blob/86bd224476814a42c41c133f9009ea66c0717517/serverless-bolt-template/gcp-js/app.js
 import bolt from '@slack/bolt'
-import { Configuration, OpenAIApi } from 'openai'
+import OpenAI from 'openai'
 import { getAnswer } from './getAnswer.js'
 import { transcribe } from './utils.js'
 
@@ -17,11 +17,9 @@ const app = new App({
 
 const expressApp = expressReceiver.app
 
-const openai = new OpenAIApi(
-  new Configuration({
-    apiKey: process.env.OPENAI_API_KEY
-  })
-)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 const errorResponse =
   'It appears I have run into an issue looking up an answer for you. Please try again'
