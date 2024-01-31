@@ -85,7 +85,7 @@ jobs:
             --task-timeout 60m \
             --set-secrets NOTION_TOKEN=notion-token:latest \
             --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
-            --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
+            --set-env-vars GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
           else
             gcloud beta run jobs update crawler-job \
             --image gcr.io/${{ inputs.GCP_PROJECT_ID }}/crawler-job:$GITHUB_SHA \
@@ -95,7 +95,7 @@ jobs:
             --task-timeout 60m \
             --set-secrets NOTION_TOKEN=notion-token:latest \
             --set-env-vars GCP_STORAGE_BUCKET_NAME=${{ inputs.GCP_STORAGE_BUCKET_NAME }} \
-            --set-env-vars GCP_STORAGE_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
+            --set-env-vars GCP_STORAGE_SCRAPED_FILE_NAME=${{ inputs.GCP_STORAGE_SCRAPED_FILE_NAME }}
           fi
 
       - name: Update scheduler
