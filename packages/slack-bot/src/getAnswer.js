@@ -118,8 +118,6 @@ async function getAnswer({
   question = 'What is NearForm?',
   maxLength = 1800,
   embeddingModel = defaultEmbeddingModel,
-  maxTokens = 300,
-  stopSequence,
   locale = 'en-IE',
   openai
 }) {
@@ -138,45 +136,46 @@ async function getAnswer({
     embeddingModel
   })
 
+  const messages = [
+    { role: 'system', content: 'You are a helpful assistant' },
+    {
+      role: 'assistant',
+      content: `We are going to call the following set of information <CONTEXT>:\n\n${context.join(
+        '\n\n###\n\n'
+      )}`
+    },
+    {
+      role: 'user',
+      content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
+    },
+    {
+      role: 'user',
+      content: `My current locale is ${locale} so factor this in to the context of my questions so that information you provide relevant to my country.`
+    },
+    {
+      role: 'assistant',
+      content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
+    },
+    {
+      role: 'assistant',
+      content: `If you provide an answer, use only the information existing in <CONTEXT>. You must not use any other source of information."`
+    },
+    {
+      role: 'assistant',
+      content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
+    },
+    // @TODO add here last provided answers (as assistant) to enable a conversational interaction
+    {
+      role: 'user',
+      content: `Question: ${question}`
+    }
+  ]
+
+  console.log('messages', JSON.stringify(messages, null, 2))
+
   const response = await openai.chat.completions.create({
-    messages: [
-      { role: 'system', content: 'You are a helpful assistant' },
-      {
-        role: 'assistant',
-        content: `We are going to call the following set of information <CONTEXT>:\n\n${context.join(
-          '\n\n###\n\n'
-        )}`
-      },
-      {
-        role: 'user',
-        content: `I'm a NearForm employee and I'm going to ask questions about <CONTEXT> or NearForm.`
-      },
-      {
-        role: 'user',
-        content: `My current locale is ${locale} so factor this in to the context of my questions so that information you provide relevant to my country.`
-      },
-      {
-        role: 'assistant',
-        content: `If there is NO relevant information in <CONTEXT> to answer the question, then briefly apologize with the user.`
-      },
-      {
-        role: 'assistant',
-        content: `If you provide an answer, use only the information existing in <CONTEXT>. You must not use any other source of information."`
-      },
-      {
-        role: 'assistant',
-        content: `If you provide an answer you MUST not mention the source of the information nor <CONTEXT>. Provide just the expected information.`
-      },
-      // @TODO add here last provided answers (as assistant) to enable a conversational interaction
-      {
-        role: 'user',
-        content: `Question: ${question}`
-      }
-    ],
+    messages,
     temperature: 0,
-    top_p: 1,
-    stop: stopSequence,
-    max_tokens: maxTokens,
     model
   })
 
