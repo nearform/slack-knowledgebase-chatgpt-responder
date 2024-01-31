@@ -24,11 +24,13 @@ const testEvent = {
   }
 }
 
-class ConfigurationMock {}
-
 const getOpenAIApiMock = (createEmbeddingMock = () => {}) =>
-  class OpenAIApiMock {
-    createEmbedding = createEmbeddingMock
+  function OpenAI() {
+    return {
+      embeddings: {
+        create: createEmbeddingMock
+      }
+    }
   }
 
 tap.test('embeddings creation', async t => {
@@ -39,18 +41,13 @@ tap.test('embeddings creation', async t => {
   const uploadMock = sinon.fake()
   const createEmbeddingMock = sinon.stub().returns(
     Promise.resolve({
-      data: {
-        data: [{ embedding: [-0.01002738, -0.03602738] }]
-      }
+      data: [{ embedding: [-0.01002738, -0.03602738] }]
     })
   )
 
   const { createEmbeddings } = await esmock('../src/create-embeddings.js', {
     '../src/utils.js': { download: downloadMock, upload: uploadMock },
-    openai: {
-      Configuration: ConfigurationMock,
-      OpenAIApi: getOpenAIApiMock(createEmbeddingMock)
-    }
+    openai: getOpenAIApiMock(createEmbeddingMock)
   })
 
   await createEmbeddings(testEvent)

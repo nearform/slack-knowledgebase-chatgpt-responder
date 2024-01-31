@@ -1,7 +1,7 @@
 import pMap from 'p-map'
 import fs from 'node:fs/promises'
 import tiktoken from 'tiktoken-node'
-import { Configuration, OpenAIApi } from 'openai'
+import OpenAI from 'openai'
 import { backOff } from 'exponential-backoff'
 import { download, upload, createCsv, parseCsv } from './utils.js'
 
@@ -10,8 +10,9 @@ const SCRAPED_FILE_NAME = process.env.GCP_STORAGE_SCRAPED_FILE_NAME
 const EMBEDDINGS_FILE_NAME = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const MAX_TOKENS = 500
 
-const configuration = new Configuration({ apiKey: process.env.OPENAI_API_KEY })
-const openai = new OpenAIApi(configuration)
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+})
 
 const tokenizer = tiktoken.getEncoding('cl100k_base')
 
@@ -86,7 +87,7 @@ export async function createEmbeddings(event) {
     try {
       const response = await backOff(
         () =>
-          openai.createEmbedding({
+          openai.embeddings.create({
             model: EMBEDDING_MODEL,
             input: short
           }),
@@ -100,7 +101,7 @@ export async function createEmbeddings(event) {
         index: i,
         text: short,
         n_tokens: tokenizer.encode(short).length,
-        embeddings: response.data.data[0].embedding
+        embeddings: response.data[0].embedding
       }
     } catch (err) {
       console.log(`Cannot fetch embeddings for ${short.substring(0, 20)}...`)

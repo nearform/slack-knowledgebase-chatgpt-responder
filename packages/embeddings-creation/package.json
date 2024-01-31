@@ -7,7 +7,7 @@
   "private": true,
   "scripts": {
     "start": "functions-framework --target=create_embeddings --signature-type=cloudevent --port=3002",
-    "test": "GCP_STORAGE_EMBEDDING_FILE_NAME=embeddings.csv GCP_STORAGE_SCRAPED_FILE_NAME=scraped.csv NODE_OPTIONS=--loader=esmock tap",
+    "test": "cross-env GCP_STORAGE_EMBEDDING_FILE_NAME=embeddings.csv GCP_STORAGE_SCRAPED_FILE_NAME=scraped.csv NODE_OPTIONS=--loader=esmock tap",
     "lint": "eslint ."
   },
   "dependencies": {

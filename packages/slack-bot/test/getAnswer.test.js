@@ -10,28 +10,24 @@ const embeddingsCsvMock = [
 ].join('\n')
 
 const createEmbeddingResponse = {
-  data: {
-    data: [
-      {
-        embedding: [
-          0.01764809899032116, 0.010304464027285576, 0.00995383970439434,
-          -0.0057625784538686275
-        ]
-      }
-    ]
-  }
+  data: [
+    {
+      embedding: [
+        0.01764809899032116, 0.010304464027285576, 0.00995383970439434,
+        -0.0057625784538686275
+      ]
+    }
+  ]
 }
 
 const createChatCompletionResponse = {
-  data: {
-    choices: [
-      {
-        message: {
-          content: '\n\nActual chat response'
-        }
+  choices: [
+    {
+      message: {
+        content: '\n\nActual chat response'
       }
-    ]
-  }
+    }
+  ]
 }
 
 tap.test('getAnswer', async t => {
@@ -44,13 +40,15 @@ tap.test('getAnswer', async t => {
     })
 
     const openApiMock = {
-      Configuration: class OpenAIConfigurationMock {},
-      OpenAIApi: class OpenAIApiMock {
-        createEmbedding = createEmbeddingMock
-        createChatCompletion = createChatCompletionMock
+      embeddings: {
+        create: createEmbeddingMock
+      },
+      chat: {
+        completions: {
+          create: createChatCompletionMock
+        }
       }
     }
-    const openai = new openApiMock.OpenAIApi()
 
     const { getAnswer } = await esmock(
       '../src/getAnswer.js',
@@ -62,7 +60,7 @@ tap.test('getAnswer', async t => {
         }
       },
       {
-        openai,
+        openai: openApiMock,
         '@google-cloud/pubsub': {
           PubSub: class PubSubMock {
             subscription = () => ({ on: () => {} })
@@ -74,7 +72,7 @@ tap.test('getAnswer', async t => {
     const question = 'This is the question'
     const locale = 'en-IE'
 
-    const actualAnswer = await getAnswer({ openai, question })
+    const actualAnswer = await getAnswer({ openai: openApiMock, question })
     const expectedAnswer = 'Actual chat response'
     tt.equal(actualAnswer, expectedAnswer)
 
