@@ -26,7 +26,7 @@
     "@manypkg/find-root": "^2.2.1",
     "@slack/bolt": "^3.17.1",
     "compute-cosine-similarity": "^1.1.0",
-    "dotenv": "^16.4.1",
+    "dotenv": "^16.4.2",
     "json-2-csv": "^5.0.1",
     "openai": "^4.26.1"
   }
