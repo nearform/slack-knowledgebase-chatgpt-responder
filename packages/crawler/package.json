@@ -15,7 +15,7 @@
     "@manypkg/find-root": "^2.2.1",
     "@notionhq/client": "^2.2.14",
     "dotenv": "^16.4.5",
-    "json-2-csv": "^5.5.0",
+    "json-2-csv": "^5.5.1",
     "p-map": "^7.0.1"
   },
   "devDependencies": {
