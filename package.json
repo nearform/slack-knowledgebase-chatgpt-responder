@@ -6,7 +6,7 @@
   "scripts": {
     "lint": "eslint .",
     "test": "npm test --workspaces",
-    "prepare": "npx husky install"
+    "prepare": "npx husky"
   },
   "repository": {
     "type": "git",
