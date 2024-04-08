@@ -18,7 +18,7 @@
     "exponential-backoff": "^3.1.1",
     "json-2-csv": "^5.5.1",
     "openai": "^4.33.0",
-    "p-map": "^7.0.1",
+    "p-map": "^7.0.2",
     "tiktoken-node": "^0.0.7"
   },
   "devDependencies": {
