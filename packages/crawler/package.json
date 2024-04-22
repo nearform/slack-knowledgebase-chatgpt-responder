@@ -11,7 +11,7 @@
     "start": "node ./src/index.js"
   },
   "dependencies": {
-    "@google-cloud/storage": "^7.9.0",
+    "@google-cloud/storage": "^7.10.0",
     "@manypkg/find-root": "^2.2.1",
     "@notionhq/client": "^2.2.15",
     "dotenv": "^16.4.5",
