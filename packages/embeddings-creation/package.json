@@ -12,7 +12,7 @@
   },
   "dependencies": {
     "@google-cloud/functions-framework": "^3.4.0",
-    "@google-cloud/storage": "^7.10.2",
+    "@google-cloud/storage": "^7.11.0",
     "@manypkg/find-root": "^2.2.1",
     "dotenv": "^16.4.5",
     "exponential-backoff": "^3.1.1",
