@@ -22,7 +22,7 @@
   },
   "dependencies": {
     "@google-cloud/pubsub": "^4.4.0",
-    "@google-cloud/storage": "^7.11.0",
+    "@google-cloud/storage": "^7.11.1",
     "@manypkg/find-root": "^2.2.1",
     "@slack/bolt": "^3.18.0",
     "compute-cosine-similarity": "^1.1.0",
