@@ -18,7 +18,7 @@
     "cross-env": "^7.0.3",
     "esmock": "^2.5.6",
     "sinon": "^18.0.0",
-    "tap": "^16.3.8"
+    "tap": "^19.2.3"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^4.4.1",
