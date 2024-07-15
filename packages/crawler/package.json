@@ -19,7 +19,7 @@
     "p-map": "^7.0.2"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.24.7",
+    "@babel/eslint-parser": "^7.24.8",
     "@babel/plugin-syntax-import-assertions": "^7.24.7",
     "cross-env": "^7.0.3",
     "esmock": "^2.5.6",
