@@ -12,7 +12,7 @@
     "try:bot": "IS_LOCAL_ENVIRONMENT=true node ./src/tryBot.js"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.25.1",
+    "@babel/eslint-parser": "^7.25.7",
     "@babel/plugin-syntax-import-assertions": "^7.25.6",
     "@google-cloud/functions-framework": "^3.4.2",
     "cross-env": "^7.0.3",
