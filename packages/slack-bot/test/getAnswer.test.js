@@ -1,7 +1,7 @@
 import fs from 'node:fs'
-import tap from 'tap'
-import esmock from 'esmock'
+import { describe, test, mock } from 'node:test'
 import sinon from 'sinon'
+import * as utils from '../src/utils.js'
 
 const embeddingsCsvMock = [
   ',text,n_tokens,embeddings',
@@ -30,8 +30,8 @@ const createChatCompletionResponse = {
   ]
 }
 
-tap.test('getAnswer', async t => {
-  t.test('returns expected answer', async tt => {
+describe('getAnswer', () => {
+  test('returns expected answer', async t => {
     const createEmbeddingMock = sinon.spy(async () => {
       return createEmbeddingResponse
     })
@@ -50,31 +50,35 @@ tap.test('getAnswer', async t => {
       }
     }
 
-    const { getAnswer } = await esmock(
-      '../src/getAnswer.js',
-      {
-        '../src/utils.js': {
-          download: (_, __, destination) => {
-            fs.writeFileSync(destination, embeddingsCsvMock)
-          }
-        }
-      },
-      {
-        openai: openApiMock,
-        '@google-cloud/pubsub': {
-          PubSub: class PubSubMock {
-            subscription = () => ({ on: () => {} })
-          }
+    mock.module('../src/utils.js', {
+      namedExports: {
+        ...utils,
+        download: (_, __, destination) => {
+          fs.writeFileSync(destination, embeddingsCsvMock)
         }
       }
-    )
+    })
+
+    mock.module('openai', {
+      defaultExport: openApiMock
+    })
+
+    mock.module('@google-cloud/pubsub', {
+      namedExports: {
+        PubSub: class PubSubMock {
+          subscription = () => ({ on: () => {} })
+        }
+      }
+    })
+
+    const { getAnswer } = await import('../src/getAnswer.js?t=1')
 
     const question = 'This is the question'
     const locale = 'en-IE'
 
     const actualAnswer = await getAnswer({ openai: openApiMock, question })
     const expectedAnswer = 'Actual chat response'
-    tt.equal(actualAnswer, expectedAnswer)
+    t.assert.strictEqual(actualAnswer, expectedAnswer)
 
     sinon.assert.calledOnceWithExactly(createEmbeddingMock, {
       model: 'text-embedding-ada-002',

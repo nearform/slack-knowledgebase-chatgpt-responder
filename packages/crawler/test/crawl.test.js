@@ -1,16 +1,16 @@
-import tap from 'tap'
-import esmock from 'esmock'
+import { test, afterEach, mock } from 'node:test'
 import sinon from 'sinon'
 import fs from 'node:fs'
+import * as utils from '../src/utils.js'
 
 const env = Object.assign({}, process.env)
 
-tap.afterEach(function () {
+afterEach(function () {
   process.env = env
   sinon.restore()
 })
 
-tap.test('crawl', async t => {
+test('crawl', async t => {
   const bucketName = 'bucket-name'
   const scrapedFileName = 'scraped.csv'
   process.env.GCP_STORAGE_BUCKET_NAME = bucketName
@@ -23,14 +23,19 @@ tap.test('crawl', async t => {
   )
   const uploadMock = sinon.fake()
 
-  const { crawl } = await esmock('../src/crawl.js', {
-    '../src/notion.js': {
+  mock.module('../src/notion.js', {
+    namedExports: {
       fetchData: fetchDataMock
-    },
-    '../src/utils.js': {
+    }
+  })
+  mock.module('../src/utils.js', {
+    namedExports: {
+      ...utils,
       upload: uploadMock
     }
   })
+
+  const { crawl } = await import('../src/crawl.js?t=1')
 
   await crawl()
 
@@ -38,7 +43,7 @@ tap.test('crawl', async t => {
   sinon.assert.calledOnceWithExactly(uploadMock, bucketName, scrapedFileName)
 
   const localScrapedFile = fs.readFileSync(scrapedFileName, 'utf8')
-  t.equal(
+  t.assert.strictEqual(
     localScrapedFile,
     'index,title,text\n0,Super blog post,This is awesome!'
   )

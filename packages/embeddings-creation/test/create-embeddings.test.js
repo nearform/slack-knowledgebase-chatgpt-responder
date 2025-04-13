@@ -1,8 +1,8 @@
-import tap from 'tap'
-import esmock from 'esmock'
-import { readFile } from 'fs/promises'
+import { test, mock } from 'node:test'
+import { readFile } from 'node:fs/promises'
 import fs from 'fs/promises'
 import sinon from 'sinon'
+import * as utils from '../src/utils.js'
 
 const scrapedFileName = process.env.GCP_STORAGE_SCRAPED_FILE_NAME
 const embeddingsFileName = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
@@ -33,7 +33,7 @@ const getOpenAIApiMock = (createEmbeddingMock = () => {}) =>
     }
   }
 
-tap.test('embeddings creation', async t => {
+test('embeddings creation', async t => {
   const downloadMock = sinon.spy(async () =>
     fs.writeFile(scrapedFileName, scrapedFileMock)
   )
@@ -45,15 +45,24 @@ tap.test('embeddings creation', async t => {
     })
   )
 
-  const { createEmbeddings } = await esmock('../src/create-embeddings.js', {
-    '../src/utils.js': { download: downloadMock, upload: uploadMock },
-    openai: getOpenAIApiMock(createEmbeddingMock)
+  mock.module('../src/utils.js', {
+    namedExports: {
+      ...utils,
+      download: downloadMock,
+      upload: uploadMock
+    }
   })
+
+  mock.module('openai', {
+    defaultExport: getOpenAIApiMock(createEmbeddingMock)
+  })
+
+  const { createEmbeddings } = await import('../src/create-embeddings.js?t=1')
 
   await createEmbeddings(testEvent)
   const result = await readFile(embeddingsFileName, 'utf-8')
 
-  t.equal(result, expectedEmbeddings)
+  t.assert.deepStrictEqual(result, expectedEmbeddings)
 
   sinon.assert.calledOnce(createEmbeddingMock)
 

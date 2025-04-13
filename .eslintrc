@@ -4,14 +4,13 @@
     "node": true,
     "es2021": true
   },
-  "ignorePatterns": ["**/tap-snapshots/**/*.cjs"],
   "parser": "@babel/eslint-parser",
   "parserOptions": {
-    "ecmaVersion": 2021,
+    "ecmaVersion": "latest",
     "sourceType": "module",
     "requireConfigFile": false,
     "babelOptions": {
-      "plugins": ["@babel/plugin-syntax-import-assertions"]
+      "plugins": ["@babel/plugin-syntax-import-attributes"]
     }
   }
 }

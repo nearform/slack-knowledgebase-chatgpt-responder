@@ -1,9 +1,7 @@
-import tap from 'tap'
-import esmock from 'esmock'
-import sinon from 'sinon'
+import { beforeEach, describe, test, mock } from 'node:test'
 
-import fakePageResponse from './mocks/page-response.json' assert { type: 'json' }
-import fakeChildrenResponse from './mocks/children-response.json' assert { type: 'json' }
+import fakePageResponse from './mocks/page-response.json' with { type: 'json' }
+import fakeChildrenResponse from './mocks/children-response.json' with { type: 'json' }
 
 const getNotionClientMock = ({ listMock = () => {}, searchMock = () => {} }) =>
   class NotionClientMock {
@@ -17,10 +15,15 @@ const getNotionClientMock = ({ listMock = () => {}, searchMock = () => {} }) =>
       }
     }
   }
-tap.test('notion', async t => {
-  t.test('fetchData returns correct parsed data', async tt => {
-    const { fetchData } = await esmock('../src/notion.js', {
-      '@notionhq/client': {
+
+describe('notion', () => {
+  beforeEach(() => {
+    mock.reset()
+  })
+
+  test('fetchData returns correct parsed data', async t => {
+    mock.module('@notionhq/client', {
+      namedExports: {
         Client: getNotionClientMock({
           searchMock: async () => fakePageResponse,
           listMock: async ({ block_id }) => fakeChildrenResponse[block_id]
@@ -28,14 +31,15 @@ tap.test('notion', async t => {
       }
     })
 
-    tt.matchSnapshot(await fetchData())
+    const { fetchData } = await import('../src/notion.js?t=1')
+
+    t.assert.snapshot(await fetchData())
   })
 
-  t.test('getPages works correctly with pagination', async () => {
-    const searchMock = sinon.stub()
-    searchMock
-      .onFirstCall()
-      .resolves({
+  test('getPages works correctly with pagination', async t => {
+    const searchMock = mock.fn()
+    searchMock.mock.mockImplementationOnce(
+      async () => ({
         object: 'list',
         results: [
           {
@@ -96,9 +100,12 @@ tap.test('notion', async t => {
         has_more: true,
         type: 'page_or_database',
         page_or_database: {}
-      })
-      .onSecondCall()
-      .resolves({
+      }),
+      0
+    )
+
+    searchMock.mock.mockImplementationOnce(
+      async () => ({
         object: 'list',
         results: [
           {
@@ -159,21 +166,25 @@ tap.test('notion', async t => {
         has_more: false,
         type: 'page_or_database',
         page_or_database: {}
-      })
+      }),
+      1
+    )
 
-    const { getPages } = await esmock('../src/notion.js', {
-      '@notionhq/client': {
+    mock.module('@notionhq/client', {
+      namedExports: {
         Client: getNotionClientMock({
           searchMock
         })
       }
     })
 
+    const { getPages } = await import('../src/notion.js?t=2')
+
     await getPages()
 
-    sinon.assert.calledTwice(searchMock)
+    t.assert.strictEqual(searchMock.mock.calls.length, 2)
 
-    sinon.assert.calledWith(searchMock.firstCall, {
+    t.assert.deepStrictEqual(searchMock.mock.calls[0].arguments[0], {
       filter: {
         value: 'page',
         property: 'object'
@@ -182,7 +193,7 @@ tap.test('notion', async t => {
       page_size: 10
     })
 
-    sinon.assert.calledWith(searchMock.secondCall, {
+    t.assert.deepStrictEqual(searchMock.mock.calls[1].arguments[0], {
       filter: {
         value: 'page',
         property: 'object'

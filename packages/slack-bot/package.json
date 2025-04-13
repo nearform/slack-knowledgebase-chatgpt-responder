@@ -6,19 +6,14 @@
   "type": "module",
   "private": true,
   "scripts": {
-    "test": "cross-env NODE_OPTIONS=--loader=esmock tap --test-ignore=mocks",
+    "test": "node --test --experimental-test-module-mocks",
     "lint": "eslint .",
     "start": "functions-framework --target=slackBot --port=3003",
     "try:bot": "IS_LOCAL_ENVIRONMENT=true node ./src/tryBot.js"
   },
   "devDependencies": {
-    "@babel/eslint-parser": "^7.25.8",
-    "@babel/plugin-syntax-import-assertions": "^7.25.7",
     "@google-cloud/functions-framework": "^3.4.2",
-    "cross-env": "^7.0.3",
-    "esmock": "^2.5.6",
-    "sinon": "^19.0.2",
-    "tap": "^16.3.8"
+    "sinon": "^19.0.2"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^4.7.2",
