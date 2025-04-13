@@ -9,7 +9,7 @@
     "test": "node --test --experimental-test-module-mocks",
     "lint": "eslint .",
     "start": "functions-framework --target=slackBot --port=3003",
-    "try:bot": "IS_LOCAL_ENVIRONMENT=true node ./src/tryBot.js"
+    "dev": "node src/dev.js"
   },
   "devDependencies": {
     "@google-cloud/functions-framework": "^3.4.2",
@@ -23,6 +23,6 @@
     "compute-cosine-similarity": "^1.1.0",
     "dotenv": "^16.4.5",
     "json-2-csv": "^5.5.6",
-    "openai": "^4.68.4"
+    "openai": "^4.93.0"
   }
 }

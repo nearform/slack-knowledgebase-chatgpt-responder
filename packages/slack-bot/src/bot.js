@@ -15,8 +15,6 @@ const app = new App({
   receiver: expressReceiver
 })
 
-const expressApp = expressReceiver.app
-
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 })
@@ -95,13 +93,50 @@ app.event('message', async ({ event, client }) => {
   }
 })
 
+const extractLinksFromMessage = message => {
+  const links = []
+  message.blocks.forEach(block => {
+    if (block.type === 'rich_text') {
+      block.elements.forEach(element => {
+        if (element.type === 'rich_text_section') {
+          element.elements.forEach(el => {
+            if (el.type === 'link') {
+              links.push(el.url)
+            }
+          })
+        }
+      })
+    }
+  })
+  return links
+}
+
+app.shortcut('summarize', async ({ shortcut, ack, client }) => {
+  await ack()
+
+  const links = extractLinksFromMessage(shortcut.message)
+
+  for (const link of links) {
+    const response = await openai.responses.create({
+      model: 'gpt-4o',
+      tools: [{ type: 'web_search_preview' }],
+      input: `Summarize the content of the following link: ${link}. If the page is not accessible, provide only a short error message.`
+    })
+
+    await client.chat.postMessage({
+      channel: shortcut.channel.id,
+      thread_ts: shortcut.message.ts,
+      text: `Here is the summary of the <${link}|link> you requested: 
+
+${response.output_text} `
+    })
+  }
+})
+
 // Check the details of the error to handle cases where you should retry sending a message or stop the app
 app.error(error => {
   console.error(error)
 })
 
-function processEvent(req, res) {
-  expressApp(req, res)
-}
-
-export { processEvent }
+export default app
+export const expressApp = expressReceiver.app

@@ -1,8 +1,4 @@
 import 'dotenv/config'
-import { processEvent } from './bot.js'
+import { expressApp } from './bot.js'
 
-function slackBot(req, res) {
-  processEvent(req, res)
-}
-
-export { slackBot }
+export { expressApp as slackBot }
