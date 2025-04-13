@@ -1,0 +1,9 @@
+exports[`notion > fetchData returns correct parsed data 1`] = `
+[
+  {
+    "index": 0,
+    "title": "Christmas",
+    "text": "At NearForm everyone is happy at Christmas, you will receive an amazon gift card! Only the Grinch is sad about Christmas."
+  }
+]
+`;
