@@ -21,6 +21,12 @@ const errorResponse =
   'It appears I have run into an issue looking up an answer for you. Please try again'
 
 app.event('message', async ({ event, client }) => {
+  console.log('message event', event)
+
+  if (event.subtype && event.subtype === 'bot_message') {
+    return
+  }
+
   try {
     let user = null
     let answer = null
