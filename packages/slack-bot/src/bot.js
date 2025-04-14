@@ -15,9 +15,7 @@ const app = new App({
   receiver: expressReceiver
 })
 
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY
-})
+const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 const errorResponse =
   'It appears I have run into an issue looking up an answer for you. Please try again'
@@ -74,10 +72,7 @@ app.event('message', async ({ event, client }) => {
         openai
       })
 
-      await client.chat.postMessage({
-        channel: event.channel,
-        text: answer
-      })
+      await client.chat.postMessage({ channel: event.channel, text: answer })
     } else {
       await client.chat.postMessage({
         channel: event.channel,
@@ -123,12 +118,11 @@ app.shortcut('summarize', async ({ shortcut, ack, client }) => {
       input: `Summarize the content of the following link: ${link}. If the page is not accessible, provide only a short error message.`
     })
 
-    await client.chat.postMessage({
+    await client.chat.postEphemeral({
       channel: shortcut.channel.id,
+      user: shortcut.user.id,
       thread_ts: shortcut.message.ts,
-      text: `Here is the summary of the <${link}|link> you requested: 
-
-${response.output_text} `
+      text: `Here is the summary of the <${link}|link> you requested: \n\n${response.output_text}`
     })
   }
 })
