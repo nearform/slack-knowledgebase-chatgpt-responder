@@ -22,7 +22,7 @@
     "@slack/bolt": "^4.0.1",
     "compute-cosine-similarity": "^1.1.0",
     "dotenv": "^16.4.5",
-    "json-2-csv": "^5.5.6",
+    "json-2-csv": "^5.5.9",
     "openai": "^4.93.0"
   }
 }
