@@ -122,7 +122,7 @@ describe('getAnswer', () => {
         }
       ],
       temperature: 0,
-      model: 'gpt-4'
+      model: 'gpt-4.1'
     })
   })
 })

@@ -114,7 +114,7 @@ async function createContext({
  */
 async function getAnswer({
   dataSet: customDataSet,
-  model = 'gpt-4',
+  model = 'gpt-4.1',
   question = 'What is NearForm?',
   maxLength = 1800,
   embeddingModel = defaultEmbeddingModel,
