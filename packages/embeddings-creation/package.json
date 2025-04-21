@@ -11,7 +11,7 @@
     "lint": "eslint ."
   },
   "dependencies": {
-    "@google-cloud/functions-framework": "^3.4.2",
+    "@google-cloud/functions-framework": "^3.5.1",
     "@google-cloud/storage": "^7.16.0",
     "@manypkg/find-root": "^2.2.3",
     "dotenv": "^16.5.0",
