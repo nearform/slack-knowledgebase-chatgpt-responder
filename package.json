@@ -1,6 +1,6 @@
 {
   "name": "slack-knowledgebase-chatgpt-responder",
-  "version": "1.4.4",
+  "version": "1.4.5",
   "description": "Template to start a new repository on the hub",
   "private": true,
   "scripts": {
