@@ -45,7 +45,7 @@ async function handleLinks(shortcut, openai, client) {
 }
 
 async function handleFiles(shortcut, client, openai) {
-  for (const file of shortcut.message.files) {
+  for (const file of shortcut.message.files ?? []) {
     const fileInfo = await client.files.info({ file: file.id })
 
     if (!fileInfo.ok) {
