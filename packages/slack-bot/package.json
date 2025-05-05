@@ -12,7 +12,7 @@
     "dev": "node src/dev.js"
   },
   "devDependencies": {
-    "@google-cloud/functions-framework": "^3.5.1",
+    "@google-cloud/functions-framework": "^4.0.0",
     "sinon": "^20.0.0"
   },
   "dependencies": {
