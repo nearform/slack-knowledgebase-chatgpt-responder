@@ -14,7 +14,7 @@
     "@google-cloud/storage": "^7.16.0",
     "@manypkg/find-root": "^3.0.0",
     "@notionhq/client": "^4.0.0",
-    "dotenv": "^17.0.1",
+    "dotenv": "^17.2.0",
     "json-2-csv": "^5.5.9",
     "p-map": "^7.0.3"
   }
