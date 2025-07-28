@@ -22,6 +22,6 @@
     "tiktoken-node": "^0.0.7"
   },
   "devDependencies": {
-    "cross-env": "^7.0.3"
+    "cross-env": "^10.0.0"
   }
 }
