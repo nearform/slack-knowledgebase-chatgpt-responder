@@ -22,7 +22,7 @@
     "@babel/core": "^7.28.4",
     "@babel/eslint-parser": "^7.28.4",
     "@babel/plugin-syntax-import-attributes": "^7.27.1",
-    "@commitlint/cli": "^19.8.1",
+    "@commitlint/cli": "^20.0.0",
     "@commitlint/config-conventional": "^20.0.0",
     "eslint": "^8.57.0",
     "eslint-config-prettier": "^10.1.8",
