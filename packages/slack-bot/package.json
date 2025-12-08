@@ -23,6 +23,6 @@
     "compute-cosine-similarity": "^1.1.0",
     "dotenv": "^17.2.3",
     "json-2-csv": "^5.5.10",
-    "openai": "^6.9.1"
+    "openai": "^6.10.0"
   }
 }
