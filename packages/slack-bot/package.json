@@ -13,7 +13,7 @@
   },
   "devDependencies": {
     "@google-cloud/functions-framework": "^4.0.1",
-    "sinon": "^21.0.0"
+    "sinon": "^21.0.1"
   },
   "dependencies": {
     "@google-cloud/pubsub": "^5.2.0",
