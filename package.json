@@ -21,7 +21,7 @@
   "devDependencies": {
     "@babel/core": "^7.28.5",
     "@babel/eslint-parser": "^7.28.5",
-    "@babel/plugin-syntax-import-attributes": "^7.27.1",
+    "@babel/plugin-syntax-import-attributes": "^7.28.6",
     "@commitlint/cli": "^20.3.1",
     "@commitlint/config-conventional": "^20.3.1",
     "eslint": "^8.57.0",
