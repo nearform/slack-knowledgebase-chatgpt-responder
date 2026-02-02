@@ -19,7 +19,7 @@
   },
   "homepage": "https://github.com/nearform/slack-knowledgebase-chatgpt-responder#readme",
   "devDependencies": {
-    "@babel/core": "^7.28.6",
+    "@babel/core": "^7.29.0",
     "@babel/eslint-parser": "^7.28.6",
     "@babel/plugin-syntax-import-attributes": "^7.28.6",
     "@commitlint/cli": "^20.3.1",
