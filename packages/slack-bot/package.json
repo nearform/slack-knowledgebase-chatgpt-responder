@@ -16,7 +16,7 @@
     "sinon": "^22.0.0"
   },
   "dependencies": {
-    "@google-cloud/pubsub": "^6.0.0",
+    "@google-cloud/pubsub": "^6.0.1",
     "@google-cloud/storage": "^8.0.0",
     "@manypkg/find-root": "^3.1.0",
     "@slack/bolt": "^5.0.0",
