@@ -77,7 +77,7 @@ const getRecursiveBlockContent = async blockId => {
   let blocks
   try {
     blocks = await notion.blocks.children.list({ block_id: blockId })
-  } catch (e) {
+  } catch {
     console.log(`Cannot fetch children of block ${blockId}...`)
     let retryCount = 1
 
@@ -87,7 +87,7 @@ const getRecursiveBlockContent = async blockId => {
         blocks = await notion.blocks.children.list({ block_id: blockId })
         console.log(`Succeded after #${retryCount} retry`)
         break
-      } catch (e) {
+      } catch {
         retryCount++
       }
     }
