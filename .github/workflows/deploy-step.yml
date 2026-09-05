@@ -129,7 +129,7 @@ jobs:
         id: deploy-slack-bot
         run: >-
           gcloud beta functions deploy slackbot
-          --runtime nodejs20 
+          --runtime nodejs24
           --memory=512MB
           --min-instances=1
           --max-instances=5
@@ -151,8 +151,8 @@ jobs:
       - name: Deploy embedding-creation to Cloud Run
         id: deploy-embedding-creation
         run: >-
-          gcloud functions deploy embedding-creation 
-          --runtime=nodejs20
+          gcloud functions deploy embedding-creation
+          --runtime=nodejs24
           --memory=512MB
           --region=europe-west1
           --gen2
