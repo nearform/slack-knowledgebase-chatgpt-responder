@@ -39,6 +39,11 @@ const reducedBudgetContextPages = [
 // mocks are registered once, before the first import. A module specifier can
 // only be mocked once per process, so this cannot live inside the tests that
 // re-import the module.
+//
+// getAnswer.js writes and reads ./embeddings.csv relative to the working
+// directory, so this file and getAnswer.test.js share that path and would
+// clobber each other's fixture if their processes overlapped. The test script
+// passes --test-concurrency=1 to keep test files from running in parallel.
 mock.module('../src/utils.js', {
   namedExports: {
     ...utils,
