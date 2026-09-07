@@ -1,4 +1,6 @@
 import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 import { describe, test, mock } from 'node:test'
 import sinon from 'sinon'
 import * as utils from '../src/utils.js'
@@ -40,13 +42,18 @@ const reducedBudgetContextPages = [
 // only be mocked once per process, so this cannot live inside the tests that
 // re-import the module.
 //
-// getAnswer.js writes and reads ./embeddings.csv relative to the working
-// directory, so this file and getAnswer.test.js share that path and would
-// clobber each other's fixture if their processes overlapped. The test script
-// passes --test-concurrency=1 to keep test files from running in parallel.
+// localEmbeddingsFile is overridden with a path of this file's own, because
+// test files run in parallel processes and would otherwise write and read the
+// one path that getAnswer.js downloads to.
+const testEmbeddingsFile = path.join(
+  os.tmpdir(),
+  'slack-bot-context-budget-embeddings.csv'
+)
+
 mock.module('../src/utils.js', {
   namedExports: {
     ...utils,
+    localEmbeddingsFile: testEmbeddingsFile,
     download: (_, __, destination) => {
       fs.writeFileSync(destination, largeChunkEmbeddingsCsvMock)
     }

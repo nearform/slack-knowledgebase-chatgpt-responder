@@ -4,7 +4,8 @@ import {
   download,
   parseCsv,
   distancesFromEmbeddings,
-  isLocalEnvironment
+  isLocalEnvironment,
+  localEmbeddingsFile
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
@@ -38,7 +39,6 @@ const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
-const localEmbeddingsFile = './embeddings.csv'
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */

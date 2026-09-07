@@ -12,6 +12,11 @@ const rootCache = path.join(rootDir, '.cache')
 
 export const isLocalEnvironment = Boolean(process.env.IS_LOCAL_ENVIRONMENT)
 
+// Where download() puts the embeddings file for this process to read back. It
+// lives here beside download() so a test can point a module instance at its own
+// file through the same mock it already uses for download().
+export const localEmbeddingsFile = './embeddings.csv'
+
 /**
  * Download a remote bucket file to a local destination
  */
