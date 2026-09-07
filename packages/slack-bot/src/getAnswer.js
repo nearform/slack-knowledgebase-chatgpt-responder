@@ -4,23 +4,12 @@ import {
   download,
   parseCsv,
   distancesFromEmbeddings,
-  isLocalEnvironment,
-  localEmbeddingsFile
+  isLocalEnvironment
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
-const fallbackMaxContextTokens = 4000
 
-/**
- * Parse a positive token count, falling back when the value is missing, empty,
- * non numeric or not a positive whole number of tokens. A NaN or zero budget
- * would silently build an empty context and answer the question from nothing.
- * Flooring comes before the guard so that a fraction below 1, which floors to
- * zero, falls back rather than passing as positive.
- * @param {string | undefined} value
- * @param {number} fallback
- * @returns {number}
- */
+/** Floors before the guard on purpose: a fraction below 1 floors to zero. */
 function parsePositiveTokenCount(value, fallback) {
   const parsed = Math.floor(Number(value))
   if (!Number.isFinite(parsed) || parsed <= 0) {
@@ -29,18 +18,16 @@ function parsePositiveTokenCount(value, fallback) {
   return parsed
 }
 
-// Token budget for the context sent to the model with each question, tunable
-// via MAX_CONTEXT_TOKENS. The previous value of 1800 was inherited from the
-// OpenAI cookbook example this project was ported from, which targeted a 4k
-// context model, and it admitted too few chunks for the model used now.
 const maxContextTokens = parsePositiveTokenCount(
   process.env.MAX_CONTEXT_TOKENS,
-  fallbackMaxContextTokens
+  4000
 )
 const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
+// Per process so that concurrent processes, tests included, never share a file.
+const localEmbeddingsFile = `/tmp/embeddings-${process.pid}.csv`
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */

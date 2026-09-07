@@ -1,17 +1,8 @@
 import fs from 'node:fs'
-import os from 'node:os'
-import path from 'node:path'
 import { describe, test, mock } from 'node:test'
 import sinon from 'sinon'
 import * as utils from '../src/utils.js'
 import { createChatCompletionResponse } from './mocks/chatCompletion.js'
-
-// Test files run in parallel processes, so each one points getAnswer.js at a
-// file of its own instead of the single path it downloads to by default.
-const testEmbeddingsFile = path.join(
-  os.tmpdir(),
-  'slack-bot-get-answer-embeddings.csv'
-)
 
 const embeddingsCsvMock = [
   ',text,n_tokens,embeddings',
@@ -53,7 +44,6 @@ describe('getAnswer', () => {
     mock.module('../src/utils.js', {
       namedExports: {
         ...utils,
-        localEmbeddingsFile: testEmbeddingsFile,
         download: (_, __, destination) => {
           fs.writeFileSync(destination, embeddingsCsvMock)
         }
