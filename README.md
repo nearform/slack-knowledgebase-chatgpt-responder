@@ -96,6 +96,9 @@ Add the following values in an `.env` file (needed for local development):
 | `SLACK_SIGNING_SECRET`            | `api.slack.com/apps/[id]` > `Basic information` > `Signing Secret`         |
 | `SLACK_BOT_TOKEN`                 | `api.slack.com/apps/[id]` > `OAuth & Permissions` > `Bot User OAuth Token` |
 | `OPENAI_API_KEY`                  | Open API key                                                               |
+| `MAX_CONTEXT_TOKENS`              | Optional. Token budget for the context sent to the model (default `4000`)  |
+
+`MAX_CONTEXT_TOKENS` applies in production too, not just locally. The deploy step does not set it, so the deployed function runs on the default of 4000 until the variable is added to the function's environment.
 
 #### Slack setup
 

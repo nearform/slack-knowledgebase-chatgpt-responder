@@ -2,6 +2,7 @@ import fs from 'node:fs'
 import { describe, test, mock } from 'node:test'
 import sinon from 'sinon'
 import * as utils from '../src/utils.js'
+import { createChatCompletionResponse } from './mocks/chatCompletion.js'
 
 const embeddingsCsvMock = [
   ',text,n_tokens,embeddings',
@@ -16,16 +17,6 @@ const createEmbeddingResponse = {
         0.01764809899032116, 0.010304464027285576, 0.00995383970439434,
         -0.0057625784538686275
       ]
-    }
-  ]
-}
-
-const createChatCompletionResponse = {
-  choices: [
-    {
-      message: {
-        content: '\n\nActual chat response'
-      }
     }
   ]
 }

@@ -8,6 +8,32 @@ import {
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
+const fallbackMaxContextTokens = 4000
+
+/**
+ * Parse a positive token count, falling back when the value is missing, empty,
+ * non numeric or not positive. A NaN or zero budget would silently build an
+ * empty context and answer the question from nothing.
+ * @param {string | undefined} value
+ * @param {number} fallback
+ * @returns {number}
+ */
+function parsePositiveTokenCount(value, fallback) {
+  const parsed = Number(value)
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback
+  }
+  return Math.floor(parsed)
+}
+
+// Token budget for the context sent to the model with each question, tunable
+// via MAX_CONTEXT_TOKENS. The previous value of 1800 was inherited from the
+// OpenAI cookbook example this project was ported from, which targeted a 4k
+// context model, and it admitted too few chunks for the model used now.
+const maxContextTokens = parsePositiveTokenCount(
+  process.env.MAX_CONTEXT_TOKENS,
+  fallbackMaxContextTokens
+)
 const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
@@ -71,7 +97,7 @@ async function createContext({
   openai,
   question,
   dataSet,
-  maxLength = 1800,
+  maxLength = maxContextTokens,
   embeddingModel = defaultEmbeddingModel
 }) {
   // Get the embeddings for the question
@@ -116,7 +142,7 @@ async function getAnswer({
   dataSet: customDataSet,
   model = 'gpt-4.1',
   question = 'What is NearForm?',
-  maxLength = 1800,
+  maxLength = maxContextTokens,
   embeddingModel = defaultEmbeddingModel,
   locale = 'en-IE',
   openai
