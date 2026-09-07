@@ -98,7 +98,7 @@ Add the following values in an `.env` file (needed for local development):
 | `OPENAI_API_KEY`                  | Open API key                                                               |
 | `MAX_CONTEXT_TOKENS`              | Optional. Token budget for the context sent to the model (default `4000`)  |
 
-`MAX_CONTEXT_TOKENS` applies in production too, not just locally. The deploy step does not set it, so the deployed function runs on the default of 4000 until the variable is added to the function's environment.
+`MAX_CONTEXT_TOKENS` applies in production too, not just locally. The deploy workflow sets it on the deployed function from its `MAX_CONTEXT_TOKENS` input, which defaults to 4000. Set the repository variable of the same name to deploy a different budget.
 
 #### Slack setup
 
