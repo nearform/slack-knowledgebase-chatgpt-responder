@@ -160,7 +160,18 @@ describe('getAnswer context budget', () => {
     )
   })
 
-  const unusableEnvValues = ['', '   ', 'lots', '0', '-4000', '4000ish']
+  // '0.5' and '0.9' floor to zero, so they have to be rejected rather than
+  // accepted as positive.
+  const unusableEnvValues = [
+    '',
+    '   ',
+    'lots',
+    '0',
+    '-4000',
+    '4000ish',
+    '0.5',
+    '0.9'
+  ]
 
   for (const unusableEnvValue of unusableEnvValues) {
     test(`falls back to 4000 tokens when MAX_CONTEXT_TOKENS is ${JSON.stringify(

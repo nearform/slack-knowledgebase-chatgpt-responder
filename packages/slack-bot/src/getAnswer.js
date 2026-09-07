@@ -13,18 +13,20 @@ const fallbackMaxContextTokens = 4000
 
 /**
  * Parse a positive token count, falling back when the value is missing, empty,
- * non numeric or not positive. A NaN or zero budget would silently build an
- * empty context and answer the question from nothing.
+ * non numeric or not a positive whole number of tokens. A NaN or zero budget
+ * would silently build an empty context and answer the question from nothing.
+ * Flooring comes before the guard so that a fraction below 1, which floors to
+ * zero, falls back rather than passing as positive.
  * @param {string | undefined} value
  * @param {number} fallback
  * @returns {number}
  */
 function parsePositiveTokenCount(value, fallback) {
-  const parsed = Number(value)
+  const parsed = Math.floor(Number(value))
   if (!Number.isFinite(parsed) || parsed <= 0) {
     return fallback
   }
-  return Math.floor(parsed)
+  return parsed
 }
 
 // Token budget for the context sent to the model with each question, tunable
