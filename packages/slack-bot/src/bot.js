@@ -55,6 +55,11 @@ const unintelligibleAudioResponse =
 const unreadableAttachmentResponse =
   'I could not read that attachment. Please type your question instead'
 
+// A message forwarded or shared into the DM with no comment typed. There is
+// content, but no question in it, and the person is waiting on a reply.
+const noQuestionInShareResponse =
+  'I can see what you shared, but not a question. Please type your question and I will look it up'
+
 // The attachment was no use, but a question was typed alongside it, so there
 // is something to answer. Short, because the answer is on its way.
 const attachmentFallbackResponse =
@@ -191,6 +196,19 @@ app.event('message', async ({ event, client }) => {
           .catch(console.error)
         return
       }
+    } else if (!hasQuestionText(event)) {
+      // Nothing typed, no file: a message forwarded or shared into the DM with
+      // no comment, whose content sits in event.attachments. Deliberately not
+      // answered as though it were the question, because the sender never
+      // framed it as one, but they are waiting on a reply, so ask for one.
+      await client.chat
+        .postMessage({
+          channel: event.channel,
+          text: noQuestionInShareResponse,
+          thread_ts: event.ts
+        })
+        .catch(console.error)
+      return
     } else {
       client.chat
         .postMessage({

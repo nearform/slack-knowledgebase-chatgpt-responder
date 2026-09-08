@@ -56,6 +56,25 @@ const voiceNoteEvent = {
   ]
 }
 
+// Share or Forward used on an existing message into the bot's DM with no
+// comment typed. The shared content arrives in attachments, the text is empty,
+// and there are no files.
+const forwardedShareEvent = {
+  type: 'message',
+  user: 'U0000000000',
+  text: '',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.001100',
+  attachments: [
+    {
+      is_share: true,
+      author_name: 'Someone Else',
+      text: 'Time off is booked in the HR tool.'
+    }
+  ]
+}
+
 // A person pinning one of the bot's answers in the DM. Slack sends this on the
 // message.im subscription with a real user, real text, no bot_id and no
 // hidden, so nothing but the deny list stands between a pin notice and the bot
@@ -356,6 +375,42 @@ describe('carriesQuestion', () => {
   test('rejects an event with neither text nor a file', t => {
     t.assert.strictEqual(
       carriesQuestion({ ...userQuestionEvent, text: '' }),
+      false
+    )
+  })
+
+  // Share or Forward with no comment typed sends an empty text, no files, and
+  // the shared message in attachments. Returning false here dropped the event
+  // before the reaction, so the person was left waiting with nothing at all to
+  // look at. The handler replies asking for a question rather than answering
+  // content nobody framed as one.
+  test('accepts a forwarded message, which someone is waiting on a reply to', t => {
+    t.assert.strictEqual(carriesQuestion(forwardedShareEvent), true)
+  })
+
+  test('rejects an empty attachments array', t => {
+    t.assert.strictEqual(
+      carriesQuestion({ ...userQuestionEvent, text: '', attachments: [] }),
+      false
+    )
+  })
+
+  test('does not read the attachments of an unfurl, which nobody is waiting on', t => {
+    // The unfurl on the bot's own answer carries attachments too. It fails
+    // isPlainUserMessage first, and this keeps carriesQuestion from being the
+    // reason it stays silent.
+    t.assert.strictEqual(
+      carriesQuestion({
+        ...linkUnfurlEvent,
+        attachments: [{ text: 'The Nearform handbook' }]
+      }),
+      true
+    )
+    t.assert.strictEqual(
+      isPlainUserMessage({
+        ...linkUnfurlEvent,
+        attachments: [{ text: 'The Nearform handbook' }]
+      }),
       false
     )
   })

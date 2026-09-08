@@ -145,11 +145,35 @@ export function isTranscribableFile(file) {
 }
 
 /**
- * Whether there is anything to answer: typed text, or a file to transcribe.
+ * Whether the event carries message attachments, which is where the content of
+ * a message forwarded or shared into the DM arrives.
+ *
+ * Slack's `attachments` are not `files`: Share or Forward with no comment
+ * typed sends an empty `text`, no `files`, and the shared message in
+ * `attachments`.
+ *
+ * @param {Object} event a Slack `message` event
+ * @returns {boolean}
+ */
+export function hasAttachments(event) {
+  return Boolean(event.attachments && event.attachments.length > 0)
+}
+
+/**
+ * Whether the event is one a person is waiting on a reply to: typed text, a
+ * file, or a forwarded message.
+ *
+ * Not the same question as whether there is something answerable. A forwarded
+ * message with no comment has no question in it, and the handler asks for one
+ * rather than answering content the sender never framed as a question, but
+ * dropping it here left the person staring at a DM the bot had not even
+ * reacted to.
  *
  * @param {Object} event a Slack `message` event
  * @returns {boolean}
  */
 export function carriesQuestion(event) {
-  return hasQuestionText(event) || hasFileAttachment(event)
+  return (
+    hasQuestionText(event) || hasFileAttachment(event) || hasAttachments(event)
+  )
 }

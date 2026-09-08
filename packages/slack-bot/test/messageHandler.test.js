@@ -237,6 +237,26 @@ const otherBotMessageEvent = {
   ts: '1700000000.000400'
 }
 
+// Share or Forward used on an existing message into the bot's DM with no
+// comment typed: an empty text, no files, and the shared message in
+// attachments. The handler used to return before the reaction, so the person
+// was left waiting with nothing at all to look at.
+const forwardedShareEvent = {
+  type: 'message',
+  user: 'U0000000000',
+  text: '',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.001100',
+  attachments: [
+    {
+      is_share: true,
+      author_name: 'Someone Else',
+      text: 'Time off is booked in the HR tool.'
+    }
+  ]
+}
+
 // The notice Slack sends when someone pins a message in the conversation.
 const pinnedItemNoticeEvent = {
   type: 'message',
@@ -385,6 +405,47 @@ describe('the message handler', () => {
     const client = createClientMock()
 
     await messageHandler({ event: pinnedItemNoticeEvent, client })
+
+    sinon.assert.notCalled(getAnswerMock)
+    sinon.assert.notCalled(client.reactions.add)
+    t.assert.deepStrictEqual(postedMessages(client), [])
+  })
+
+  test('asks for a question when a message is forwarded with no comment', async t => {
+    const client = createClientMock()
+
+    await messageHandler({ event: forwardedShareEvent, client })
+
+    sinon.assert.calledOnce(client.reactions.add)
+
+    const posted = postedMessages(client)
+    t.assert.strictEqual(
+      posted.length,
+      1,
+      `exactly one message should be posted, got ${JSON.stringify(posted)}`
+    )
+    t.assert.match(posted[0], /type your question/i)
+
+    // The shared content is deliberately not treated as the question:
+    // answering something the sender never asked is a different feature.
+    sinon.assert.notCalled(getAnswerMock)
+    sinon.assert.notCalled(transcribeMock)
+    t.assert.ok(!posted.includes(genericErrorResponse))
+  })
+
+  test('still leaves no trace on an unfurl that carries attachments', async t => {
+    // The reply above must not reach the events nobody is waiting on. An
+    // unfurl of the bot's own answer carries attachments as well, and issue
+    // #983 depends on it staying silent.
+    const client = createClientMock()
+
+    await messageHandler({
+      event: {
+        ...linkUnfurlEvent,
+        attachments: [{ text: 'The Nearform handbook' }]
+      },
+      client
+    })
 
     sinon.assert.notCalled(getAnswerMock)
     sinon.assert.notCalled(client.reactions.add)
