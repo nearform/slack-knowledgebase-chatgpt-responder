@@ -1,25 +1,52 @@
 import fs from 'node:fs/promises'
 import os from 'node:os'
 import path from 'node:path'
+import { EventEmitter } from 'node:events'
 import { PassThrough } from 'node:stream'
-import { after, before, describe, test, mock } from 'node:test'
+import { beforeEach, describe, test, mock } from 'node:test'
 import sinon from 'sinon'
 
 // transcribe downloads the audio over HTTPS before handing it to OpenAI, so
 // node:https is the one thing that has to be faked. Writing and reading the
-// downloaded file stay real, into a temporary directory. mock.module registers
-// a specifier once per process, which is why this lives in a test file of its
-// own.
-const httpsGetMock = sinon.spy((options, onResponse) => {
+// downloaded file stay real, under the system temporary directory the download
+// writes to. mock.module registers a specifier once per process, which is why
+// this lives in a test file of its own.
+
+function respondWithAudio(
+  request,
+  onResponse,
+  { statusCode = 200, body = 'fake audio bytes' } = {}
+) {
   const response = new PassThrough()
+  response.statusCode = statusCode
   onResponse(response)
-  response.end('fake audio bytes')
+  response.end(body)
   return response
+}
+
+// What the faked https.get does once the caller has had its request object
+// back, set per test. The default serves the audio successfully.
+let respondToDownload = respondWithAudio
+
+const httpsGetMock = sinon.spy((options, onResponse) => {
+  const request = new EventEmitter()
+  // ClientRequest.destroy(error) surfaces the error to the request's own
+  // 'error' listeners, which is how a timeout becomes a rejection.
+  request.destroy = sinon.spy(error => {
+    if (error) {
+      request.emit('error', error)
+    }
+  })
+  // The real https.get returns the request before any response arrives, so a
+  // listener registered after the call still sees the outcome.
+  setImmediate(() => respondToDownload(request, onResponse))
+  return request
 })
 
 mock.module('node:https', { defaultExport: { get: httpsGetMock } })
 
-const { transcribe, transcriptionText } = await import('../src/utils.js')
+const { downloadAudio, transcribe, transcriptionText } =
+  await import('../src/utils.js')
 
 const audioFile = {
   id: 'F0000000000',
@@ -52,21 +79,119 @@ function createOpenaiMock(transcriptionResponse) {
   }
 }
 
-let previousWorkingDirectory
-let downloadDirectory
+async function removeIfPresent(filePath) {
+  await fs.rm(filePath, { force: true })
+}
 
-before(async () => {
-  // downloadAudio writes ./<file id>.mp4 relative to the working directory.
-  previousWorkingDirectory = process.cwd()
-  downloadDirectory = await fs.mkdtemp(
-    path.join(os.tmpdir(), 'slack-bot-transcribe-')
-  )
-  process.chdir(downloadDirectory)
+beforeEach(() => {
+  respondToDownload = respondWithAudio
 })
 
-after(async () => {
-  process.chdir(previousWorkingDirectory)
-  await fs.rm(downloadDirectory, { recursive: true, force: true })
+describe('downloadAudio', () => {
+  test('writes the audio under the system temporary directory', async t => {
+    // The working directory of a Cloud Run instance is an in-memory
+    // filesystem charged against the instance memory limit, and a scratch
+    // file belongs in the temporary directory rather than beside the source.
+    const downloadedPath = await downloadAudio(
+      audioFile.url_private_download,
+      audioFile.id
+    )
+
+    try {
+      t.assert.strictEqual(
+        path.dirname(downloadedPath),
+        os.tmpdir(),
+        'the download should not land in the working directory'
+      )
+      t.assert.strictEqual(
+        await fs.readFile(downloadedPath, 'utf8'),
+        'fake audio bytes'
+      )
+    } finally {
+      await removeIfPresent(downloadedPath)
+    }
+  })
+
+  test('rejects when the request itself fails', async t => {
+    // files.slack.com unreachable: ENOTFOUND, ECONNRESET or a TLS failure. The
+    // ClientRequest emits 'error', and with no listener for it that was an
+    // uncaught exception which took the whole instance down.
+    const connectionError = new Error('getaddrinfo ENOTFOUND files.slack.com')
+    respondToDownload = request => {
+      request.emit('error', connectionError)
+    }
+
+    await t.assert.rejects(
+      downloadAudio(audioFile.url_private_download, audioFile.id),
+      connectionError
+    )
+  })
+
+  test('rejects when the response fails part way through', async t => {
+    const responseError = new Error('aborted')
+    respondToDownload = (request, onResponse) => {
+      const response = new PassThrough()
+      response.statusCode = 200
+      onResponse(response)
+      response.emit('error', responseError)
+    }
+
+    await t.assert.rejects(
+      downloadAudio(audioFile.url_private_download, audioFile.id),
+      responseError
+    )
+  })
+
+  test('rejects when the downloaded file cannot be written', async t => {
+    // The write stream error, which nothing listened for either.
+    await t.assert.rejects(
+      downloadAudio(
+        audioFile.url_private_download,
+        path.join('a-directory-that-does-not-exist', 'F0000000000')
+      ),
+      { code: 'ENOENT' }
+    )
+  })
+
+  test('rejects when a stalled response times out', async t => {
+    // Slack accepts the connection and then sends nothing. With no timeout the
+    // promise never settled and the handler waited on it forever.
+    respondToDownload = request => {
+      request.emit('timeout')
+    }
+
+    await t.assert.rejects(
+      downloadAudio(audioFile.url_private_download, audioFile.id),
+      /timed out/i
+    )
+    sinon.assert.called(httpsGetMock.lastCall.returnValue.destroy)
+  })
+
+  test('asks for a request timeout, without which the timeout never fires', async t => {
+    await removeIfPresent(
+      await downloadAudio(audioFile.url_private_download, audioFile.id)
+    )
+
+    const [options] = httpsGetMock.lastCall.args
+    t.assert.strictEqual(typeof options.timeout, 'number')
+    t.assert.ok(options.timeout > 0, 'the timeout has to be a real deadline')
+  })
+
+  test('rejects a non-2xx response rather than writing the error body to disk', async t => {
+    // An expired or forbidden Slack download URL answers with an error body,
+    // which was written to disk and handed to Whisper as though it were audio.
+    respondToDownload = (request, onResponse) => {
+      respondWithAudio(request, onResponse, {
+        statusCode: 403,
+        body: 'expired signature'
+      })
+    }
+
+    await t.assert.rejects(
+      downloadAudio(audioFile.url_private_download, audioFile.id),
+      /403/
+    )
+  })
 })
 
 describe('transcribe', () => {

@@ -1,6 +1,7 @@
 import fs from 'node:fs/promises'
 import f from 'node:fs'
 import path from 'node:path'
+import os from 'node:os'
 import https from 'node:https'
 import { Storage } from '@google-cloud/storage'
 import { findRootSync } from '@manypkg/find-root'
@@ -46,24 +47,79 @@ export function distancesFromEmbeddings({ queryEmbedding, embeddings }) {
   return distance
 }
 
+/**
+ * How long the audio download may take before it is abandoned. Slack accepting
+ * the connection and then sending nothing used to leave the message handler
+ * waiting on a promise that could never settle.
+ */
+const audioDownloadTimeoutMs = 30_000
+
+/**
+ * Download the audio a Slack file points at to a local scratch file.
+ *
+ * Every failure has to reject: the request failing to connect, the response
+ * breaking part way through, the file failing to write, the response stalling,
+ * and a non-2xx answer such as the error body an expired or forbidden download
+ * URL serves. Unlistened-for stream errors were uncaught exceptions, which
+ * functions-framework turns into a process exit that takes every in-flight
+ * request with it.
+ *
+ * @param {string} url the file's `url_private_download`
+ * @param {string} id the Slack file id, used to name the scratch file
+ * @returns {Promise<string>} the path the audio was written to
+ */
 export async function downloadAudio(url, id) {
-  return new Promise(resolve => {
-    const u = new URL(url)
-    const dest = `./${id}.mp4`
-    https.get(
+  const slackUrl = new URL(url)
+  // The working directory of a Cloud Run instance is an in-memory filesystem
+  // charged against the instance memory limit, so a scratch file belongs in
+  // the temporary directory instead.
+  const destination = path.join(os.tmpdir(), `${id}.mp4`)
+
+  return new Promise((resolve, reject) => {
+    const request = https.get(
       {
-        hostname: u.hostname,
-        path: u.pathname,
+        hostname: slackUrl.hostname,
+        path: slackUrl.pathname,
         headers: {
           authorization: `Bearer ${process.env.SLACK_BOT_TOKEN}`
-        }
+        },
+        timeout: audioDownloadTimeoutMs
       },
-      res => {
-        res.pipe(f.createWriteStream(dest)).on('finish', () => {
-          resolve(dest)
+      response => {
+        const { statusCode } = response
+        if (!statusCode || statusCode < 200 || statusCode >= 300) {
+          // Drain and abandon it: writing an error body to disk and handing it
+          // to Whisper as though it were audio helps nobody.
+          response.resume()
+          request.destroy()
+          reject(
+            new Error(
+              `downloading the audio failed with HTTP status ${statusCode}`
+            )
+          )
+          return
+        }
+
+        const audioFile = f.createWriteStream(destination)
+        response.on('error', reject)
+        audioFile.on('error', reject)
+        audioFile.on('finish', () => {
+          resolve(destination)
         })
+        response.pipe(audioFile)
       }
     )
+
+    request.on('error', reject)
+    request.on('timeout', () => {
+      // A timeout does not close the socket by itself, and destroying with an
+      // error is what turns it into a rejection through the listener above.
+      request.destroy(
+        new Error(
+          `downloading the audio timed out after ${audioDownloadTimeoutMs}ms`
+        )
+      )
+    })
   })
 }
 
