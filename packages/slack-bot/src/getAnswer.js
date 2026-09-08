@@ -142,12 +142,19 @@ async function createContext({
 async function getAnswer({
   dataSet: customDataSet,
   model = 'gpt-4.1',
-  question = 'What is NearForm?',
+  question,
   maxLength = parsePositiveTokenCount(process.env.MAX_CONTEXT_TOKENS, 4000),
   embeddingModel = defaultEmbeddingModel,
   locale = 'en-IE',
   openai
 }) {
+  // No default: a question this function invented would be answered as
+  // confidently as one a person asked, which is how a spurious Slack event
+  // turned into a plausible looking answer rather than an obvious failure.
+  if (typeof question !== 'string' || question.trim().length === 0) {
+    throw new Error('getAnswer requires a question')
+  }
+
   await initialize()
   const dataSet = customDataSet ?? defaultDataSet
   if (!dataSet) {
