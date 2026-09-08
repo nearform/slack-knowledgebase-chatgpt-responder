@@ -31,6 +31,30 @@ const userQuestionEvent = {
   ts: '1700000000.000200'
 }
 
+// A voice note recorded in a DM. Slack delivers a person's file upload as a
+// message event with the file_share subtype, an empty text and the file in
+// event.files, which is the shape the transcription branch in bot.js exists
+// for.
+const voiceNoteEvent = {
+  type: 'message',
+  subtype: 'file_share',
+  user: 'U0000000000',
+  text: '',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000300',
+  files: [
+    {
+      id: 'F0000000000',
+      name: 'audio_message.webm',
+      mimetype: 'audio/webm',
+      subtype: 'slack_audio',
+      url_private_download:
+        'https://files.slack.com/files-pri/T0000000000-F0000000000/download/audio_message.webm'
+    }
+  ]
+}
+
 describe('isPlainUserMessage', () => {
   test('accepts a plain direct message from a person', t => {
     t.assert.strictEqual(isPlainUserMessage(userQuestionEvent), true)
@@ -47,22 +71,70 @@ describe('isPlainUserMessage', () => {
     )
   })
 
-  test('rejects every other subtype it has not been told about', t => {
-    const otherSubtypes = [
+  test('rejects every subtype on the deny list', t => {
+    const deniedSubtypes = [
+      'bot_message',
+      'message_changed',
       'message_deleted',
       'message_replied',
+      'tombstone',
+      'ekm_access_denied',
       'channel_join',
-      'thread_broadcast',
-      'file_share'
+      'channel_leave',
+      'channel_topic',
+      'channel_purpose',
+      'channel_name',
+      'channel_archive',
+      'channel_unarchive',
+      'group_join',
+      'group_leave',
+      'group_topic',
+      'group_purpose',
+      'group_name',
+      'group_archive',
+      'group_unarchive'
     ]
 
-    for (const subtype of otherSubtypes) {
+    for (const subtype of deniedSubtypes) {
       t.assert.strictEqual(
         isPlainUserMessage({ ...userQuestionEvent, subtype }),
         false,
         `expected the ${subtype} subtype to be ignored`
       )
     }
+  })
+
+  test('accepts the subtypes that are still a person speaking', t => {
+    // file_share is a file or voice note someone uploaded, thread_broadcast is
+    // a threaded reply also sent to the channel, and me_message is a /me
+    // message. All three keep their text at event.text and are questions the
+    // bot should answer.
+    const userSubtypes = ['file_share', 'thread_broadcast', 'me_message']
+
+    for (const subtype of userSubtypes) {
+      t.assert.strictEqual(
+        isPlainUserMessage({ ...userQuestionEvent, subtype }),
+        true,
+        `expected the ${subtype} subtype to be answered`
+      )
+    }
+  })
+
+  test('accepts an unrecognised subtype, so an unknown behaves as before', t => {
+    // The list is a deny list on purpose. A subtype nobody here has seen keeps
+    // the behaviour this fix started from, an answered message, rather than
+    // becoming a new silent failure.
+    t.assert.strictEqual(
+      isPlainUserMessage({
+        ...userQuestionEvent,
+        subtype: 'a_subtype_slack_has_not_shipped_yet'
+      }),
+      true
+    )
+  })
+
+  test('accepts a voice note a person recorded in a DM', t => {
+    t.assert.strictEqual(isPlainUserMessage(voiceNoteEvent), true)
   })
 
   test('rejects an event carrying a bot_id even with no subtype', t => {
@@ -151,6 +223,10 @@ describe('carriesQuestion', () => {
       }),
       true
     )
+  })
+
+  test('accepts the voice note event, whose question is in the audio', t => {
+    t.assert.strictEqual(carriesQuestion(voiceNoteEvent), true)
   })
 
   test('rejects an event with neither text nor a file', t => {

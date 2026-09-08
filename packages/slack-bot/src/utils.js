@@ -68,17 +68,41 @@ export async function downloadAudio(url, id) {
 }
 
 /**
+ * The text of a transcription, whatever shape the SDK returned it in.
  *
- * @param {*} file
+ * With `response_format: 'text'` the SDK resolves to the transcription as a
+ * plain string, so reading `.text` off it gave `undefined`. Other formats
+ * resolve to an object carrying `text`. Both are handled here rather than in
+ * the caller, so changing the format cannot quietly return nothing again, and
+ * anything else gives the empty string a silent recording would.
+ *
+ * @param {string | { text?: string } | undefined} transcription
+ * @returns {string}
+ */
+export function transcriptionText(transcription) {
+  if (typeof transcription === 'string') {
+    return transcription
+  }
+  if (transcription && typeof transcription.text === 'string') {
+    return transcription.text
+  }
+  return ''
+}
+
+/**
+ * Transcribe an audio file a person sent, such as a voice note.
+ *
+ * @param {*} file a Slack file from `event.files`
  * @param {import('openai').OpenAI} openai
- * @returns
+ * @returns {Promise<string>} the transcription, or the empty string if the
+ *   audio yielded no words
  */
 export async function transcribe(file, openai) {
   const p = await downloadAudio(file.url_private_download, file.id)
-  const transcribe = await openai.audio.transcriptions.create({
+  const transcription = await openai.audio.transcriptions.create({
     file: f.createReadStream(p),
     model: 'whisper-1',
     response_format: 'text'
   })
-  return transcribe.text
+  return transcriptionText(transcription)
 }

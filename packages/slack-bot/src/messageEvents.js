@@ -4,20 +4,70 @@
  */
 
 /**
+ * Subtypes of the `message` event that are never a person asking something.
+ *
+ * A deny list rather than an allow list, deliberately. We are not confident we
+ * know every subtype string Slack may send, and an unrecognised one is far
+ * better answered, which is what the bot did before this guard existed, than
+ * silently dropped. Getting an answer nobody expected is visible; getting no
+ * answer at all looks like the bot is broken.
+ *
+ * The entries fall into two groups. `bot_message`, `message_changed`,
+ * `message_deleted`, `message_replied`, `tombstone` and `ekm_access_denied`
+ * are the bot's or the workspace's own doing, not a message anyone typed: a
+ * link unfurl on the bot's own answer is the `message_changed` one, and it is
+ * what issue #983 was about. The rest are the channel membership and channel
+ * metadata notices, whose text reads like "so-and-so joined the channel" or
+ * "set the channel topic", which the model would happily answer as a question.
+ *
+ * Subtypes that are still a person speaking are absent on purpose, so they are
+ * answered: `file_share` (an upload, including a voice note, with the file in
+ * `event.files`), `thread_broadcast` and `me_message` all keep their text at
+ * `event.text`.
+ */
+const nonUserMessageSubtypes = new Set([
+  'bot_message',
+  'message_changed',
+  'message_deleted',
+  'message_replied',
+  'tombstone',
+  'ekm_access_denied',
+  'channel_join',
+  'channel_leave',
+  'channel_topic',
+  'channel_purpose',
+  'channel_name',
+  'channel_archive',
+  'channel_unarchive',
+  'group_join',
+  'group_leave',
+  'group_topic',
+  'group_purpose',
+  'group_name',
+  'group_archive',
+  'group_unarchive'
+])
+
+/**
  * Whether a `message` event is a plain message a person sent.
  *
- * Slack delivers far more than typed messages on this event. Edits, deletions,
- * joins and channel changes arrive as subtypes, and a link unfurl on the bot's
- * own answer arrives as a `message_changed` subtype carrying the bot's
- * `bot_id` and `hidden: true`. Only a plain user message keeps its text at
- * `event.text`, so treating any of the others as a question asks the model
- * something nobody asked.
+ * Slack delivers far more than typed messages on this event. A link unfurl on
+ * the bot's own answer arrives as a `message_changed` subtype with
+ * `hidden: true`, and it keeps its text at `event.message.text`, alongside the
+ * bot's own `bot_id`, so treating it as a question asks the model something
+ * nobody asked. A `bot_id` or `hidden` at the top level is rejected whatever
+ * the subtype, so that unfurl fails the deny list and the `hidden` check both.
  *
  * @param {Object} [event] a Slack `message` event
  * @returns {boolean}
  */
 export function isPlainUserMessage(event) {
-  return Boolean(event) && !event.subtype && !event.bot_id && !event.hidden
+  return (
+    Boolean(event) &&
+    !nonUserMessageSubtypes.has(event.subtype) &&
+    !event.bot_id &&
+    !event.hidden
+  )
 }
 
 /**

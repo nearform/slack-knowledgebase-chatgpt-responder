@@ -6,6 +6,7 @@ import { transcribe } from './utils.js'
 import {
   carriesQuestion,
   hasFileAttachment,
+  hasQuestionText,
   isPlainUserMessage
 } from './messageEvents.js'
 import summarize from './summarize.js'
@@ -42,6 +43,11 @@ const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
 
 const errorResponse =
   'It appears I have run into an issue looking up an answer for you. Please try again'
+
+// Nothing went wrong on our side, so the generic failure above would be
+// misleading as well as unhelpful.
+const unintelligibleAudioResponse =
+  'I could not make out any words in that recording. Please try again, or type your question instead'
 
 app.event('message', async ({ event, client }) => {
   console.log('message event', event)
@@ -94,6 +100,17 @@ app.event('message', async ({ event, client }) => {
             text: `Give me a moment whilst I check for you. You asked: "${transcribedResponse.trim()}"`,
             thread_ts: event.ts
           })
+        } else if (!hasQuestionText(event)) {
+          // The audio yielded no words and there is nothing typed to fall back
+          // on, so there is no question to look up. Say so, rather than asking
+          // getAnswer for an answer to nothing and reporting its failure as
+          // ours.
+          await client.chat.postMessage({
+            channel: event.channel,
+            text: unintelligibleAudioResponse,
+            thread_ts: event.ts
+          })
+          return
         }
       } catch (err) {
         console.error('transcription error', err)
