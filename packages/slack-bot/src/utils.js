@@ -132,15 +132,21 @@ export async function downloadAudio(url, id) {
  * the caller, so changing the format cannot quietly return nothing again, and
  * anything else gives the empty string a silent recording would.
  *
+ * The result is trimmed, so "no words were heard" is exactly the empty string
+ * and callers can branch on it directly. Whisper's text format newline
+ * terminates what it returns and gives only whitespace for audio with no
+ * speech in it, and a whitespace-only string is truthy: trimming here rather
+ * than in each caller is what makes the returns below true.
+ *
  * @param {string | { text?: string } | undefined} transcription
- * @returns {string}
+ * @returns {string} the words heard, or the empty string if there were none
  */
 export function transcriptionText(transcription) {
   if (typeof transcription === 'string') {
-    return transcription
+    return transcription.trim()
   }
   if (transcription && typeof transcription.text === 'string') {
-    return transcription.text
+    return transcription.text.trim()
   }
   return ''
 }
@@ -150,8 +156,8 @@ export function transcriptionText(transcription) {
  *
  * @param {*} file a Slack file from `event.files`
  * @param {import('openai').OpenAI} openai
- * @returns {Promise<string>} the transcription, or the empty string if the
- *   audio yielded no words
+ * @returns {Promise<string>} the transcription, trimmed, or the empty string
+ *   if the audio yielded no words
  */
 export async function transcribe(file, openai) {
   const downloadedPath = await downloadAudio(file.url_private_download, file.id)

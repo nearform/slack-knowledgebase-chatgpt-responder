@@ -27,7 +27,11 @@ const transcribeMock = sinon.spy(async () => {
   if (transcriptionRejection) {
     throw transcriptionRejection
   }
-  return transcriptionResult
+  // The real transcribe trims what it returns, so the empty string means "no
+  // words were heard". Trimming here keeps the fake to that contract, which is
+  // what the handler branches on. The trim itself is covered in
+  // transcribe.test.js.
+  return transcriptionResult.trim()
 })
 
 let answerFromGetAnswer = 'You book time off in the HR tool.'
@@ -220,8 +224,9 @@ describe('the message handler', () => {
   })
 
   test('transcribes a voice note and answers what was said', async t => {
-    // Whisper's text format newline-terminates what it returns, so the value
-    // reaching getAnswer has to be the trimmed one.
+    // Whisper's text format newline-terminates what it returns, and transcribe
+    // trims it, so what reaches getAnswer and the acknowledgement is the words
+    // and nothing else.
     transcriptionResult = 'How do I book time off?\n'
     const client = createClientMock()
 
@@ -279,11 +284,11 @@ describe('the message handler', () => {
     sinon.assert.notCalled(getAnswerMock)
   })
 
-  // Whisper with response_format: 'text' returns a plain string, and returns
-  // only whitespace for audio that contains no speech. A whitespace-only string
-  // is truthy, so branching on the untrimmed value took the "we heard
-  // something" path with nothing in it.
-  test('treats a whitespace-only transcription as no words heard', async t => {
+  // Whisper with response_format: 'text' returns only whitespace for audio
+  // that contains no speech, and a whitespace-only string is truthy, so the
+  // "we heard something" path was taken with nothing in it. transcribe now
+  // trims, and this covers the whole way through the handler.
+  test('treats a recording that transcribes to only whitespace as no words heard', async t => {
     transcriptionResult = ' \n '
     const client = createClientMock()
 

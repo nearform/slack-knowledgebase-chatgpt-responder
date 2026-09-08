@@ -92,14 +92,12 @@ app.event('message', async ({ event, client }) => {
 
     if (hasFileAttachment(event)) {
       try {
-        // Whisper's text format returns a plain string, newline terminated,
-        // and only whitespace for audio with no speech in it. Trim once and
-        // decide on the trimmed value: a whitespace-only string is truthy, so
-        // branching on the raw one both skipped the message below and
-        // overwrote a question the user had typed alongside the file.
-        const transcribedQuestion = (
-          await transcribe(event.files[0], openai)
-        ).trim()
+        // transcribe trims what it returns, so the empty string is exactly
+        // "no words were heard" and is what this branches on. Whisper's text
+        // format gives only whitespace for audio with no speech in it, and a
+        // whitespace-only string is truthy, which is why the normalisation
+        // matters and why it lives in one place.
+        const transcribedQuestion = await transcribe(event.files[0], openai)
         if (transcribedQuestion) {
           questionInput = transcribedQuestion
           client.chat.postMessage({

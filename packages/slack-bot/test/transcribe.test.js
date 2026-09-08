@@ -302,6 +302,23 @@ describe('transcriptionText', () => {
     t.assert.strictEqual(transcriptionText(''), '')
   })
 
+  // What Whisper actually returns for audio with no speech in it, and the
+  // reason the documented "empty string if the audio yielded no words" was
+  // false: a whitespace-only string is truthy, so every caller had to trim
+  // again to find out whether any words were heard.
+  test('returns the empty string for a whitespace-only transcription', t => {
+    t.assert.strictEqual(transcriptionText('\n'), '')
+    t.assert.strictEqual(transcriptionText('   '), '')
+    t.assert.strictEqual(transcriptionText({ text: '\n' }), '')
+  })
+
+  test('trims the newline Whisper terminates its text with', t => {
+    t.assert.strictEqual(
+      transcriptionText(`${spokenQuestion}\n`),
+      spokenQuestion
+    )
+  })
+
   test('reads text off an object response', t => {
     t.assert.strictEqual(
       transcriptionText({ text: spokenQuestion }),
