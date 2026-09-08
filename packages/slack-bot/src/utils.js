@@ -22,7 +22,7 @@ export async function download(bucketName, fileName, destination) {
     const storage = new Storage()
     const bucket = storage.bucket(bucketName)
     const file = bucket.file(fileName)
-    await file.download({ destination: fileName })
+    await file.download({ destination })
   }
 }
 

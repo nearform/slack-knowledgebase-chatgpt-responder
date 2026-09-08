@@ -8,31 +8,58 @@ import {
 } from './utils.js'
 
 const defaultEmbeddingModel = 'text-embedding-ada-002'
+
+/** Floors before the guard on purpose: a fraction below 1 floors to zero. */
+function parsePositiveTokenCount(value, fallback) {
+  const parsed = Math.floor(Number(value))
+  if (!Number.isFinite(parsed) || parsed <= 0) {
+    return fallback
+  }
+  return parsed
+}
+
 const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
 const embeddingsSubscription = process.env.GCP_EMBEDDING_SUBSCRIPTION
-const localEmbeddingsFile = './embeddings.csv'
+// Per process so that concurrent processes, tests included, never share a file.
+const localEmbeddingsFile = `/tmp/embeddings-${process.pid}.csv`
 
 // @TODO Reorganize this data in a more suitable way to improve access and manipulation
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
 let defaultDataSet = undefined
 
-// @TODO Since initialization is async, we expose a promise to avoid race conditions on getAnswer calls
 let initializationPromise = undefined
-async function initialize() {
-  initializationPromise = new Promise(resolve => {
-    getEmbeddingsFile()
-      .then(result => {
-        defaultDataSet = result
-      })
-      .then(() => {
-        if (!isLocalEnvironment) {
-          subscribeToEmbeddingChanges()
-        }
-      })
-      .then(resolve)
-  })
+
+/**
+ * Load the embeddings, at most once at a time. The promise rejects if the load
+ * fails, so callers surface the failure instead of waiting on it forever, and
+ * the failed attempt is forgotten so the next caller can try again.
+ */
+function initialize() {
+  if (!initializationPromise) {
+    initializationPromise = loadEmbeddings().catch(error => {
+      initializationPromise = undefined
+      throw error
+    })
+  }
+  return initializationPromise
+}
+
+async function loadEmbeddings() {
+  const startedAt = Date.now()
+  try {
+    defaultDataSet = await getEmbeddingsFile()
+  } catch (error) {
+    console.error('Failed to load embeddings', error)
+    throw error
+  }
+  console.log(
+    `Loaded ${defaultDataSet.length} chunks in ${Date.now() - startedAt}ms`
+  )
+  if (!isLocalEnvironment) {
+    subscribeToEmbeddingChanges()
+  }
 }
 
 async function getEmbeddingsFile() {
@@ -71,7 +98,7 @@ async function createContext({
   openai,
   question,
   dataSet,
-  maxLength = 1800,
+  maxLength = parsePositiveTokenCount(process.env.MAX_CONTEXT_TOKENS, 4000),
   embeddingModel = defaultEmbeddingModel
 }) {
   // Get the embeddings for the question
@@ -116,12 +143,12 @@ async function getAnswer({
   dataSet: customDataSet,
   model = 'gpt-4.1',
   question = 'What is NearForm?',
-  maxLength = 1800,
+  maxLength = parsePositiveTokenCount(process.env.MAX_CONTEXT_TOKENS, 4000),
   embeddingModel = defaultEmbeddingModel,
   locale = 'en-IE',
   openai
 }) {
-  await initializationPromise
+  await initialize()
   const dataSet = customDataSet ?? defaultDataSet
   if (!dataSet) {
     // @TODO shall we validate the date frame?
@@ -135,6 +162,12 @@ async function getAnswer({
     maxLength,
     embeddingModel
   })
+
+  if (context.length === 0 && dataSet.length > 0) {
+    console.warn(
+      `Empty context assembled from ${dataSet.length} chunks with a budget of ${maxLength} tokens`
+    )
+  }
 
   const messages = [
     { role: 'system', content: 'You are a helpful assistant' },
@@ -182,6 +215,8 @@ async function getAnswer({
   return response.choices[0].message.content.trim()
 }
 
-export { getAnswer }
+export { getAnswer, initialize }
 
-initialize()
+// Start loading now so the first question does not wait for it. A failure is
+// reported by loadEmbeddings and retried by the next caller of initialize.
+initialize().catch(() => {})

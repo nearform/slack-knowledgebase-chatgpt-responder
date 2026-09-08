@@ -1,7 +1,7 @@
 // https://github.com/seratch/slack-app-examples/blob/86bd224476814a42c41c133f9009ea66c0717517/serverless-bolt-template/gcp-js/app.js
 import bolt from '@slack/bolt'
 import OpenAI from 'openai'
-import { getAnswer } from './getAnswer.js'
+import { getAnswer, initialize } from './getAnswer.js'
 import { transcribe } from './utils.js'
 import summarize from './summarize.js'
 
@@ -18,6 +18,19 @@ const app = new App({
   // signingSecret: process.env.SLACK_SIGNING_SECRET,
   // appToken: process.env.SLACK_APP_TOKEN,
   // socketMode: true
+})
+
+// Outside Bolt's /slack/events mount, so no Slack signature check applies. A
+// Cloud Run startup probe on this path keeps full CPU allocated while the
+// embeddings load, instead of the load being throttled in the background.
+expressReceiver.app.get('/healthz', async (_req, res) => {
+  try {
+    await initialize()
+    res.status(200).send('ok')
+  } catch (error) {
+    console.error('healthz: embeddings are not loaded', error)
+    res.status(503).send('embeddings are not loaded')
+  }
 })
 
 const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY })
