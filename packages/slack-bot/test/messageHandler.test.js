@@ -309,8 +309,9 @@ describe('the message handler', () => {
     )
   })
 
-  // The three Slack calls the handler deliberately does not wait on. Each one
-  // used to be started with no catch, so a WebAPIPlatformError (already_reacted
+  // Three of the Slack calls the handler deliberately does not wait on: the
+  // reaction, and the two acknowledgements that existed before this branch.
+  // Each was started with no catch, so a WebAPIPlatformError (already_reacted
   // on a Slack redelivery, msg_too_long, a 429 after retries) became an
   // unhandled rejection, which functions-framework turns into a process exit
   // that kills every in-flight request.
@@ -364,6 +365,25 @@ describe('the message handler', () => {
     const consoleError = t.mock.method(console, 'error', () => {})
 
     await messageHandler({ event: voiceNoteEvent, client })
+    await settleFireAndForgetCalls()
+
+    t.assert.ok(
+      postedMessages(client).includes(answerFromGetAnswer),
+      'the answer should still be posted'
+    )
+    t.assert.ok(
+      consoleError.mock.calls.some(call => call.arguments.includes(postError)),
+      'the rejection should be logged rather than left unhandled'
+    )
+  })
+
+  test('answers anyway when the attachment fallback acknowledgement is rejected', async t => {
+    const client = createClientMock()
+    const postError = new Error('msg_too_long')
+    rejectPostsMatching(client, attachmentFallbackNotice, postError)
+    const consoleError = t.mock.method(console, 'error', () => {})
+
+    await messageHandler({ event: documentUploadEvent, client })
     await settleFireAndForgetCalls()
 
     t.assert.ok(

@@ -75,10 +75,9 @@ const forwardedShareEvent = {
   ]
 }
 
-// A person pinning one of the bot's answers in the DM. Slack sends this on the
-// message.im subscription with a real user, real text, no bot_id and no
-// hidden, so nothing but the deny list stands between a pin notice and the bot
-// asking the model to answer it.
+// A person pinning one of the bot's answers in the DM. The notice carries a
+// real user and real text, with no bot_id and no hidden, so nothing but the
+// deny list stands between it and the bot asking the model to answer it.
 const pinnedItemNoticeEvent = {
   type: 'message',
   subtype: 'pinned_item',
@@ -284,8 +283,8 @@ describe('isTranscribableFile', () => {
   })
 
   test('accepts a voice note recognised by its subtype alone', t => {
-    // Slack marks its own voice notes with subtype: 'slack_audio', which is
-    // the more reliable of the two signals.
+    // Slack marks its own voice notes with subtype: 'slack_audio', so either
+    // signal on its own is enough.
     t.assert.strictEqual(
       isTranscribableFile({
         id: 'F0000000000',
@@ -395,10 +394,11 @@ describe('carriesQuestion', () => {
     )
   })
 
-  test('does not read the attachments of an unfurl, which nobody is waiting on', t => {
-    // The unfurl on the bot's own answer carries attachments too. It fails
-    // isPlainUserMessage first, and this keeps carriesQuestion from being the
-    // reason it stays silent.
+  test('leaves an unfurl carrying attachments to isPlainUserMessage', t => {
+    // An unfurl of the bot's own answer carries attachments too, so accepting
+    // attachments here does make it look answerable. What keeps it silent is
+    // isPlainUserMessage, which the handler consults first, and that is
+    // asserted alongside so the pair is what the coverage rests on.
     t.assert.strictEqual(
       carriesQuestion({
         ...linkUnfurlEvent,
