@@ -83,6 +83,18 @@ async function removeIfPresent(filePath) {
   await fs.rm(filePath, { force: true })
 }
 
+// Where downloadAudio puts a Slack file, so a test can look for what it left.
+function downloadedAudioPath(fileId) {
+  return path.join(os.tmpdir(), `${fileId}.mp4`)
+}
+
+async function downloadedAudioExists(fileId) {
+  return fs
+    .access(downloadedAudioPath(fileId))
+    .then(() => true)
+    .catch(() => false)
+}
+
 beforeEach(() => {
   respondToDownload = respondWithAudio
 })
@@ -234,6 +246,50 @@ describe('transcribe', () => {
       'string',
       'callers treat the result as text, so the type must not vary'
     )
+  })
+
+  // The service runs with --min-instances=1 on a 512MB Cloud Run instance, so
+  // an instance lives indefinitely and the files it writes are held in its
+  // memory. One file left behind per upload grows until the instance is
+  // OOM-killed mid-request.
+  test('removes the downloaded audio once the transcription has been read', async t => {
+    const openai = createOpenaiMock(spokenQuestion)
+
+    await transcribe(audioFile, openai)
+
+    t.assert.strictEqual(
+      await downloadedAudioExists(audioFile.id),
+      false,
+      'the downloaded audio should not outlive the transcription'
+    )
+  })
+
+  test('removes the downloaded audio when the transcription throws', async t => {
+    // Whisper rejects a body that is not audio, which is what a PDF or a
+    // screenshot upload gives it. That path leaked its bytes too.
+    const openai = createOpenaiMock(spokenQuestion)
+    const whisperRejection = new Error('Whisper rejected the uploaded file')
+    openai.audio.transcriptions.create = sinon.spy(async () => {
+      throw whisperRejection
+    })
+
+    await t.assert.rejects(transcribe(audioFile, openai), whisperRejection)
+
+    t.assert.strictEqual(
+      await downloadedAudioExists(audioFile.id),
+      false,
+      'a failed transcription should not leave its download behind'
+    )
+  })
+
+  test('tolerates the downloaded audio already being gone', async t => {
+    const openai = createOpenaiMock(spokenQuestion)
+    openai.audio.transcriptions.create = sinon.spy(async () => {
+      await removeIfPresent(downloadedAudioPath(audioFile.id))
+      return spokenQuestion
+    })
+
+    t.assert.strictEqual(await transcribe(audioFile, openai), spokenQuestion)
   })
 })
 

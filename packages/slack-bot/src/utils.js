@@ -154,11 +154,36 @@ export function transcriptionText(transcription) {
  *   audio yielded no words
  */
 export async function transcribe(file, openai) {
-  const p = await downloadAudio(file.url_private_download, file.id)
-  const transcription = await openai.audio.transcriptions.create({
-    file: f.createReadStream(p),
-    model: 'whisper-1',
-    response_format: 'text'
+  const downloadedPath = await downloadAudio(file.url_private_download, file.id)
+  const audioStream = f.createReadStream(downloadedPath)
+  // The SDK reads the stream to upload it, but a rejection before it gets
+  // there leaves the stream open, and it would then fail on the file removed
+  // below with nothing listening for the error.
+  audioStream.on('error', error => {
+    console.error('could not read the downloaded audio', error)
   })
-  return transcriptionText(transcription)
+
+  try {
+    const transcription = await openai.audio.transcriptions.create({
+      file: audioStream,
+      model: 'whisper-1',
+      response_format: 'text'
+    })
+    return transcriptionText(transcription)
+  } finally {
+    audioStream.destroy()
+    // The caller only ever sees the transcription, so cleaning up has to
+    // happen here. The service runs with --min-instances=1 on a 512MB Cloud
+    // Run instance, where the filesystem is memory and an instance lives
+    // indefinitely: one file left behind per upload grows until the instance
+    // is OOM-killed. A rejected transcription leaks just as readily as a
+    // successful one, hence the finally.
+    await fs.unlink(downloadedPath).catch(error => {
+      // Already gone is the outcome we wanted. Anything else is worth knowing
+      // about but must not replace the transcription result or its failure.
+      if (error.code !== 'ENOENT') {
+        console.error('could not remove the downloaded audio', error)
+      }
+    })
+  }
 }
