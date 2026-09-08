@@ -395,6 +395,27 @@ describe('the message handler', () => {
     sinon.assert.notCalled(getAnswerMock)
   })
 
+  // The notice and its return used to sit inside the try/catch around
+  // transcribe, so a Slack failure posting it was logged as a transcription
+  // error, skipped the return, and left the user with the generic failure the
+  // comment above that post says must not be shown for a silent recording.
+  test('does not report an internal failure when the silent recording notice cannot be posted', async t => {
+    transcriptionResult = ''
+    const client = createClientMock()
+    const postError = new Error('internal_error')
+    rejectPostsMatching(client, /could not make out any words/, postError)
+    t.mock.method(console, 'error', () => {})
+
+    await messageHandler({ event: voiceNoteEvent, client })
+    await settleFireAndForgetCalls()
+
+    t.assert.ok(
+      !postedMessages(client).includes(genericErrorResponse),
+      'a silent recording is not an internal failure, whatever Slack does with the notice'
+    )
+    sinon.assert.notCalled(getAnswerMock)
+  })
+
   // Whisper with response_format: 'text' returns only whitespace for audio
   // that contains no speech, and a whitespace-only string is truthy, so the
   // "we heard something" path was taken with nothing in it. transcribe now

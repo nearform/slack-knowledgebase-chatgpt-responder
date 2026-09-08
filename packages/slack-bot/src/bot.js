@@ -73,6 +73,9 @@ app.event('message', async ({ event, client }) => {
     let answer = null
     let processingError = false
     let questionInput = event.text
+    // Set when the audio carried no words and nothing was typed alongside it.
+    // Decided inside the guarded block below and acted on after it.
+    let audioHadNoWords = false
 
     // Deliberately not awaited, here and for the interim acknowledgements
     // below: neither gates the answer, so the answer should not wait on them
@@ -118,15 +121,11 @@ app.event('message', async ({ event, client }) => {
             .catch(console.error)
         } else if (!hasQuestionText(event)) {
           // The audio yielded no words and there is nothing typed to fall back
-          // on, so there is no question to look up. Say so, rather than asking
-          // getAnswer for an answer to nothing and reporting its failure as
-          // ours.
-          await client.chat.postMessage({
-            channel: event.channel,
-            text: unintelligibleAudioResponse,
-            thread_ts: event.ts
-          })
-          return
+          // on, so there is no question to look up. Only the decision is made
+          // here: saying so is done outside this block, because a Slack
+          // failure posting it is not a transcription failure and must not be
+          // answered with the generic error the catch below would reach for.
+          audioHadNoWords = true
         }
       } catch (err) {
         console.error('transcription error', err)
@@ -136,6 +135,20 @@ app.event('message', async ({ event, client }) => {
         // answerable question. With nothing typed there is no fallback, and
         // the generic failure below stands.
         processingError = !hasQuestionText(event)
+      }
+
+      if (audioHadNoWords) {
+        // Nothing went wrong on our side, so this is the whole reply and the
+        // catch is here rather than around it: if Slack will not take the
+        // notice, there is nothing better to tell the user instead.
+        await client.chat
+          .postMessage({
+            channel: event.channel,
+            text: unintelligibleAudioResponse,
+            thread_ts: event.ts
+          })
+          .catch(console.error)
+        return
       }
     } else {
       client.chat
