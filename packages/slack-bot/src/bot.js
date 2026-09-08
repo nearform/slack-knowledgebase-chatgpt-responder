@@ -74,11 +74,20 @@ app.event('message', async ({ event, client }) => {
     let processingError = false
     let questionInput = event.text
 
-    client.reactions.add({
-      channel: event.channel,
-      name: 'thumbsup',
-      timestamp: event.ts
-    })
+    // Deliberately not awaited, here and for the interim acknowledgements
+    // below: neither gates the answer, so the answer should not wait on them
+    // and the latency stays as it was. What they do need is a catch. The
+    // WebClient rejects with a WebAPIPlatformError on ok: false, and
+    // already_reacted on a Slack redelivery, msg_too_long, or a 429 after
+    // retries is nothing the handler's try/catch or app.error can see: an
+    // unhandled rejection ends the process and every request in flight on it.
+    client.reactions
+      .add({
+        channel: event.channel,
+        name: 'thumbsup',
+        timestamp: event.ts
+      })
+      .catch(console.error)
 
     try {
       const clientReq = await client.users.info({
@@ -100,11 +109,13 @@ app.event('message', async ({ event, client }) => {
         const transcribedQuestion = await transcribe(event.files[0], openai)
         if (transcribedQuestion) {
           questionInput = transcribedQuestion
-          client.chat.postMessage({
-            channel: event.channel,
-            text: `Give me a moment whilst I check for you. You asked: "${transcribedQuestion}"`,
-            thread_ts: event.ts
-          })
+          client.chat
+            .postMessage({
+              channel: event.channel,
+              text: `Give me a moment whilst I check for you. You asked: "${transcribedQuestion}"`,
+              thread_ts: event.ts
+            })
+            .catch(console.error)
         } else if (!hasQuestionText(event)) {
           // The audio yielded no words and there is nothing typed to fall back
           // on, so there is no question to look up. Say so, rather than asking
@@ -127,10 +138,12 @@ app.event('message', async ({ event, client }) => {
         processingError = !hasQuestionText(event)
       }
     } else {
-      client.chat.postMessage({
-        channel: event.channel,
-        text: `Thanks for your question. Let me check available information on that for you.`
-      })
+      client.chat
+        .postMessage({
+          channel: event.channel,
+          text: `Thanks for your question. Let me check available information on that for you.`
+        })
+        .catch(console.error)
     }
 
     if (!processingError) {

@@ -92,6 +92,25 @@ function postedMessages(client) {
   return client.chat.postMessage.args.map(([message]) => message.text)
 }
 
+// Makes one of the posts fail while the rest keep working, so a test can pick
+// out the interim acknowledgement without failing the answer as well.
+function rejectPostsMatching(client, pattern, error) {
+  const succeedingPostMessage = client.chat.postMessage
+  client.chat.postMessage = sinon.spy(async message => {
+    if (pattern.test(message.text)) {
+      throw error
+    }
+    return succeedingPostMessage(message)
+  })
+}
+
+// An unhandled rejection is reported on the turn after the promise settles, so
+// a fire-and-forget call with no catch has to be given that turn to blow up in
+// before the test ends.
+function settleFireAndForgetCalls() {
+  return new Promise(resolve => setImmediate(resolve))
+}
+
 const typedQuestionEvent = {
   type: 'message',
   user: 'U0000000000',
@@ -196,6 +215,73 @@ describe('the message handler', () => {
     t.assert.ok(
       postedMessages(client).includes(answerFromGetAnswer),
       'the answer should be posted'
+    )
+  })
+
+  // The three Slack calls the handler deliberately does not wait on. Each one
+  // used to be started with no catch, so a WebAPIPlatformError (already_reacted
+  // on a Slack redelivery, msg_too_long, a 429 after retries) became an
+  // unhandled rejection, which functions-framework turns into a process exit
+  // that kills every in-flight request.
+  test('answers anyway when the reaction it does not wait for is rejected', async t => {
+    const client = createClientMock()
+    const reactionError = new Error('already_reacted')
+    client.reactions.add = sinon.spy(async () => {
+      throw reactionError
+    })
+    const consoleError = t.mock.method(console, 'error', () => {})
+
+    await messageHandler({ event: typedQuestionEvent, client })
+    await settleFireAndForgetCalls()
+
+    t.assert.ok(
+      postedMessages(client).includes(answerFromGetAnswer),
+      'the answer should still be posted'
+    )
+    t.assert.ok(
+      consoleError.mock.calls.some(call =>
+        call.arguments.includes(reactionError)
+      ),
+      'the rejection should be logged rather than left unhandled'
+    )
+  })
+
+  test('answers anyway when the interim acknowledgement is rejected', async t => {
+    const client = createClientMock()
+    const postError = new Error('msg_too_long')
+    rejectPostsMatching(client, /Thanks for your question/, postError)
+    const consoleError = t.mock.method(console, 'error', () => {})
+
+    await messageHandler({ event: typedQuestionEvent, client })
+    await settleFireAndForgetCalls()
+
+    t.assert.ok(
+      postedMessages(client).includes(answerFromGetAnswer),
+      'the answer should still be posted'
+    )
+    t.assert.ok(
+      consoleError.mock.calls.some(call => call.arguments.includes(postError)),
+      'the rejection should be logged rather than left unhandled'
+    )
+  })
+
+  test('answers anyway when the transcription acknowledgement is rejected', async t => {
+    transcriptionResult = 'How do I book time off?'
+    const client = createClientMock()
+    const postError = new Error('msg_too_long')
+    rejectPostsMatching(client, /You asked/, postError)
+    const consoleError = t.mock.method(console, 'error', () => {})
+
+    await messageHandler({ event: voiceNoteEvent, client })
+    await settleFireAndForgetCalls()
+
+    t.assert.ok(
+      postedMessages(client).includes(answerFromGetAnswer),
+      'the answer should still be posted'
+    )
+    t.assert.ok(
+      consoleError.mock.calls.some(call => call.arguments.includes(postError)),
+      'the rejection should be logged rather than left unhandled'
     )
   })
 
