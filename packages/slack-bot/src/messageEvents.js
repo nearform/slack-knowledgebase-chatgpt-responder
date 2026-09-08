@@ -19,10 +19,11 @@
  * what issue #983 was about. The rest are notices Slack writes on someone's
  * behalf, whose text reads like "pinned a message to this conversation" or
  * "so-and-so joined the channel", which the model would happily answer as a
- * question. `pinned_item` through `app_conversation_join` are the ones that
- * can arrive on the `message.im` subscription the bot has today, and a pin on
- * one of the bot's own answers is the likeliest of them. The `channel_*` and
- * `group_*` entries cannot arrive on that subscription, and are kept because
+ * question. `pinned_item` through `app_conversation_join` are the notices we
+ * expect on `message.im`, which is the only event the manifest subscribes to,
+ * and a pin on one of the bot's own answers is the likeliest of them. The
+ * `channel_*` and `group_*` entries are notices about channel and group
+ * conversations, which that subscription does not cover; they are kept because
  * they cost nothing and would matter the moment a channel subscription is
  * added.
  *

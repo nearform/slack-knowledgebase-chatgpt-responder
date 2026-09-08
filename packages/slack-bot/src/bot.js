@@ -97,8 +97,8 @@ app.event('message', async ({ event, client }) => {
     let fellBackToTypedText = false
 
     // Deliberately not awaited, here and for the interim acknowledgements
-    // below: neither gates the answer, so the answer should not wait on them
-    // and the latency stays as it was. What they do need is a catch. The
+    // below: none of them gates the answer, so the answer should not wait on
+    // them and the latency stays as it was. What they do need is a catch. The
     // WebClient rejects with a WebAPIPlatformError on ok: false, and
     // already_reacted on a Slack redelivery, msg_too_long, or a 429 after
     // retries is nothing the handler's try/catch or app.error can see: an
