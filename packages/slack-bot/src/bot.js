@@ -92,12 +92,19 @@ app.event('message', async ({ event, client }) => {
 
     if (hasFileAttachment(event)) {
       try {
-        const transcribedResponse = await transcribe(event.files[0], openai)
-        if (transcribedResponse) {
-          questionInput = transcribedResponse
+        // Whisper's text format returns a plain string, newline terminated,
+        // and only whitespace for audio with no speech in it. Trim once and
+        // decide on the trimmed value: a whitespace-only string is truthy, so
+        // branching on the raw one both skipped the message below and
+        // overwrote a question the user had typed alongside the file.
+        const transcribedQuestion = (
+          await transcribe(event.files[0], openai)
+        ).trim()
+        if (transcribedQuestion) {
+          questionInput = transcribedQuestion
           client.chat.postMessage({
             channel: event.channel,
-            text: `Give me a moment whilst I check for you. You asked: "${transcribedResponse.trim()}"`,
+            text: `Give me a moment whilst I check for you. You asked: "${transcribedQuestion}"`,
             thread_ts: event.ts
           })
         } else if (!hasQuestionText(event)) {

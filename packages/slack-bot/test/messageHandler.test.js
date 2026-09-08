@@ -184,7 +184,9 @@ describe('the message handler', () => {
   })
 
   test('transcribes a voice note and answers what was said', async t => {
-    transcriptionResult = 'How do I book time off?'
+    // Whisper's text format newline-terminates what it returns, so the value
+    // reaching getAnswer has to be the trimmed one.
+    transcriptionResult = 'How do I book time off?\n'
     const client = createClientMock()
 
     await messageHandler({ event: voiceNoteEvent, client })
@@ -196,14 +198,19 @@ describe('the message handler', () => {
     )
 
     sinon.assert.calledOnce(getAnswerMock)
+    const askedQuestion = getAnswerMock.firstCall.args[0].question
+    t.assert.strictEqual(askedQuestion, 'How do I book time off?')
     t.assert.strictEqual(
-      getAnswerMock.firstCall.args[0].question,
-      transcriptionResult
+      askedQuestion,
+      askedQuestion.trim(),
+      'no trailing whitespace should reach getAnswer'
     )
 
     const posted = postedMessages(client)
     t.assert.ok(
-      posted.some(text => text.includes(transcriptionResult)),
+      posted.some(text =>
+        text.includes('You asked: "How do I book time off?"')
+      ),
       'the acknowledgement should quote what was heard'
     )
     t.assert.ok(
@@ -234,6 +241,55 @@ describe('the message handler', () => {
     // Nothing to ask, so nothing is asked. getAnswer now throws on a missing
     // question, which is what produced the generic error.
     sinon.assert.notCalled(getAnswerMock)
+  })
+
+  // Whisper with response_format: 'text' returns a plain string, and returns
+  // only whitespace for audio that contains no speech. A whitespace-only string
+  // is truthy, so branching on the untrimmed value took the "we heard
+  // something" path with nothing in it.
+  test('treats a whitespace-only transcription as no words heard', async t => {
+    transcriptionResult = ' \n '
+    const client = createClientMock()
+
+    await messageHandler({ event: voiceNoteEvent, client })
+
+    const posted = postedMessages(client)
+    t.assert.strictEqual(
+      posted.length,
+      1,
+      `exactly one message should be posted, got ${JSON.stringify(posted)}`
+    )
+    t.assert.match(posted[0], /could not make out any words in that recording/i)
+    t.assert.ok(
+      !posted.includes(genericErrorResponse),
+      'whitespace from the transcriber is not an internal failure'
+    )
+
+    sinon.assert.notCalled(getAnswerMock)
+  })
+
+  test('keeps the typed question when the transcription is only whitespace', async t => {
+    transcriptionResult = ' \n '
+    const client = createClientMock()
+
+    await messageHandler({
+      event: { ...voiceNoteEvent, text: 'How do I book time off?' },
+      client
+    })
+
+    sinon.assert.calledOnce(getAnswerMock)
+    t.assert.strictEqual(
+      getAnswerMock.firstCall.args[0].question,
+      'How do I book time off?'
+    )
+    t.assert.ok(
+      postedMessages(client).includes(answerFromGetAnswer),
+      'the answer should be posted'
+    )
+    t.assert.ok(
+      !postedMessages(client).includes(genericErrorResponse),
+      'the typed question is answerable, so nothing has gone wrong'
+    )
   })
 
   test('falls back to the text alongside a file when the audio yields nothing', async t => {
