@@ -3,7 +3,8 @@ import {
   carriesQuestion,
   hasFileAttachment,
   hasQuestionText,
-  isPlainUserMessage
+  isPlainUserMessage,
+  isTranscribableFile
 } from '../src/messageEvents.js'
 
 // The event that caused the bot to answer its own default question: Slack
@@ -255,6 +256,80 @@ describe('hasFileAttachment', () => {
       hasFileAttachment({ ...userQuestionEvent, files: [] }),
       false
     )
+  })
+})
+
+describe('isTranscribableFile', () => {
+  test('accepts the voice note Slack records in a DM', t => {
+    t.assert.strictEqual(isTranscribableFile(voiceNoteEvent.files[0]), true)
+  })
+
+  test('accepts a voice note recognised by its subtype alone', t => {
+    // Slack marks its own voice notes with subtype: 'slack_audio', which is
+    // the more reliable of the two signals.
+    t.assert.strictEqual(
+      isTranscribableFile({
+        id: 'F0000000000',
+        subtype: 'slack_audio',
+        url_private_download: 'https://files.slack.com/audio_message.webm'
+      }),
+      true
+    )
+  })
+
+  test('rejects a document, which has no audio to transcribe', t => {
+    // A PDF or a screenshot was downloaded and uploaded to OpenAI's audio
+    // endpoint for nothing before Whisper rejected it, which for confidential
+    // client content is a send that should never have happened.
+    t.assert.strictEqual(
+      isTranscribableFile({
+        id: 'F0000000001',
+        name: 'contract.pdf',
+        mimetype: 'application/pdf',
+        url_private_download: 'https://files.slack.com/contract.pdf'
+      }),
+      false
+    )
+  })
+
+  test('rejects a video, whose soundtrack is not the question', t => {
+    // Whisper accepts a screen recording's audio track, so this one
+    // transcribed successfully and overwrote the question the person typed.
+    t.assert.strictEqual(
+      isTranscribableFile({
+        id: 'F0000000002',
+        name: 'screen-recording.mp4',
+        mimetype: 'video/mp4',
+        url_private_download: 'https://files.slack.com/screen-recording.mp4'
+      }),
+      false
+    )
+  })
+
+  test('rejects an audio file Slack served no download URL for', t => {
+    // Slack Connect and restricted files arrive as a stub, and hidden_by_limit
+    // and external-mode files lack the URL too. new URL(undefined) threw a
+    // TypeError, which surfaced as the generic internal failure.
+    t.assert.strictEqual(
+      isTranscribableFile({
+        id: 'F0000000003',
+        mimetype: 'audio/webm',
+        file_access: 'check_file_info'
+      }),
+      false
+    )
+    t.assert.strictEqual(
+      isTranscribableFile({
+        id: 'F0000000003',
+        mimetype: 'audio/webm',
+        url_private_download: ''
+      }),
+      false
+    )
+  })
+
+  test('rejects a missing file rather than throwing', t => {
+    t.assert.strictEqual(isTranscribableFile(undefined), false)
   })
 })
 

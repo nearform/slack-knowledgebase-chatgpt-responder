@@ -97,14 +97,51 @@ export function hasQuestionText(event) {
 }
 
 /**
- * Whether the event carries a file, which transcription may turn into a
- * question.
+ * Whether the event carries a file at all, transcribable or not.
+ *
+ * Deliberately not narrowed to the files we can transcribe: a file we cannot
+ * read is still something a person sent and is waiting on, so it has to reach
+ * the handler and get a reaction and a reply. What we do with the file is
+ * `isTranscribableFile`'s decision.
  *
  * @param {Object} event a Slack `message` event
  * @returns {boolean}
  */
 export function hasFileAttachment(event) {
   return Boolean(event.files && event.files[0])
+}
+
+/**
+ * Whether a file is one we should send to the transcription API.
+ *
+ * Both halves are required. Without the audio check any attachment was
+ * downloaded and posted to OpenAI's audio endpoint, so a PDF or a screenshot
+ * of potentially confidential client content was uploaded for nothing, and a
+ * screen recording, whose audio track Whisper transcribes happily, had its
+ * soundtrack answered instead of the question its owner typed alongside it.
+ * Without the URL check `new URL(undefined)` threw a `TypeError`: Slack
+ * Connect and restricted files arrive as a stub carrying `file_access`, and
+ * `hidden_by_limit` and external-mode files have no download URL either, all
+ * of which surfaced to the user as a generic internal failure.
+ *
+ * @param {Object} [file] a Slack file from `event.files`
+ * @returns {boolean}
+ */
+export function isTranscribableFile(file) {
+  if (!file) {
+    return false
+  }
+
+  const isAudio =
+    (typeof file.mimetype === 'string' && file.mimetype.startsWith('audio/')) ||
+    // What Slack marks its own voice notes with.
+    file.subtype === 'slack_audio'
+
+  return (
+    isAudio &&
+    typeof file.url_private_download === 'string' &&
+    file.url_private_download.length > 0
+  )
 }
 
 /**

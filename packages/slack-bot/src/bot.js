@@ -5,9 +5,9 @@ import { getAnswer, initialize } from './getAnswer.js'
 import { transcribe } from './utils.js'
 import {
   carriesQuestion,
-  hasFileAttachment,
   hasQuestionText,
-  isPlainUserMessage
+  isPlainUserMessage,
+  isTranscribableFile
 } from './messageEvents.js'
 import summarize from './summarize.js'
 
@@ -49,6 +49,17 @@ const errorResponse =
 const unintelligibleAudioResponse =
   'I could not make out any words in that recording. Please try again, or type your question instead'
 
+// Also not our failure: a document, an image, a video, or a file Slack will
+// not let us download. Telling someone to try again, as the generic failure
+// does, sends them round a loop that cannot help.
+const unreadableAttachmentResponse =
+  'I could not read that attachment. Please type your question instead'
+
+// The attachment was no use, but a question was typed alongside it, so there
+// is something to answer. Short, because the answer is on its way.
+const attachmentFallbackResponse =
+  'I could not get anything from that attachment, so I will answer the question you typed.'
+
 app.event('message', async ({ event, client }) => {
   console.log('message event', event)
 
@@ -76,6 +87,9 @@ app.event('message', async ({ event, client }) => {
     // Set when the audio carried no words and nothing was typed alongside it.
     // Decided inside the guarded block below and acted on after it.
     let audioHadNoWords = false
+    // Set when the attachment was no use but a question was typed alongside
+    // it, so the answer can say the file was not read.
+    let fellBackToTypedText = false
 
     // Deliberately not awaited, here and for the interim acknowledgements
     // below: neither gates the answer, so the answer should not wait on them
@@ -102,14 +116,19 @@ app.event('message', async ({ event, client }) => {
       console.error('error', error)
     }
 
-    if (hasFileAttachment(event)) {
+    const [attachedFile] = event.files ?? []
+    const fileToTranscribe = isTranscribableFile(attachedFile)
+      ? attachedFile
+      : null
+
+    if (fileToTranscribe) {
       try {
         // transcribe trims what it returns, so the empty string is exactly
         // "no words were heard" and is what this branches on. Whisper's text
         // format gives only whitespace for audio with no speech in it, and a
         // whitespace-only string is truthy, which is why the normalisation
         // matters and why it lives in one place.
-        const transcribedQuestion = await transcribe(event.files[0], openai)
+        const transcribedQuestion = await transcribe(fileToTranscribe, openai)
         if (transcribedQuestion) {
           questionInput = transcribedQuestion
           client.chat
@@ -126,15 +145,18 @@ app.event('message', async ({ event, client }) => {
           // failure posting it is not a transcription failure and must not be
           // answered with the generic error the catch below would reach for.
           audioHadNoWords = true
+        } else {
+          // No words, but a question was typed alongside the recording, so
+          // that is what gets answered.
+          fellBackToTypedText = true
         }
       } catch (err) {
         console.error('transcription error', err)
-        // The file failed, not the question. Whisper rejects a body that is
-        // not audio, which is what a PDF or screenshot upload gives it, so
-        // fall back to anything typed alongside rather than losing an
-        // answerable question. With nothing typed there is no fallback, and
-        // the generic failure below stands.
+        // The file failed, not the question, so fall back to anything typed
+        // alongside rather than losing an answerable question. With nothing
+        // typed there is no fallback, and the generic failure below stands.
         processingError = !hasQuestionText(event)
+        fellBackToTypedText = !processingError
       }
 
       if (audioHadNoWords) {
@@ -150,11 +172,43 @@ app.event('message', async ({ event, client }) => {
           .catch(console.error)
         return
       }
+    } else if (attachedFile) {
+      // A file we will not transcribe: a document, an image, a video, or one
+      // Slack served us no download URL for. Nothing is sent to OpenAI.
+      if (hasQuestionText(event)) {
+        fellBackToTypedText = true
+      } else {
+        // Nothing typed and nothing we can read, so there is no question to
+        // look up. This is the user's situation to fix, not an internal
+        // failure, and the generic error told them to try again when retrying
+        // cannot help.
+        await client.chat
+          .postMessage({
+            channel: event.channel,
+            text: unreadableAttachmentResponse,
+            thread_ts: event.ts
+          })
+          .catch(console.error)
+        return
+      }
     } else {
       client.chat
         .postMessage({
           channel: event.channel,
           text: `Thanks for your question. Let me check available information on that for you.`
+        })
+        .catch(console.error)
+    }
+
+    if (fellBackToTypedText) {
+      // The attachment was no use, so say so and answer what was typed. Left
+      // unsaid, the person waited the whole embeddings and completion round
+      // trip on a bare thumbsup and was never told the file was ignored.
+      client.chat
+        .postMessage({
+          channel: event.channel,
+          text: attachmentFallbackResponse,
+          thread_ts: event.ts
         })
         .catch(console.error)
     }

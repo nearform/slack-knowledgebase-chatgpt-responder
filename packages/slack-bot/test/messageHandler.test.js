@@ -78,6 +78,12 @@ const messageHandler = registeredEventHandlers.get('message')
 const genericErrorResponse =
   'It appears I have run into an issue looking up an answer for you. Please try again'
 
+// The acknowledgement on the paths where the attachment was no use but the
+// person typed a question alongside it, and the reply when the attachment was
+// no use and there is nothing typed to fall back on.
+const attachmentFallbackNotice = /could not get anything from that attachment/i
+const unreadableAttachmentNotice = /could not read that attachment/i
+
 function createClientMock() {
   return {
     reactions: { add: sinon.spy(async () => {}) },
@@ -134,6 +140,71 @@ const voiceNoteEvent = {
       mimetype: 'audio/webm',
       url_private_download:
         'https://files.slack.com/files-pri/T0000000000-F0000000000/download/audio_message.webm'
+    }
+  ]
+}
+
+// A document upload with the question typed alongside it. Whisper has nothing
+// to transcribe here, and the file is potentially confidential client content
+// that should not be sent to OpenAI at all.
+const documentUploadEvent = {
+  type: 'message',
+  subtype: 'file_share',
+  user: 'U0000000000',
+  text: 'How do I book time off?',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000800',
+  files: [
+    {
+      id: 'F0000000001',
+      name: 'contract.pdf',
+      mimetype: 'application/pdf',
+      url_private_download:
+        'https://files.slack.com/files-pri/T0000000000-F0000000001/download/contract.pdf'
+    }
+  ]
+}
+
+// A screen recording with the question typed alongside it. Whisper accepts a
+// video's audio track, so this one transcribed successfully and answered the
+// soundtrack instead of the question.
+const screenRecordingEvent = {
+  type: 'message',
+  subtype: 'file_share',
+  user: 'U0000000000',
+  text: 'How do I book time off?',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000900',
+  files: [
+    {
+      id: 'F0000000002',
+      name: 'screen-recording.mp4',
+      mimetype: 'video/mp4',
+      url_private_download:
+        'https://files.slack.com/files-pri/T0000000000-F0000000002/download/screen-recording.mp4'
+    }
+  ]
+}
+
+// What Slack sends for a file the app may not download: a Slack Connect or
+// restricted file, or one hidden by a free plan's storage limit. There is no
+// url_private_download, and new URL(undefined) threw a TypeError.
+const restrictedFileEvent = {
+  type: 'message',
+  subtype: 'file_share',
+  user: 'U0000000000',
+  text: '',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.001000',
+  files: [
+    {
+      id: 'F0000000003',
+      created: 1700000000,
+      timestamp: 1700000000,
+      file_access: 'check_file_info'
     }
   ]
 }
@@ -479,15 +550,23 @@ describe('the message handler', () => {
       getAnswerMock.firstCall.args[0].question,
       'How do I book time off?'
     )
+
+    const posted = postedMessages(client)
+    // Without this the person waited the whole embeddings and completion round
+    // trip on a bare thumbsup, and was never told the recording was no use.
     t.assert.ok(
-      postedMessages(client).includes(answerFromGetAnswer),
+      posted.some(text => attachmentFallbackNotice.test(text)),
+      `the fallback should be acknowledged, got ${JSON.stringify(posted)}`
+    )
+    t.assert.ok(
+      posted.includes(answerFromGetAnswer),
       'the answer should be posted'
     )
   })
 
-  // A user attaches a PDF or a screenshot and types the question alongside it.
-  // Whisper rejects the non-audio body, which is a failure of the file, not of
-  // the question sitting in event.text.
+  // A real audio file that Whisper would not transcribe: an API error, or a
+  // download that failed. That is a failure of the file, not of the question
+  // sitting in event.text.
   test('falls back to the text alongside a file when the transcription fails', async t => {
     transcriptionRejection = new Error('Whisper rejected the uploaded file')
     const client = createClientMock()
@@ -506,12 +585,79 @@ describe('the message handler', () => {
 
     const posted = postedMessages(client)
     t.assert.ok(
+      posted.some(text => attachmentFallbackNotice.test(text)),
+      `the fallback should be acknowledged, got ${JSON.stringify(posted)}`
+    )
+    t.assert.ok(
       posted.includes(answerFromGetAnswer),
       `the answer should be posted, got ${JSON.stringify(posted)}`
     )
     t.assert.ok(
       !posted.includes(genericErrorResponse),
       'the typed question is answerable, so nothing has gone wrong'
+    )
+  })
+
+  test('answers the typed question and never sends a document to Whisper', async t => {
+    const client = createClientMock()
+
+    await messageHandler({ event: documentUploadEvent, client })
+
+    sinon.assert.notCalled(transcribeMock)
+    sinon.assert.calledOnce(getAnswerMock)
+    t.assert.strictEqual(
+      getAnswerMock.firstCall.args[0].question,
+      documentUploadEvent.text
+    )
+
+    const posted = postedMessages(client)
+    t.assert.ok(
+      posted.some(text => attachmentFallbackNotice.test(text)),
+      `the user should be told the file was not read, got ${JSON.stringify(posted)}`
+    )
+    t.assert.ok(posted.includes(answerFromGetAnswer))
+    t.assert.ok(!posted.includes(genericErrorResponse))
+  })
+
+  test('answers the typed question rather than a video soundtrack', async t => {
+    // Whisper transcribes a screen recording's audio track happily, and that
+    // transcript replaced the question the person had typed.
+    transcriptionResult = 'so then you click the green button'
+    const client = createClientMock()
+
+    await messageHandler({ event: screenRecordingEvent, client })
+
+    sinon.assert.notCalled(transcribeMock)
+    sinon.assert.calledOnce(getAnswerMock)
+    t.assert.strictEqual(
+      getAnswerMock.firstCall.args[0].question,
+      screenRecordingEvent.text
+    )
+  })
+
+  test('says it could not read an attachment sent with nothing typed', async t => {
+    const client = createClientMock()
+
+    await messageHandler({ event: restrictedFileEvent, client })
+
+    sinon.assert.notCalled(transcribeMock)
+    sinon.assert.notCalled(getAnswerMock)
+    // The person is waiting on something, so the reaction and a reply both
+    // matter: this is a user-side situation, not an event we should not have
+    // been sent.
+    sinon.assert.calledOnce(client.reactions.add)
+
+    const posted = postedMessages(client)
+    t.assert.strictEqual(
+      posted.length,
+      1,
+      `exactly one message should be posted, got ${JSON.stringify(posted)}`
+    )
+    t.assert.match(posted[0], unreadableAttachmentNotice)
+    t.assert.match(posted[0], /type your question/i)
+    t.assert.ok(
+      !posted.includes(genericErrorResponse),
+      'a file Slack will not serve us is not an internal failure'
     )
   })
 
