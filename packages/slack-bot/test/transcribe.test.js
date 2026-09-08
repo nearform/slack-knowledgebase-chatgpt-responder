@@ -83,20 +83,28 @@ async function removeIfPresent(filePath) {
   await fs.rm(filePath, { force: true })
 }
 
-// Where downloadAudio puts a Slack file, so a test can look for what it left.
-function downloadedAudioPath(fileId) {
-  return path.join(os.tmpdir(), `${fileId}.mp4`)
+// Every scratch file downloadAudio could have written for one Slack file id.
+// The name carries a per-invocation suffix, so a test asking whether anything
+// was left behind has to look for the whole family rather than one fixed path.
+async function leftoverAudioFiles(fileId) {
+  const entries = await fs.readdir(os.tmpdir())
+  return entries.filter(
+    entry => entry.startsWith(`${fileId}`) && entry.endsWith('.mp4')
+  )
 }
 
-async function downloadedAudioExists(fileId) {
-  return fs
-    .access(downloadedAudioPath(fileId))
-    .then(() => true)
-    .catch(() => false)
+async function removeLeftoverAudioFiles(fileId) {
+  const leftovers = await leftoverAudioFiles(fileId)
+  await Promise.all(
+    leftovers.map(entry => removeIfPresent(path.join(os.tmpdir(), entry)))
+  )
 }
 
-beforeEach(() => {
+beforeEach(async () => {
   respondToDownload = respondWithAudio
+  // The temporary directory outlives the test run, so a file an earlier run
+  // leaked would otherwise be read as this run's leak.
+  await removeLeftoverAudioFiles(audioFile.id)
 })
 
 describe('downloadAudio', () => {
@@ -152,6 +160,74 @@ describe('downloadAudio', () => {
       downloadAudio(audioFile.url_private_download, audioFile.id),
       responseError
     )
+  })
+
+  test('leaves nothing behind when the response fails part way through', async t => {
+    // Slack's response aborting mid-download: ECONNRESET, a TLS reset, or the
+    // platform cutting the connection. Rejecting was all that happened, and
+    // pipe does not tear the destination down when the source fails, so the
+    // partial file stayed on disk with its write handle still open. transcribe
+    // cannot clean up after this one: downloadAudio throws before it ever
+    // returns a path, so the caller's finally is never reached.
+    const responseError = new Error('aborted')
+    respondToDownload = (request, onResponse) => {
+      const response = new PassThrough()
+      response.statusCode = 200
+      onResponse(response)
+      // Bytes reach the write stream before the failure, which is what makes
+      // this a leak rather than an empty file that was never opened.
+      response.write('the first half of a voice note')
+      setImmediate(() => response.destroy(responseError))
+    }
+
+    await t.assert.rejects(
+      downloadAudio(audioFile.url_private_download, audioFile.id)
+    )
+
+    t.assert.deepStrictEqual(
+      await leftoverAudioFiles(audioFile.id),
+      [],
+      'a download that failed mid-stream should leave no partial file behind'
+    )
+  })
+
+  test('gives each download its own scratch file', async t => {
+    // Slack redelivers an event it has not seen a 200 for, so two runs for the
+    // same voice note can overlap. Sharing one destination had them writing
+    // over each other, and now that each run removes the file when it is done
+    // the first to finish would delete the other's download.
+    const [first, second] = await Promise.all([
+      downloadAudio(audioFile.url_private_download, audioFile.id),
+      downloadAudio(audioFile.url_private_download, audioFile.id)
+    ])
+
+    try {
+      t.assert.notStrictEqual(
+        first,
+        second,
+        'two concurrent downloads of one file must not share a destination'
+      )
+    } finally {
+      await removeIfPresent(first)
+      await removeIfPresent(second)
+    }
+  })
+
+  test('keeps the query string and port the download URL carries', async t => {
+    // url_private_download is a signed URL: dropping its query string asks
+    // Slack for a path that does not exist, and dropping the port sends the
+    // request somewhere else entirely.
+    const signedUrl =
+      'https://files.slack.com:8443/files-pri/T0-F0/download/audio.webm?t=xoxe-1-abc&d=1'
+
+    await removeIfPresent(await downloadAudio(signedUrl, audioFile.id))
+
+    const [options] = httpsGetMock.lastCall.args
+    t.assert.strictEqual(
+      options.path,
+      '/files-pri/T0-F0/download/audio.webm?t=xoxe-1-abc&d=1'
+    )
+    t.assert.strictEqual(options.port, '8443')
   })
 
   test('rejects when the downloaded file cannot be written', async t => {
@@ -257,9 +333,9 @@ describe('transcribe', () => {
 
     await transcribe(audioFile, openai)
 
-    t.assert.strictEqual(
-      await downloadedAudioExists(audioFile.id),
-      false,
+    t.assert.deepStrictEqual(
+      await leftoverAudioFiles(audioFile.id),
+      [],
       'the downloaded audio should not outlive the transcription'
     )
   })
@@ -275,17 +351,19 @@ describe('transcribe', () => {
 
     await t.assert.rejects(transcribe(audioFile, openai), whisperRejection)
 
-    t.assert.strictEqual(
-      await downloadedAudioExists(audioFile.id),
-      false,
+    t.assert.deepStrictEqual(
+      await leftoverAudioFiles(audioFile.id),
+      [],
       'a failed transcription should not leave its download behind'
     )
   })
 
   test('tolerates the downloaded audio already being gone', async t => {
     const openai = createOpenaiMock(spokenQuestion)
-    openai.audio.transcriptions.create = sinon.spy(async () => {
-      await removeIfPresent(downloadedAudioPath(audioFile.id))
+    openai.audio.transcriptions.create = sinon.spy(async request => {
+      // The read stream knows where the download went, which is the only way
+      // to find it now that the name carries a per-invocation suffix.
+      await removeIfPresent(request.file.path)
       return spokenQuestion
     })
 
