@@ -3,6 +3,11 @@ import bolt from '@slack/bolt'
 import OpenAI from 'openai'
 import { getAnswer, initialize } from './getAnswer.js'
 import { transcribe } from './utils.js'
+import {
+  carriesQuestion,
+  hasFileAttachment,
+  isPlainUserMessage
+} from './messageEvents.js'
 import summarize from './summarize.js'
 
 const { App, ExpressReceiver } = bolt
@@ -41,7 +46,19 @@ const errorResponse =
 app.event('message', async ({ event, client }) => {
   console.log('message event', event)
 
-  if (event.subtype && event.subtype === 'bot_message') {
+  // Both guards sit ahead of the reaction and the acknowledgement below, so an
+  // event we should not answer produces no visible trace at all.
+  //
+  // A link unfurl on the bot's own answer comes back as a message event, and
+  // answering it posts a question nobody asked, reacts to the bot's own
+  // message, and can unfurl again in turn.
+  if (!isPlainUserMessage(event)) {
+    return
+  }
+
+  // Nothing to answer, and nothing a person is waiting on either: an event we
+  // should not have been sent rather than a user visible situation.
+  if (!carriesQuestion(event)) {
     return
   }
 
@@ -67,7 +84,7 @@ app.event('message', async ({ event, client }) => {
       console.error('error', error)
     }
 
-    if (event.files && event.files[0]) {
+    if (hasFileAttachment(event)) {
       try {
         const transcribedResponse = await transcribe(event.files[0], openai)
         if (transcribedResponse) {
