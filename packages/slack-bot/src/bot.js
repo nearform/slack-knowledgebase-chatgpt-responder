@@ -121,10 +121,14 @@ app.event('message', async ({ event, client }) => {
       console.error('error', error)
     }
 
-    const [attachedFile] = event.files ?? []
-    const fileToTranscribe = isTranscribableFile(attachedFile)
-      ? attachedFile
-      : null
+    const attachedFiles = event.files ?? []
+    // The first file we can transcribe, not the first file: a document
+    // uploaded alongside a voice note told the person their attachment could
+    // not be read while the recording was silently ignored. The first file is
+    // still what the unreadable-attachment reply below is about, since by then
+    // there is nothing transcribable among them.
+    const fileToTranscribe = attachedFiles.find(isTranscribableFile) ?? null
+    const [attachedFile] = attachedFiles
 
     if (fileToTranscribe) {
       try {

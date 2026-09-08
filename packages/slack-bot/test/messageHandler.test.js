@@ -188,6 +188,34 @@ const screenRecordingEvent = {
   ]
 }
 
+// A document and a voice note uploaded in one message, the document first.
+// Looking only at event.files[0] found the document, so the person was told
+// their attachment could not be read while the recording was ignored.
+const documentAndVoiceNoteEvent = {
+  type: 'message',
+  subtype: 'file_share',
+  user: 'U0000000000',
+  text: '',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.001200',
+  files: [
+    {
+      id: 'F0000000004',
+      name: 'contract.pdf',
+      mimetype: 'application/pdf',
+      url_private_download:
+        'https://files.slack.com/files-pri/T0000000000-F0000000004/download/contract.pdf'
+    },
+    {
+      id: 'F0000000005',
+      mimetype: 'audio/webm',
+      url_private_download:
+        'https://files.slack.com/files-pri/T0000000000-F0000000005/download/audio_message.webm'
+    }
+  ]
+}
+
 // What Slack sends for a file the app may not download: a Slack Connect or
 // restricted file, or one hidden by a free plan's storage limit. There is no
 // url_private_download, and new URL(undefined) threw a TypeError.
@@ -740,6 +768,32 @@ describe('the message handler', () => {
       !posted.includes(genericErrorResponse),
       'a file Slack will not serve us is not an internal failure'
     )
+  })
+
+  test('transcribes the voice note in a multi-file upload it is not first in', async t => {
+    transcriptionResult = 'How do I book time off?'
+    const client = createClientMock()
+
+    await messageHandler({ event: documentAndVoiceNoteEvent, client })
+
+    sinon.assert.calledOnce(transcribeMock)
+    t.assert.strictEqual(
+      transcribeMock.firstCall.args[0].id,
+      'F0000000005',
+      'the recording should be the file that is transcribed, not the document'
+    )
+    sinon.assert.calledOnce(getAnswerMock)
+    t.assert.strictEqual(
+      getAnswerMock.firstCall.args[0].question,
+      transcriptionResult
+    )
+
+    const posted = postedMessages(client)
+    t.assert.ok(
+      !posted.some(text => unreadableAttachmentNotice.test(text)),
+      `the recording was read, so nothing should say otherwise, got ${JSON.stringify(posted)}`
+    )
+    t.assert.ok(posted.includes(answerFromGetAnswer))
   })
 
   // The boundary of the fallback above: with nothing typed there is no question
