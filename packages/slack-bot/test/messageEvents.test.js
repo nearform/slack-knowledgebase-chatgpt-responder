@@ -55,6 +55,31 @@ const voiceNoteEvent = {
   ]
 }
 
+// A person pinning one of the bot's answers in the DM. Slack sends this on the
+// message.im subscription with a real user, real text, no bot_id and no
+// hidden, so nothing but the deny list stands between a pin notice and the bot
+// asking the model to answer it.
+const pinnedItemNoticeEvent = {
+  type: 'message',
+  subtype: 'pinned_item',
+  user: 'U0000000000',
+  text: '<@U0000000000> pinned a message to this conversation.',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000600'
+}
+
+// A reminder notice, the same shape of thing from the same subscription.
+const reminderAddNoticeEvent = {
+  type: 'message',
+  subtype: 'reminder_add',
+  user: 'U0000000000',
+  text: 'Reminder: read the handbook.',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000700'
+}
+
 describe('isPlainUserMessage', () => {
   test('accepts a plain direct message from a person', t => {
     t.assert.strictEqual(isPlainUserMessage(userQuestionEvent), true)
@@ -71,6 +96,22 @@ describe('isPlainUserMessage', () => {
     )
   })
 
+  // The two fixtures below are written out rather than derived from the deny
+  // list, because the enumeration test that follows them is a copy of that
+  // list and so cannot notice a subtype missing from it.
+  test('rejects the pin notice a person pinning an answer produces', t => {
+    t.assert.strictEqual(isPlainUserMessage(pinnedItemNoticeEvent), false)
+
+    // Without the subtype guard this notice would be answered: it reads as a
+    // question as far as everything else here is concerned.
+    t.assert.strictEqual(carriesQuestion(pinnedItemNoticeEvent), true)
+  })
+
+  test('rejects a reminder notice', t => {
+    t.assert.strictEqual(isPlainUserMessage(reminderAddNoticeEvent), false)
+    t.assert.strictEqual(carriesQuestion(reminderAddNoticeEvent), true)
+  })
+
   test('rejects every subtype on the deny list', t => {
     const deniedSubtypes = [
       'bot_message',
@@ -79,6 +120,14 @@ describe('isPlainUserMessage', () => {
       'message_replied',
       'tombstone',
       'ekm_access_denied',
+      'pinned_item',
+      'unpinned_item',
+      'reminder_add',
+      'huddle_thread',
+      'bot_add',
+      'bot_remove',
+      'sh_room_created',
+      'app_conversation_join',
       'channel_join',
       'channel_leave',
       'channel_topic',

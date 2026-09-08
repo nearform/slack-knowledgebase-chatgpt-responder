@@ -147,6 +147,17 @@ const otherBotMessageEvent = {
   ts: '1700000000.000400'
 }
 
+// The notice Slack sends when someone pins a message in the conversation.
+const pinnedItemNoticeEvent = {
+  type: 'message',
+  subtype: 'pinned_item',
+  user: 'U0000000000',
+  text: '<@U0000000000> pinned a message to this conversation.',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000600'
+}
+
 // The subtype deny list is deliberately not an allow list, so a subtype we do
 // not recognise is let through to be answered. This one carries neither text
 // nor a file, which leaves nothing to answer and nobody waiting on a reply.
@@ -203,6 +214,20 @@ describe('the message handler', () => {
     const client = createClientMock()
 
     await messageHandler({ event: otherBotMessageEvent, client })
+
+    sinon.assert.notCalled(getAnswerMock)
+    sinon.assert.notCalled(client.reactions.add)
+    t.assert.deepStrictEqual(postedMessages(client), [])
+  })
+
+  // A person pinning one of the bot's answers in the DM. The notice carries a
+  // real user and real text, so without the subtype guard the bot reacted,
+  // acknowledged, and asked the model to answer "pinned a message to this
+  // conversation".
+  test('leaves no trace on the notice a pinned message produces', async t => {
+    const client = createClientMock()
+
+    await messageHandler({ event: pinnedItemNoticeEvent, client })
 
     sinon.assert.notCalled(getAnswerMock)
     sinon.assert.notCalled(client.reactions.add)

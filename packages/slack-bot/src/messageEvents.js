@@ -16,9 +16,15 @@
  * `message_deleted`, `message_replied`, `tombstone` and `ekm_access_denied`
  * are the bot's or the workspace's own doing, not a message anyone typed: a
  * link unfurl on the bot's own answer is the `message_changed` one, and it is
- * what issue #983 was about. The rest are the channel membership and channel
- * metadata notices, whose text reads like "so-and-so joined the channel" or
- * "set the channel topic", which the model would happily answer as a question.
+ * what issue #983 was about. The rest are notices Slack writes on someone's
+ * behalf, whose text reads like "pinned a message to this conversation" or
+ * "so-and-so joined the channel", which the model would happily answer as a
+ * question. `pinned_item` through `app_conversation_join` are the ones that
+ * can arrive on the `message.im` subscription the bot has today, and a pin on
+ * one of the bot's own answers is the likeliest of them. The `channel_*` and
+ * `group_*` entries cannot arrive on that subscription, and are kept because
+ * they cost nothing and would matter the moment a channel subscription is
+ * added.
  *
  * Subtypes that are still a person speaking are absent on purpose, so they are
  * answered: `file_share` (an upload, including a voice note, with the file in
@@ -32,6 +38,14 @@ const nonUserMessageSubtypes = new Set([
   'message_replied',
   'tombstone',
   'ekm_access_denied',
+  'pinned_item',
+  'unpinned_item',
+  'reminder_add',
+  'huddle_thread',
+  'bot_add',
+  'bot_remove',
+  'sh_room_created',
+  'app_conversation_join',
   'channel_join',
   'channel_leave',
   'channel_topic',
