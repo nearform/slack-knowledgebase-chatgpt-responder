@@ -135,6 +135,7 @@ jobs:
           gcloud beta functions deploy slackbot
           --runtime nodejs24 
           --memory=512MB
+          --cpu=1
           --min-instances=1
           --max-instances=5
           --concurrency=5
