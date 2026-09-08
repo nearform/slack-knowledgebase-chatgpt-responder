@@ -121,7 +121,12 @@ app.event('message', async ({ event, client }) => {
         }
       } catch (err) {
         console.error('transcription error', err)
-        processingError = true
+        // The file failed, not the question. Whisper rejects a body that is
+        // not audio, which is what a PDF or screenshot upload gives it, so
+        // fall back to anything typed alongside rather than losing an
+        // answerable question. With nothing typed there is no fallback, and
+        // the generic failure below stands.
+        processingError = !hasQuestionText(event)
       }
     } else {
       client.chat.postMessage({

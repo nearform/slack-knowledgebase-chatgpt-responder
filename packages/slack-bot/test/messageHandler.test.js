@@ -20,10 +20,19 @@ const getAnswerMock = sinon.spy(async ({ question }) => {
   }
   return answerFromGetAnswer
 })
-const transcribeMock = sinon.spy(async () => transcriptionResult)
+// Transcription can fail outright as well as come back empty: Whisper rejects
+// a body that is not audio, which is what a PDF or a screenshot upload gives
+// it. Tests set transcriptionRejection to exercise that path.
+const transcribeMock = sinon.spy(async () => {
+  if (transcriptionRejection) {
+    throw transcriptionRejection
+  }
+  return transcriptionResult
+})
 
 let answerFromGetAnswer = 'You book time off in the HR tool.'
 let transcriptionResult = ''
+let transcriptionRejection = null
 
 class AppMock {
   event(eventName, handler) {
@@ -139,6 +148,7 @@ beforeEach(() => {
   transcribeMock.resetHistory()
   answerFromGetAnswer = 'You book time off in the HR tool.'
   transcriptionResult = ''
+  transcriptionRejection = null
 })
 
 describe('the message handler', () => {
@@ -309,6 +319,54 @@ describe('the message handler', () => {
     t.assert.ok(
       postedMessages(client).includes(answerFromGetAnswer),
       'the answer should be posted'
+    )
+  })
+
+  // A user attaches a PDF or a screenshot and types the question alongside it.
+  // Whisper rejects the non-audio body, which is a failure of the file, not of
+  // the question sitting in event.text.
+  test('falls back to the text alongside a file when the transcription fails', async t => {
+    transcriptionRejection = new Error('Whisper rejected the uploaded file')
+    const client = createClientMock()
+
+    await messageHandler({
+      event: { ...voiceNoteEvent, text: 'How do I book time off?' },
+      client
+    })
+
+    sinon.assert.calledOnce(transcribeMock)
+    sinon.assert.calledOnce(getAnswerMock)
+    t.assert.strictEqual(
+      getAnswerMock.firstCall.args[0].question,
+      'How do I book time off?'
+    )
+
+    const posted = postedMessages(client)
+    t.assert.ok(
+      posted.includes(answerFromGetAnswer),
+      `the answer should be posted, got ${JSON.stringify(posted)}`
+    )
+    t.assert.ok(
+      !posted.includes(genericErrorResponse),
+      'the typed question is answerable, so nothing has gone wrong'
+    )
+  })
+
+  // The boundary of the fallback above: with nothing typed there is no question
+  // to fall back on, so a failed transcription stays an internal failure.
+  test('reports the generic error when the transcription fails and nothing was typed', async t => {
+    transcriptionRejection = new Error('Whisper rejected the uploaded file')
+    const client = createClientMock()
+
+    await messageHandler({ event: voiceNoteEvent, client })
+
+    sinon.assert.calledOnce(transcribeMock)
+    sinon.assert.notCalled(getAnswerMock)
+
+    const posted = postedMessages(client)
+    t.assert.ok(
+      posted.includes(genericErrorResponse),
+      `the generic error should be posted, got ${JSON.stringify(posted)}`
     )
   })
 })
