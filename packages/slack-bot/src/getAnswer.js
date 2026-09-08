@@ -18,10 +18,6 @@ function parsePositiveTokenCount(value, fallback) {
   return parsed
 }
 
-const maxContextTokens = parsePositiveTokenCount(
-  process.env.MAX_CONTEXT_TOKENS,
-  4000
-)
 const projectId = process.env.GCP_PROJECT_ID
 const bucketName = process.env.GCP_STORAGE_BUCKET_NAME
 const bucketEmbeddingsFile = process.env.GCP_STORAGE_EMBEDDING_FILE_NAME
@@ -102,7 +98,7 @@ async function createContext({
   openai,
   question,
   dataSet,
-  maxLength = maxContextTokens,
+  maxLength = parsePositiveTokenCount(process.env.MAX_CONTEXT_TOKENS, 4000),
   embeddingModel = defaultEmbeddingModel
 }) {
   // Get the embeddings for the question
@@ -147,7 +143,7 @@ async function getAnswer({
   dataSet: customDataSet,
   model = 'gpt-4.1',
   question = 'What is NearForm?',
-  maxLength = maxContextTokens,
+  maxLength = parsePositiveTokenCount(process.env.MAX_CONTEXT_TOKENS, 4000),
   embeddingModel = defaultEmbeddingModel,
   locale = 'en-IE',
   openai

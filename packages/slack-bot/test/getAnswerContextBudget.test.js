@@ -36,9 +36,9 @@ const reducedBudgetContextPages = [
 ]
 
 // getAnswer.js downloads the embeddings file when the module loads, so the
-// mocks are registered once, before the first import. A module specifier can
-// only be mocked once per process, so this cannot live inside the tests that
-// re-import the module.
+// mocks are registered before it is imported. A module specifier can only be
+// mocked once per process, so these registrations belong here rather than
+// inside the tests.
 //
 // The file it downloads to is named after the process id, and every test file
 // runs in its own process, so the fixture written here cannot reach any other
@@ -60,13 +60,15 @@ mock.module('@google-cloud/pubsub', {
   }
 })
 
-let importedModuleInstances = 0
+// Imported dynamically, because a static import would be evaluated before the
+// mocks above are registered.
+const { getAnswer } = await import('../src/getAnswer.js')
 
 /**
- * Import a fresh instance of getAnswer.js backed by the large chunk data set,
- * so that its module level configuration is re-read from the environment.
+ * Build the OpenAI mocks for one test. getAnswer reads the token budget from
+ * the environment on every call, so the module itself is imported once.
  */
-async function importGetAnswerWithLargeChunks() {
+function createLargeChunkOpenaiMocks() {
   const createChatCompletionMock = sinon.spy(async () => {
     return createChatCompletionResponse
   })
@@ -82,12 +84,7 @@ async function importGetAnswerWithLargeChunks() {
     }
   }
 
-  importedModuleInstances += 1
-  const { getAnswer } = await import(
-    `../src/getAnswer.js?budget=${importedModuleInstances}`
-  )
-
-  return { getAnswer, openaiMock, createChatCompletionMock }
+  return { openaiMock, createChatCompletionMock }
 }
 
 /**
@@ -106,8 +103,8 @@ describe('getAnswer context budget', () => {
   test('defaults to a 4000 token budget', async t => {
     delete process.env.MAX_CONTEXT_TOKENS
 
-    const { getAnswer, openaiMock, createChatCompletionMock } =
-      await importGetAnswerWithLargeChunks()
+    const { openaiMock, createChatCompletionMock } =
+      createLargeChunkOpenaiMocks()
 
     await getAnswer({ openai: openaiMock, question: 'This is the question' })
 
@@ -123,8 +120,8 @@ describe('getAnswer context budget', () => {
       delete process.env.MAX_CONTEXT_TOKENS
     })
 
-    const { getAnswer, openaiMock, createChatCompletionMock } =
-      await importGetAnswerWithLargeChunks()
+    const { openaiMock, createChatCompletionMock } =
+      createLargeChunkOpenaiMocks()
 
     await getAnswer({ openai: openaiMock, question: 'This is the question' })
 
@@ -137,8 +134,8 @@ describe('getAnswer context budget', () => {
   test('lets an explicit maxLength argument win', async t => {
     delete process.env.MAX_CONTEXT_TOKENS
 
-    const { getAnswer, openaiMock, createChatCompletionMock } =
-      await importGetAnswerWithLargeChunks()
+    const { openaiMock, createChatCompletionMock } =
+      createLargeChunkOpenaiMocks()
 
     await getAnswer({
       openai: openaiMock,
@@ -174,8 +171,8 @@ describe('getAnswer context budget', () => {
         delete process.env.MAX_CONTEXT_TOKENS
       })
 
-      const { getAnswer, openaiMock, createChatCompletionMock } =
-        await importGetAnswerWithLargeChunks()
+      const { openaiMock, createChatCompletionMock } =
+        createLargeChunkOpenaiMocks()
 
       await getAnswer({ openai: openaiMock, question: 'This is the question' })
 
