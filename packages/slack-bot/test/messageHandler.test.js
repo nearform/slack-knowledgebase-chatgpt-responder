@@ -143,6 +143,18 @@ const otherBotMessageEvent = {
   ts: '1700000000.000400'
 }
 
+// The subtype deny list is deliberately not an allow list, so a subtype we do
+// not recognise is let through to be answered. This one carries neither text
+// nor a file, which leaves nothing to answer and nobody waiting on a reply.
+const unrecognisedSubtypeWithNothingToAnswerEvent = {
+  type: 'message',
+  subtype: 'some_subtype_slack_added_later',
+  user: 'U0000000000',
+  channel: 'D0000000000',
+  channel_type: 'im',
+  ts: '1700000000.000500'
+}
+
 beforeEach(() => {
   getAnswerMock.resetHistory()
   transcribeMock.resetHistory()
@@ -190,6 +202,20 @@ describe('the message handler', () => {
 
     sinon.assert.notCalled(getAnswerMock)
     sinon.assert.notCalled(client.reactions.add)
+    t.assert.deepStrictEqual(postedMessages(client), [])
+  })
+
+  test('leaves no trace when an unrecognised subtype carries nothing to answer', async t => {
+    const client = createClientMock()
+
+    await messageHandler({
+      event: unrecognisedSubtypeWithNothingToAnswerEvent,
+      client
+    })
+
+    sinon.assert.notCalled(getAnswerMock)
+    sinon.assert.notCalled(client.reactions.add)
+    sinon.assert.notCalled(client.chat.postMessage)
     t.assert.deepStrictEqual(postedMessages(client), [])
   })
 
