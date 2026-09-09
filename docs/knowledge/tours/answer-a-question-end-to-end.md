@@ -4,9 +4,10 @@ type: tour
 tags: [reading-path, request-flow]
 source_paths:
   - packages/slack-bot/src/bot.js
+  - packages/slack-bot/src/messageEvents.js
   - packages/slack-bot/src/getAnswer.js
   - packages/slack-bot/src/utils.js
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -23,67 +24,74 @@ Cloud Run's startup probe hit `/healthz` to await that load with full CPU. If yo
 step you will misread everything that follows. See
 [[embedding-lifecycle-and-warm-start]].
 
-## 1. Arrival — `bot.js:41`
+## 1. Arrival and two guards: `bot.js:68`
 
 Slack POSTs to `/slack/events`. Bolt's `ExpressReceiver` verifies the signature
 ([[slack-event-surface]]) and dispatches to the `message` handler, which returns
-immediately if the subtype is `bot_message`. That check is the loop guard.
+immediately unless both `isPlainUserMessage(event)` (`bot.js:77`) and
+`carriesQuestion(event)` (`bot.js:83`) pass. The first is the loop guard. Both sit ahead of
+everything visible, so a dropped event leaves no reaction and no reply.
 
-## 2. Receipt — `bot.js:54`
+## 2. Receipt: `bot.js:106`
 
 A `thumbsup` reaction, then a `users.info` lookup for the asker's locale in its own
 `try`/`catch`, then a holding message. The `users.info` call **is** awaited
-(`packages/slack-bot/src/bot.js:61`), so the locale lookup does add latency to every
+(`packages/slack-bot/src/bot.js:115`), so the locale lookup does add latency to every
 answer. Only the reaction and the holding message are fire-and-forget.
 
-If a file is attached, the [[audio-transcription-path]] runs instead of the holding
-message. It is meant to make the transcript the question, but as written `transcribe`
-returns `undefined`, so the question stays as `event.text`.
+Then the handler branches on what arrived (`bot.js:133-223`). A transcribable file takes the
+[[audio-transcription-path]], which replaces `questionInput` with the transcript and echoes
+it in-thread. An attachment it cannot read, or a message shared with no comment, gets a
+reply asking for a typed question and the handler returns. Otherwise the holding message
+goes out.
 
-## 3. Ensure the data set — `getAnswer.js:142`
+## 3. Ensure the data set: `getAnswer.js:158`
 
 `getAnswer()` awaits `initialize()`. Normally already resolved, so this is free. If the
-earlier load failed, this is where the retry happens.
+earlier load failed, this is where the retry happens. Before that await, the question guard
+(`getAnswer.js:154`) rejects a missing, empty or non-string question, so a spurious event
+costs nothing.
 
-## 4. Embed the question — `getAnswer.js:105`
+## 4. Embed the question: `getAnswer.js:105`
 
 `createContext` calls `openai.embeddings.create` with `text-embedding-ada-002`, the same
 model the corpus used. That match is load-bearing:
 [[retrieval-augmented-answering]].
 
-## 5. Rank — `getAnswer.js:113`
+## 5. Rank: `getAnswer.js:113`
 
 `distancesFromEmbeddings` scores every chunk, linear scan, in process. Sorted ascending.
 [[cosine-distance-ranking]].
 
-## 6. Fill the budget — `getAnswer.js:121-131`
+## 6. Fill the budget: `getAnswer.js:122-131`
 
 Walk the sorted chunks, adding `n_tokens + 4` each, and break at the first that would
 exceed `maxLength`. [[context-token-budget]].
 
-## 7. Notice an empty context — `getAnswer.js:166`
+## 7. Notice an empty context: `getAnswer.js:173`
 
 If the data set was non-empty but nothing fitted, log the warning and carry on. The only
 retrieval-quality alarm in the system.
 
-## 8. Build the prompt — `getAnswer.js:172`
+## 8. Build the prompt: `getAnswer.js:179`
 
 Eight messages, chunks joined with `\n\n###\n\n`, locale interpolated.
 [[prompt-contract]] and [[prompt-message-sequence]].
 
-## 9. Complete — `getAnswer.js:209`
+## 9. Complete: `getAnswer.js:216`
 
 `gpt-4.1`, `temperature: 0`. Note the full prompt is `console.log`ged just before this, so
 production logs contain the retrieved content.
 
-## 10. Reply — `bot.js:99`
+## 10. Reply: `bot.js:245`
 
 The trimmed answer is posted. An awaited rejection from step 3 onwards lands in the outer
-`catch`, which posts one fixed error string, identical for every failure mode. Two classes
-of failure do **not** arrive there: the locale lookup and the transcription each have their
-own inner handler, and the unawaited `reactions.add` and holding-message calls reject
-outside the `await` chain entirely, so their failures surface only as unhandled
-rejections.
+`catch` (`bot.js:252`), which posts one fixed error string, identical for every failure
+mode. Several classes of failure do **not** arrive there: the locale lookup and the
+transcription each have their own inner handler, and the unawaited `reactions.add` and
+interim `postMessage` calls each carry a `.catch(console.error)`, so a Slack failure on one
+of them is logged and the answer still arrives rather than escaping as an unhandled
+rejection.
 [[question-and-answer]].
 
 ## Where you could get lost

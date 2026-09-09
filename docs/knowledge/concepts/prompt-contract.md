@@ -4,15 +4,15 @@ type: concept
 tags: [prompt, openai, product-behaviour]
 source_paths:
   - packages/slack-bot/src/getAnswer.js
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
 
 # Prompt contract
 
-Eight messages, assembled at `packages/slack-bot/src/getAnswer.js:172` and sent at
-`:209` with `temperature: 0` and `model: 'gpt-4.1'`. Verbatim text:
+Eight messages, assembled at `packages/slack-bot/src/getAnswer.js:179` and sent at
+`:216` with `temperature: 0` and `model: 'gpt-4.1'`. Verbatim text:
 [[prompt-message-sequence]].
 
 **This is product behaviour expressed as prose.** Changing the wording changes what users

@@ -7,7 +7,7 @@ source_paths:
   - packages/slack-bot/src/bot.js
   - packages/slack-bot/src/getAnswer.js
   - packages/embeddings-creation/src/create-embeddings.js
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -37,9 +37,9 @@ constructor, with no null check, no empty-string guard and no startup assertion:
 
 | Credential | Read at |
 |---|---|
-| `SLACK_SIGNING_SECRET` | `packages/slack-bot/src/bot.js:11` |
-| `SLACK_BOT_TOKEN` | `packages/slack-bot/src/bot.js:15`, and again in `utils.js:58` and `summarize.js:57` |
-| `OPENAI_API_KEY` | `packages/slack-bot/src/bot.js:36`, `packages/embeddings-creation/src/create-embeddings.js:14` |
+| `SLACK_SIGNING_SECRET` | `packages/slack-bot/src/bot.js:17` |
+| `SLACK_BOT_TOKEN` | `packages/slack-bot/src/bot.js:21`, and again in `utils.js:119` and `summarize.js:57` |
+| `OPENAI_API_KEY` | `packages/slack-bot/src/bot.js:42`, `packages/embeddings-creation/src/create-embeddings.js:14` |
 | `NOTION_TOKEN` | `packages/crawler/src/notion.js:6` |
 
 The GCP bucket and project names are read the same way at module scope

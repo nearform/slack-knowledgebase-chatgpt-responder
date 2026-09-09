@@ -6,7 +6,7 @@ source_paths:
   - packages/crawler/src/utils.js
   - packages/embeddings-creation/src/utils.js
   - packages/slack-bot/src/utils.js
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -26,7 +26,7 @@ visible apparent DRY violation in the repo, and it is a deliberate trade.
 | `createCsv` | yes | yes | no |
 | `parseCsv` | no | yes | yes |
 | `distancesFromEmbeddings` | no | no | yes |
-| `downloadAudio`, `transcribe` | no | no | yes |
+| `downloadAudio`, `transcribe`, `transcriptionText` | no | no | yes |
 
 Each package carries only the direction it needs. The crawler only ever writes; the bot
 only ever reads.
@@ -38,7 +38,9 @@ from their own directory (`gcloud builds submit ./packages/crawler`,
 `gcloud functions deploy` per package). A shared workspace dependency would have to be
 resolvable at build time inside each deployment artifact, which is exactly the packaging
 problem the duplication avoids. The duplicated surface is about 30 lines of thin wrappers
-with no business logic, so the cost of divergence is low.
+with no business logic, so the cost of divergence is low. Note that most of
+`slack-bot`'s `utils.js` is **not** duplicated: the audio helpers exist only there
+([[audio-transcription-path]]) and are the bulk of the file.
 
 **Before extracting a shared package, check the deploy workflow first.** This is the
 constraint that makes the obvious refactor a bad idea.

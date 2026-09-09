@@ -6,7 +6,7 @@ source_paths:
   - packages/crawler/test
   - packages/embeddings-creation/test
   - packages/slack-bot/test
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -24,9 +24,12 @@ around this in three ways:
 
 - **Cache-busting import queries.** `await import('../src/getAnswer.js?t=1')` forces a
   fresh module instance per test, since the query string makes it a different specifier.
-- **Splitting by mock, not by subject.** There are three separate `getAnswer*` test files
+- **Splitting by mock, not by subject.** There are four separate `getAnswer*` test files
   because each needs a different `utils.js` mock: a normal fixture, a large-chunk fixture,
-  and a failure-injecting one.
+  a failure-injecting one, and one for the question guard.
+- **Mocking the framework.** `messageHandler.test.js` mocks `@slack/bolt` itself, capturing
+  the function `app.event('message', ...)` registers so the handler can be invoked directly
+  with a stub `client`. That is what made the handler testable without a Slack workspace.
 - **A file with a mutable flag.** `getAnswerInitialization.test.js` keeps a
   `downloadFailure` variable the mock closes over, so tests flip behaviour without
   re-registering the mock.
@@ -48,16 +51,22 @@ delete `IS_LOCAL_ENVIRONMENT` before importing `utils.js`, and its comment says 
   ([[cosine-distance-ranking]]).
 - **Explanatory comments.** The budget fixture spells out the arithmetic (1004, 2008,
   3012, 4016, 5020). Read those comments before changing a fixture.
+- **Pure functions extracted so they can be asserted directly.** `messageEvents.js` exists
+  partly so the event-filtering rules are testable without a Bolt app. See
+  [[slack-event-surface]].
 
 ## Where it is thin
 
-No tests at all for `bot.js`, `summarize.js`, the Pub/Sub refresh, `splitIntoMany`, the
-retry paths, or the local branch of `upload`. The untested surface is precisely the
-Slack-facing and rate-limit-facing code, which is also the hardest to mock.
+No tests at all for `summarize.js`, `/healthz`, the Pub/Sub refresh, `splitIntoMany`, the
+retry paths, or the local branch of `upload`. What remains untested is the rate-limit-facing
+crawler code and the summarise path, which is also the hardest to mock. The Slack-facing
+answering path is no longer in that group: `messageEvents.test.js`,
+`messageHandler.test.js` and `transcribe.test.js` cover it.
 
 One reporting quirk: node's default glob executes the fixture modules under
-`test/mocks/` as test files, so the runner's 19 for slack-bot includes two files
-containing no tests. There are 22 real tests across the repo, 24 reported.
+`test/mocks/` as test files, so the runner's 105 for slack-bot includes two files
+containing no tests. There are 108 real tests across the repo, 110 reported: 4 in crawler,
+1 in embeddings-creation, and 103 of slack-bot's 105.
 
 Vendored guidance for this repo now lives in `.agents/skills/test-unit-guidelines/` and
 `.agents/skills/test-review/`.

@@ -14,9 +14,10 @@ and offers a `summarize` message shortcut for links and files.
 |---|---|
 | `src/index.js` | Exports `slackBot`, the Express app the function serves. |
 | `src/bot.js` | Bolt app, `ExpressReceiver`, the `message` handler, `/healthz`. |
+| `src/messageEvents.js` | Pure predicates deciding which `message` events and files the handler acts on. |
 | `src/getAnswer.js` | Embeddings load/refresh, context assembly, chat completion. |
 | `src/summarize.js` | The `summarize` shortcut for links and file attachments. |
-| `src/utils.js` | `download`, `parseCsv`, `distancesFromEmbeddings`, audio transcription. |
+| `src/utils.js` | `download`, `parseCsv`, `distancesFromEmbeddings`, `downloadAudio`, `transcribe`, `transcriptionText`. |
 | `src/dev.js` | Local Bolt server (`npm run dev`). |
 
 ## Commands
@@ -54,6 +55,39 @@ optional `MAX_CONTEXT_TOKENS` (default 4000), and `IS_LOCAL_ENVIRONMENT` for loc
   source. Changing that wording changes the product: ask first.
 - The local embeddings file is `/tmp/embeddings-<pid>.csv`, per process, so concurrent
   tests never share it.
+- **`getAnswer` requires a question.** There is no default: a missing, empty,
+  whitespace-only or non-string `question` throws `getAnswer requires a question` before
+  any OpenAI call (`src/getAnswer.js:154`). Do not reintroduce a default parameter, and
+  keep the guard ahead of `initialize()` so a spurious event costs nothing.
+- **Event filtering lives in `src/messageEvents.js`, not the handler.** Six pure
+  predicates, exported so they can be tested without constructing a Bolt app:
+  `isPlainUserMessage` (a deny list of non-user subtypes, plus a `bot_id` or `hidden`
+  rejection), `hasQuestionText`, `hasFileAttachment`, `isTranscribableFile`,
+  `hasAttachments` and `carriesQuestion`. The subtype list is a **deny** list on purpose,
+  so an unrecognised subtype is still answered rather than silently dropped. Add a
+  predicate here rather than inlining a condition in `src/bot.js`.
+- **Only audio is sent to Whisper.** `isTranscribableFile` requires an `audio/` mimetype
+  or the `slack_audio` subtype **and** a non-empty `url_private_download`
+  (`src/messageEvents.js:131`). Both halves matter: without the first, documents and
+  screenshots were uploaded to OpenAI and a screen recording's soundtrack was answered
+  instead of the typed question; without the second, `new URL(undefined)` threw on Slack
+  Connect and restricted-file stubs.
+- **The handler picks the first *transcribable* file, not the first file**
+  (`src/bot.js:130`), so a document uploaded alongside a voice note does not hide the
+  recording.
+- **Four user-facing replies are not the generic error, deliberately**: unintelligible
+  audio, an unreadable attachment, a share with no question, and the "I could not get
+  anything from that attachment" notice sent when a question was typed alongside a file
+  that failed (`src/bot.js:49-66`). Each exists because the generic "please try again"
+  sent the user round a loop that could not help. Keep them distinct.
+- **`downloadAudio` writes to `os.tmpdir()` with a `randomUUID()` suffix**
+  (`src/utils.js:107`), rejects every failure (transport, mid-stream, write, timeout,
+  non-2xx), and `transcribe` removes the scratch file in a `finally`
+  (`src/utils.js:225-231`). Cloud Run's filesystem is memory on a `--min-instances=1`
+  instance, so a leaked file per upload grows until the instance is OOM-killed.
+- **Read the transcription through `transcriptionText`** (`src/utils.js:190`). It accepts
+  either shape the SDK returns and trims, so the empty string means exactly "no words were
+  heard" and callers can branch on it directly.
 
 ## Spec
 

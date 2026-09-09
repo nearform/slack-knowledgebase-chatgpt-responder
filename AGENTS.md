@@ -112,16 +112,29 @@ a linked issue is red on arrival.
   injected `openai` client rather than constructing one inside a helper (see `getAnswer`).
 - **DRY, YAGNI, KISS.** The three packages deliberately duplicate small per-package utils helpers
   because they deploy independently: do not extract a shared package without asking.
-- **Handle errors explicitly.** Fail fast with a meaningful error. Four swallow sites are
-  deliberate and each degrades to something useful: the message handler posts a
-  user-facing fallback, the locale lookup falls back to a default locale
-  (`packages/slack-bot/src/bot.js:66`), `/healthz` answers 503, and the import-time
-  embeddings load defers the retry to the next caller
-  (`packages/slack-bot/src/getAnswer.js:222`). Do not add a swallow without that kind of
-  reason. **One existing path is not in that category and should not be copied**: the
-  Pub/Sub reload at `packages/slack-bot/src/getAnswer.js:83` acks first and then awaits
-  the reload with no `try`/`catch`, so a failed reload is lost and the bot serves stale
-  embeddings until a later message or a restart.
+- **Handle errors explicitly.** Fail fast with a meaningful error. The swallow sites in
+  `packages/slack-bot` are deliberate and each degrades to something useful:
+  - the message handler's outer `catch` posts a user-facing fallback
+    (`packages/slack-bot/src/bot.js:252`);
+  - the locale lookup falls back to a default locale
+    (`packages/slack-bot/src/bot.js:120`);
+  - a failed transcription falls back to any question typed alongside the file, and only
+    reaches the generic error when there is nothing typed
+    (`packages/slack-bot/src/bot.js:162-169`);
+  - every fire-and-forget Slack call carries a `.catch(console.error)`, because an
+    unhandled rejection there would end the process and every request in flight on it
+    (`packages/slack-bot/src/bot.js:106-112` and the interim `postMessage` calls);
+  - removing a downloaded audio scratch file logs and continues, so it never replaces the
+    result the caller was about to report (`packages/slack-bot/src/utils.js:73`);
+  - `/healthz` answers 503; and
+  - the import-time embeddings load defers the retry to the next caller
+    (`packages/slack-bot/src/getAnswer.js:229`).
+
+  Do not add a swallow without that kind of reason. **One existing path is not in that
+  category and should not be copied**: the Pub/Sub reload at
+  `packages/slack-bot/src/getAnswer.js:83` acks first and then awaits the reload with no
+  `try`/`catch`, so a failed reload is lost and the bot serves stale embeddings until a
+  later message or a restart.
 - **Validate at trust boundaries.** Slack requests are verified by `ExpressReceiver` via
   `SLACK_SIGNING_SECRET`; anything mounted outside that receiver is unauthenticated.
 - **Observability.** `console.log`/`console.error` to stdout is the convention here (Cloud
@@ -135,9 +148,11 @@ a linked issue is red on arrival.
 `node:test` with `--experimental-test-module-mocks`, tests in each package's `test/`
 directory as `*.test.js`, fixtures in `test/mocks/`. Run with `npm test` (all workspaces)
 or `npm test --workspace=<name>`. As of 2026-09-09 the suite is green. The root script runs one
-`node:test` runner per workspace, reporting 4 in crawler, 1 in embeddings-creation and 19
-in slack-bot. Two of slack-bot's 19 are the test-less fixture modules under `test/mocks/`,
-which node's default glob executes, so there are 22 real tests across 24 reported.
+`node:test` runner per workspace, reporting 4 in crawler, 1 in embeddings-creation and 105
+in slack-bot (14 suites). Two of slack-bot's 105 are the test-less fixture modules under
+`test/mocks/`, which node's default glob executes as test files, so there are 108 real tests
+across 110 reported. The crawler's fixtures are `.json` and are not executed, so its 4 are
+all real.
 
 Conventions: mock the network at the module boundary with `mock.module`, and use `sinon`
 for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which its

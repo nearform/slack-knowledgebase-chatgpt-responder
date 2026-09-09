@@ -6,7 +6,7 @@ source_paths:
   - packages/slack-bot/src/getAnswer.js
   - packages/slack-bot/src/bot.js
   - .github/workflows/deploy-step.yml
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -41,7 +41,7 @@ unguarded and a regression there would not fail the suite.
 ## 2. Loading starts at import time
 
 The module ends with `initialize().catch(() => {})`
-(`packages/slack-bot/src/getAnswer.js:222`). The load begins as soon as the module is
+(`packages/slack-bot/src/getAnswer.js:229`). The load begins as soon as the module is
 imported, so the first question does not pay for it. The swallowed rejection is
 deliberate: the failure is already logged inside `loadEmbeddings`, and behaviour 1 ensures
 the next real caller retries. An unhandled rejection here would take the process down.
@@ -49,7 +49,7 @@ the next real caller retries. An unhandled rejection here would take the process
 ## 3. `/healthz` as the startup probe
 
 `GET /healthz` awaits `initialize()` and answers 200 `ok` or 503
-`embeddings are not loaded` (`packages/slack-bot/src/bot.js:26`). The deploy attaches it
+`embeddings are not loaded` (`packages/slack-bot/src/bot.js:32`). The deploy attaches it
 as a Cloud Run **startup probe**, and the source comment explains why: during startup
 Cloud Run allocates full CPU, but work outside a request is throttled. Without the probe,
 the import-time load in behaviour 2 crawls along on a fraction of a CPU. The probe turns
@@ -82,4 +82,4 @@ The download target is `/tmp/embeddings-${process.pid}.csv`. The pid suffix keep
 concurrent processes, tests included, from sharing a file. It also means the file is never
 cleaned up, and a container that restarts many times accumulates them in `/tmp`.
 
-Owned by [[slack-bot-module]]. The refresh path is untested.
+Owned by [[slack-bot-module]]. The refresh path and `/healthz` are both untested.

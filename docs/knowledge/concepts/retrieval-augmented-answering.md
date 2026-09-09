@@ -4,7 +4,7 @@ type: concept
 tags: [rag, core-idea]
 source_paths:
   - packages/slack-bot/src/getAnswer.js
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -37,7 +37,7 @@ The chain, per question:
 ## What this design cannot do
 
 - **No conversation.** Each question is answered independently; there is no history. The
-  `@TODO` at `packages/slack-bot/src/getAnswer.js:200` marks the intended place for it.
+  `@TODO` at `packages/slack-bot/src/getAnswer.js:207` marks the intended place for it.
 - **No citations.** The prompt explicitly forbids mentioning the source, so a user cannot
   tell which Notion page an answer came from, and cannot check it.
 - **No "I do not know" beyond an apology.** If nothing relevant is retrieved, the model is

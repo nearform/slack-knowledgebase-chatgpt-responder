@@ -63,13 +63,11 @@ Each is described in its own note; collected here so nobody rediscovers them the
 | A page over 500 tokens with no `'. '` boundary, which is most bullet- or heading-heavy Notion pages, is replaced wholesale by a single `"."` chunk (under 500 tokens it is embedded whole and unharmed) | [[chunking-strategy]] |
 | The trailing chunk of every over-long record is dropped before embedding | [[chunking-strategy]] |
 | `make bot-ask` calls a `try:bot` script that does not exist | see `Makefile:33` |
-| `transcribe` reads `.text` off a string, so it returns `undefined` and every voice question is answered from an empty question, silently | [[audio-transcription-path]] |
-| Transcription temp files (`./<id>.mp4`) are never cleaned up, and download errors are unhandled (can crash the process, not degrade quietly) | [[audio-transcription-path]] |
+| A downloaded audio file is always named `.mp4` whatever Slack actually sent, so the name is no evidence of the format | [[audio-transcription-path]] |
 | Notion child-block listing is not paginated, so large pages are silently truncated | [[crawler-module]] |
-| `downloadAudio` drops the URL's query string, so an authenticated Slack download can fail | [[audio-transcription-path]] |
 | A failed Pub/Sub reload is unlogged and unretried after the ack, so the bot serves stale embeddings silently | [[embedding-lifecycle-and-warm-start]] |
 | No credential is validated at startup, so a missing secret fails at first request rather than at deploy | [[external-integrations]] |
 | The deploy workflow never creates the Pub/Sub topic, and its notification step never runs | [[gcp-deployment-topology]] |
 | A persistently failing Notion block subtree is skipped silently | [[resilience-and-rate-limiting]] |
-| `bot.js` and `summarize.js` have no tests at all | [[test-strategy-module-mocks]] |
+| `summarize.js`, `/healthz` and the Pub/Sub refresh path have no tests at all | [[test-strategy-module-mocks]] |
 | `packages/crawler/src/csv.js` is unreferenced dead code | [[crawler-module]] |

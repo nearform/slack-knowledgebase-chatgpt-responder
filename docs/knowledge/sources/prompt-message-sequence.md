@@ -4,14 +4,14 @@ type: source
 tags: [prompt, raw-extract]
 source_paths:
   - packages/slack-bot/src/getAnswer.js
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---
 
 # Prompt message sequence
 
-Verbatim extract from `packages/slack-bot/src/getAnswer.js:172-205`, kept here so
+Verbatim extract from `packages/slack-bot/src/getAnswer.js:179-212`, kept here so
 [[prompt-contract]] can discuss it without restating it. Sent with `temperature: 0` and
 `model: 'gpt-4.1'` at `:209`.
 
