@@ -91,13 +91,15 @@ where a type is not obvious. Commit messages follow conventional commits (commit
 on `commit-msg`). Releases are not derived from them: `.github/workflows/release.yml` is a
 manual `workflow_dispatch` taking an explicit `semver` choice (`patch`, `minor` or `major`,
 default `patch`) and running `nearform-actions/optic-release-automation-action@v4`, so a
-human picks the version.
+human picks the version. It also triggers on `pull_request: [closed]`, which is how that
+action's own release PR completes the publish.
 
 Every pull request body must link an issue, for example `Closes #123`.
 `.github/workflows/check-linked-issues.yml` runs
-`nearform-actions/github-action-check-linked-issues@v1` on every pull request and fails the
-check when the body links none. Only `release/**` and `dependabot/**` branches are excluded,
-so a PR opened without a linked issue is red on arrival.
+`nearform-actions/github-action-check-linked-issues@v1` on `pull_request_target` (types
+`opened`, `edited`, `reopened` and `synchronize`) and fails the check when the body links
+none. Only `release/**` and `dependabot/**` branches are excluded, so a PR opened without
+a linked issue is red on arrival.
 
 ## Engineering principles
 

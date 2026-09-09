@@ -54,7 +54,8 @@ then auto-merges Dependabot PRs. Note that CI never runs the root `npm run lint`
 per-workspace one. Releases are cut manually rather than from commit messages:
 `.github/workflows/release.yml` is a `workflow_dispatch` with an explicit `semver` input
 (`patch`, `minor` or `major`, default `patch`) that runs
-`nearform-actions/optic-release-automation-action@v4`, so a human picks the version. A
-published release is what triggers the production deploy.
+`nearform-actions/optic-release-automation-action@v4`, so a human picks the version. It
+also triggers on `pull_request: [closed]`, which is how that action's own release PR
+completes the publish. A published release is what triggers the production deploy.
 
 Part of [[project-overview]].

@@ -60,7 +60,7 @@ Each is described in its own note; collected here so nobody rediscovers them the
 
 | Issue | Note |
 |---|---|
-| A page with no `'. '` boundary, which is most bullet- or heading-heavy Notion pages, is replaced wholesale by a single `"."` chunk | [[chunking-strategy]] |
+| A page over 500 tokens with no `'. '` boundary, which is most bullet- or heading-heavy Notion pages, is replaced wholesale by a single `"."` chunk (under 500 tokens it is embedded whole and unharmed) | [[chunking-strategy]] |
 | The trailing chunk of every over-long record is dropped before embedding | [[chunking-strategy]] |
 | `make bot-ask` calls a `try:bot` script that does not exist | see `Makefile:33` |
 | `transcribe` reads `.text` off a string, so it returns `undefined` and every voice question is answered from an empty question, silently | [[audio-transcription-path]] |

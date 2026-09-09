@@ -47,13 +47,17 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   be split into chunks each within the 500 token budget (unguarded). **The current
   implementation violates this**: `splitIntoMany` pushes a chunk only when the next
   sentence would exceed the budget, so the final accumulated chunk is never flushed and
-  the record's tail is lost. Treat the criterion as the invariant to restore, not the
-  behaviour to preserve.
+  the record's tail is lost, and where the record holds no `'. '` boundary at all it loses
+  everything (see the next criterion). Treat the criterion as the invariant to restore,
+  not the behaviour to preserve.
 - Given a sentence longer than 500 tokens, when chunking runs, then that sentence is
-  dropped (unguarded). **The implementation also emits a spurious `"."` chunk** when such
-  a sentence arrives with an empty accumulator, because the push precedes the size check.
-  That chunk is embedded like any other. Treat the drop as intended and the `"."` as a
-  defect to remove.
+  dropped (unguarded). Where such a sentence arrives with an empty accumulator the push at
+  `packages/embeddings-creation/src/create-embeddings.js:35` precedes the size check, so a
+  `"."` chunk is emitted in its place and embedded like any other. **For a record with no
+  `'. '` boundary at all, which is what `packages/crawler/src/notion.js:65` produces for a
+  bullet- or heading-heavy Notion page, that `"."` is the only chunk**: `splitIntoMany`
+  returns exactly `["."]` and the whole record's text is lost. Treat the drop as intended
+  and the `"."` as a defect to remove.
 - Given a transient OpenAI failure, when a chunk is embedded, then the call is made up to
   5 times in total (4 retries) with a 5s maximum delay before the run fails (unguarded).
 
