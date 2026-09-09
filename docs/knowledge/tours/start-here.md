@@ -2,7 +2,7 @@
 title: Start here
 type: tour
 tags: [onboarding, reading-path]
-source_commit: c4bc5ac
+source_commit: 4a9f973
 created: 2026-09-09
 updated: 2026-09-09
 ---

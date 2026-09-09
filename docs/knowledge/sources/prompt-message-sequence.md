@@ -13,7 +13,7 @@ updated: 2026-09-09
 
 Verbatim extract from `packages/slack-bot/src/getAnswer.js:179-212`, kept here so
 [[prompt-contract]] can discuss it without restating it. Sent with `temperature: 0` and
-`model: 'gpt-4.1'` at `:209`.
+`model: 'gpt-4.1'` at `:216`.
 
 | # | Role | Content |
 |---|---|---|
@@ -29,7 +29,7 @@ Verbatim extract from `packages/slack-bot/src/getAnswer.js:179-212`, kept here s
 Chunks are joined with `\n\n###\n\n` as a separator. Message 6 ends with an unmatched
 double quote, present in the source and asserted by the test.
 
-A `@TODO` sits between messages 7 and 8 (`:200`) marking where prior answers would go to
+A `@TODO` sits between messages 7 and 8 (`:207`) marking where prior answers would go to
 make the exchange conversational.
 
 The whole array is asserted with `sinon.assert.calledOnceWithExactly` in

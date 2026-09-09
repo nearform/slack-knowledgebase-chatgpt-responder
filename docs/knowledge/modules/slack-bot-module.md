@@ -75,7 +75,7 @@ Well covered:
 - `getAnswer.js`, including the whole prompt array asserted with `calledOnceWithExactly`,
   the token budget, the load-failure retry, and the question guard.
 - `messageEvents.js`: five of its six predicates have their own `describe` block, including
-  a case asserting every one of the 27 subtypes on the deny list is rejected
+  a case asserting every one of the 28 subtypes on the deny list is rejected
   (`packages/slack-bot/test/messageEvents.test.js`). `hasAttachments` has no direct test and
   is exercised only through `carriesQuestion`.
 - The transcription half of `utils.js`: ten cases for `downloadAudio`, six for `transcribe`

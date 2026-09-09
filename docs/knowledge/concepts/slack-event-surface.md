@@ -101,7 +101,7 @@ question in it, so it passes this guard and then gets a reply asking for one, ra
 being dropped while the sender waits on a DM the bot never even reacted to.
 
 The predicates are covered by `packages/slack-bot/test/messageEvents.test.js`, including a
-case that asserts every one of the 27 subtypes on the deny list is rejected. `hasAttachments`
+case that asserts every one of the 28 subtypes on the deny list is rejected. `hasAttachments`
 is the one predicate with no `describe` block of its own, reached only through
 `carriesQuestion`. The handler is covered by
 `packages/slack-bot/test/messageHandler.test.js`, which mocks `@slack/bolt` to capture the
