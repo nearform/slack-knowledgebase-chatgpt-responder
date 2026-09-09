@@ -1,0 +1,35 @@
+{
+  "version": 1,
+  "skills": {
+    "prompt-engineering": {
+      "source": "nearform/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/prompt-engineering/skills/prompt-engineering/SKILL.md",
+      "computedHash": "69ceb36e84fc779cae7f5b3cde31a4d9e147c5e0a943f27ca55e652e0d250fd4"
+    },
+    "test-automation-guidelines": {
+      "source": "nearform/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/test-automation-guidelines/skills/test-automation-guidelines/SKILL.md",
+      "computedHash": "d9a82698467376e5944c4a11abc3e890bc4984cc218262714ab7f3e5b1acb9d7"
+    },
+    "test-review": {
+      "source": "nearform/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/test-review/skills/test-review/SKILL.md",
+      "computedHash": "08543cdbc19a3963a4da35c4ab0e3bd7788b7d93edaee8f813bd2302acde1666"
+    },
+    "test-unit-guidelines": {
+      "source": "nearform/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/test-unit-guidelines/skills/test-unit-guidelines/SKILL.md",
+      "computedHash": "91850409273617e80f8118e94f507b1ab8b55ca638032fc4108a57a7716c8e59"
+    },
+    "understand-codebase": {
+      "source": "nearform/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/understand-codebase/skills/understand-codebase/SKILL.md",
+      "computedHash": "cef70898e6a7ea2ddd607a60fccb443d21a7478856f8d84bcc4d250410c27e8f"
+    }
+  }
+}
