@@ -54,8 +54,9 @@ make bot-start                        # slack bot function on :3003
 make bot-expose                       # ngrok tunnel for Slack's Request URL
 ```
 
-`IS_LOCAL_ENVIRONMENT=true` (set by the `make` targets) swaps every GCS read/write for a
-file copy under `.cache/`, so local runs never touch a bucket. Full setup, including the
+`IS_LOCAL_ENVIRONMENT=true` (set by the `crawl`, `embeddings-start` and `bot-start`
+targets, not by `embeddings` or `bot-expose`) swaps every GCS read/write for a file copy
+under `.cache/`, so those runs never touch a bucket. Full setup, including the
 Notion integration and Slack app manifest, is in `README.md`.
 
 ## Code style & conventions
@@ -149,8 +150,13 @@ for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which
 ## Boundaries
 
 - ✅ **Safe without asking:** edit source under `packages/*/src`, add or change tests, run
-  `npm test`, `npm run lint`, and the `make` targets (they are local-only thanks to
-  `IS_LOCAL_ENVIRONMENT`), read any workflow file.
+  `npm test` and `npm run lint`, read any workflow file.
+- ⚠️ **The `make` targets are not in the safe tier.** `IS_LOCAL_ENVIRONMENT` redirects
+  Cloud Storage reads and writes to `.cache/` and suppresses the bot's Pub/Sub subscribe
+  (`packages/slack-bot/src/getAnswer.js:60`); it does not stop any other outbound call.
+  `make crawl` hits the Notion API, `make embeddings` drives OpenAI embedding calls that
+  cost money, and `make bot-expose` opens a public ngrok tunnel to a local service. Note
+  `make embeddings` and `make bot-expose` do not set the flag at all. Ask first.
 - ⚠️ **Ask first:** adding or upgrading dependencies, changing prompts or model ids in
   `packages/slack-bot/src/getAnswer.js` and `packages/slack-bot/src/summarize.js` (they change the bot's answers), altering the CSV schema
   shared between packages, editing anything under `.github/workflows`, changing GCP

@@ -32,10 +32,13 @@ string instead of an answer.
 
 - **The temp file is never deleted.** `downloadAudio` writes `./<file id>.mp4` relative to
   the working directory and nothing removes it. On a long-lived container these accumulate.
-- **Errors are dropped silently.** `downloadAudio` returns a promise that only ever
-  `resolve`s: there is no `reject`, no `error` handler on the request, and no status check.
-  A 404 or an auth failure writes a file containing the error body, which is then sent to
-  Whisper.
+- **Errors are unhandled, not swallowed.** `downloadAudio` returns a promise that only
+  ever `resolve`s: there is no `reject`, and no `error` listener on the request or the
+  streams. A transport or stream failure therefore emits an `error` event with no
+  listener, which **throws and can take the process down**, rather than degrading quietly.
+  Separately, there is no status check, so a 404 or an auth failure writes the error body
+  to disk and sends it to Whisper. Do not preserve either behaviour on the assumption that
+  it fails softly.
 - **The extension is assumed.** Every download is named `.mp4` regardless of what Slack
   actually sent.
 

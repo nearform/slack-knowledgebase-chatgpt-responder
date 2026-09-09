@@ -33,8 +33,12 @@ than crawl time ([[external-integrations]]).
 
 - One ephemeral reply per item, so the summary is visible only to the requester.
 - File summaries are asked to be "formatted for Slack".
-- Failures are logged and `continue`d: an unreadable file is skipped silently and the user
-  simply gets no reply for it.
+- Only the two explicit non-OK checks are logged and `continue`d: a `files.info` response
+  with `ok: false`, and a non-OK download response. Those skip that one file silently.
+- **Every other failure aborts the whole shortcut**, including any remaining files and
+  links. A rejection from `files.info`, `fetch`, `arrayBuffer`, `responses.create` or
+  `postEphemeral` is uncaught, because neither `handleFiles` nor `handleLinks` wraps its
+  loop body.
 - Link extraction only walks `rich_text` blocks and only `rich_text_section` elements, so
   links in other block shapes are missed.
 

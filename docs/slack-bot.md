@@ -100,8 +100,11 @@ before answering them, and summarises links and files on request.
 - Given a non-local environment, when `download()` runs, then the named bucket file is
   downloaded to the caller's destination, not to the bucket file name (guarded:
   `download > downloads the bucket file to the destination it was given`).
-- Given no data set could be loaded and none was passed, when `getAnswer()` runs, then it
-  throws `No data frame provided` (unguarded).
+- Given `initialize()` resolves without assigning a data set and none was passed, when
+  `getAnswer()` runs, then it throws `No data frame provided` (unguarded). Note this is
+  **not** the normal load-failure path: `getAnswer` awaits `initialize()` first, which
+  rethrows, so a failed download surfaces that error rather than this guard. The guard is
+  only reachable if a load resolves while leaving `defaultDataSet` unset.
 - Given `GET /healthz`, when the embeddings are loaded, then it responds 200 `ok`, and 503
   `embeddings are not loaded` when the load fails (unguarded).
 - Given a `message` event with subtype `bot_message`, when the handler runs, then it

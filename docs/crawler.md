@@ -15,6 +15,12 @@ bucket. It is the first stage of the pipeline and the only component that talks 
   and is `null` when neither exists (`packages/crawler/src/notion.js:45`).
 - Page content is gathered by recursively listing block children and collecting every
   block type's `rich_text[].plain_text` (`packages/crawler/src/notion.js:108`).
+- **Child listing is not paginated.** `getPages` follows `has_more`/`next_cursor` for
+  search (`packages/crawler/src/notion.js:38`), but the two
+  `notion.blocks.children.list` calls pass only `block_id`
+  (`packages/crawler/src/notion.js:79`, `:87`) and never request further pages. A block
+  with more children than one API page returns is therefore **truncated**, silently. This
+  is the code as it stands, not documented intent.
 - Newlines are stripped from the assembled text; blocks are joined with a single space
   (`packages/crawler/src/notion.js:65`).
 - Pages whose assembled text is empty are dropped (`packages/crawler/src/notion.js:71`).

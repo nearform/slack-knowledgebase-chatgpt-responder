@@ -32,8 +32,9 @@ immediately if the subtype is `bot_message`. That check is the loop guard.
 ## 2. Receipt — `bot.js:54`
 
 A `thumbsup` reaction, then a `users.info` lookup for the asker's locale in its own
-`try`/`catch`, then a holding message. None of the Slack calls here are awaited, so they
-do not delay the answer.
+`try`/`catch`, then a holding message. The `users.info` call **is** awaited
+(`packages/slack-bot/src/bot.js:61`), so the locale lookup does add latency to every
+answer. Only the reaction and the holding message are fire-and-forget.
 
 If a file is attached, the [[audio-transcription-path]] runs instead and its transcript
 becomes the question.

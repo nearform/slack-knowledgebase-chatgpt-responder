@@ -62,7 +62,9 @@ Each is described in its own note; collected here so nobody rediscovers them the
 |---|---|
 | The trailing chunk of every over-long record is dropped before embedding | [[chunking-strategy]] |
 | `make bot-ask` calls a `try:bot` script that does not exist | see `Makefile:33` |
-| Transcription temp files (`./<id>.mp4`) are never cleaned up, and download errors are swallowed | [[audio-transcription-path]] |
+| Transcription temp files (`./<id>.mp4`) are never cleaned up, and download errors are unhandled (can crash the process, not degrade quietly) | [[audio-transcription-path]] |
+| Notion child-block listing is not paginated, so large pages are silently truncated | [[crawler-module]] |
+| The deploy workflow never creates the Pub/Sub topic, and its notification step never runs | [[gcp-deployment-topology]] |
 | A persistently failing Notion block subtree is skipped silently | [[resilience-and-rate-limiting]] |
 | `bot.js` and `summarize.js` have no tests at all | [[test-strategy-module-mocks]] |
 | `packages/crawler/src/csv.js` is unreferenced dead code | [[crawler-module]] |

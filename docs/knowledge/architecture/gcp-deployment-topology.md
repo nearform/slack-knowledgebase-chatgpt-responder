@@ -13,9 +13,11 @@ updated: 2026-09-09
 
 # GCP deployment topology
 
-One GitHub Actions workflow, `.github/workflows/deploy-step.yml`, both **provisions and
-deploys** everything. It is the authoritative description of the runtime environment.
-Extracted commands: [[deploy-step-commands]].
+One GitHub Actions workflow, `.github/workflows/deploy-step.yml`, provisions and deploys
+**most** of this. It is the best description of the runtime environment, but it is not
+self-contained: it never creates the Pub/Sub topic, and its bucket-notification step is
+guarded so that it never runs. Both are manual prerequisites on a fresh project. Extracted
+commands and the full caveats: [[deploy-step-commands]].
 
 Everything lives in **`europe-west1`**.
 

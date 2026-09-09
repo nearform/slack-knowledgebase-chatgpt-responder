@@ -51,8 +51,8 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   behaviour to preserve.
 - Given a sentence longer than 500 tokens, when chunking runs, then that sentence is
   dropped (unguarded).
-- Given a transient OpenAI failure, when a chunk is embedded, then the call is retried up
-  to 5 times with a 5s maximum delay before the run fails (unguarded).
+- Given a transient OpenAI failure, when a chunk is embedded, then the call is made up to
+  5 times in total (4 retries) with a 5s maximum delay before the run fails (unguarded).
 
 ## Non-goals & boundaries
 
@@ -60,8 +60,10 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
 - Does not answer questions or rank chunks; similarity search belongs to
   [slack-bot](./slack-bot.md).
 - Does not incrementally update embeddings: every run re-embeds the whole corpus.
-- Does not create the bucket, the Pub/Sub topic, or the notification. Those are provisioned
-  by `.github/workflows/deploy-step.yml`.
+- Does not create the bucket, the Pub/Sub topic, or the notification. `.github/workflows/deploy-step.yml`
+  provisions the bucket and the subscription, but **nothing creates the topic**, and its
+  notification step is mis-guarded so it never runs. Both are manual prerequisites today:
+  see the caveats in `docs/knowledge/sources/deploy-step-commands.md`.
 
 ## Inputs & outputs
 
@@ -107,7 +109,8 @@ Tests live in `packages/embeddings-creation/test/` and run with
 names via `cross-env`. One test, `embeddings creation`, passing as of 2026-09-09.
 
 That single test covers the happy path end to end with mocked storage and OpenAI. The
-skip-on-wrong-object-name branch, `splitIntoMany`, and the backoff path are uncovered.
+skip-on-wrong-object-name branch, `splitIntoMany`, and the backoff *retry* branch are uncovered. `backOff` itself runs on
+the happy path, so it is the retry, not the wrapper, that is unexercised.
 
 ## Related code
 

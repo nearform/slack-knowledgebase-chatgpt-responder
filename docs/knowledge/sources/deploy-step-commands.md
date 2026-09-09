@@ -16,7 +16,13 @@ Extract of the provisioning and deploy steps from
 [[gcp-deployment-topology]].
 
 Most create steps are guarded by a `describe` check, so the workflow is broadly safe to
-re-run. **One guard is wrong**: "Create bucket notification" checks whether the *bucket*
+re-run. Two provisioning gaps matter on a fresh project.
+
+**The Pub/Sub topic is never created.** Both the bucket notification and the subscription
+pass `--topic=$GCP_EMBEDDING_TOPIC_NAME`, but no step runs `gcloud pubsub topics create`.
+A fresh project needs the topic created by hand first, or both steps fail.
+
+**One guard is wrong**: "Create bucket notification" checks whether the *bucket*
 exists, not whether the notification exists. Because the preceding step just created the
 bucket, the `describe` succeeds and the notification is **skipped on a fresh deployment**,
 which is the step that wires [[pipeline-data-flow]]'s second coupling. On a re-run against
