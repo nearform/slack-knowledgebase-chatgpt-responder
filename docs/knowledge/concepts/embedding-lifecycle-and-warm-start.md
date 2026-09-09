@@ -30,9 +30,13 @@ initializationPromise = loadEmbeddings().catch(error => {
 
 Two properties fall out of those three lines. Concurrent callers share one load rather
 than each starting their own. And a failed load is *forgotten*, so the next question
-retries instead of every future caller awaiting a permanently rejected promise. Both are
-guarded by
-`getAnswer initialization > rejects when the embeddings fail to load, then loads on a retry`.
+retries instead of every future caller awaiting a permanently rejected promise.
+
+Only the second is guarded, by
+`getAnswer initialization > rejects when the embeddings fail to load, then loads on a retry`,
+which sequences a single caller through a failure and then a success. **No test starts
+concurrent callers or asserts they share one download**, so the shared-load property is
+unguarded and a regression there would not fail the suite.
 
 ## 2. Loading starts at import time
 

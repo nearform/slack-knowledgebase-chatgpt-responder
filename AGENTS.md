@@ -20,8 +20,9 @@ use the corpus at all.
 - `@notionhq/client` 5.x, `tiktoken-node`, `compute-cosine-similarity`, `json-2-csv`, `p-map`,
   `exponential-backoff`
 - Google Cloud: Cloud Storage, Pub/Sub, Cloud Run jobs + functions
-  (`@google-cloud/functions-framework` 5.x), Cloud Scheduler, Secret Manager. All in
-  `europe-west1`.
+  (`@google-cloud/functions-framework` 5.x), Cloud Scheduler, Secret Manager. Storage,
+  compute and scheduler are pinned to `europe-west1`; Pub/Sub topics and subscriptions and
+  Secret Manager secrets are global and take no region.
 - Tests: `node:test` (built in) with `sinon` for spies and fakes in all three packages
   (`sinon` is declared in `packages/slack-bot` and hoisted by npm workspaces). No Jest or
   Vitest.

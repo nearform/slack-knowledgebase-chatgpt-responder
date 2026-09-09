@@ -9,7 +9,7 @@
 | Host | Claude Code |
 | Verify rounds | 3 of max 3, plus 2 external review rounds and a confirmation audit |
 | Overall confidence | 95.75/100 (confirmation audit) |
-| Score source | confirmation audit, **with three low-severity text corrections applied after it** (enumerated below) |
+| Score source | confirmation audit, **with four low-severity text corrections applied after it** (enumerated below) |
 | ≥95 gate | met |
 
 ## Verify rounds
@@ -35,10 +35,10 @@ current. The confirmation audit re-graded the fixed artifacts cold, and 95.75 is
 score. It is lower than 97.9 and that is expected: a different auditor, a larger artifact
 surface, and five nits round 3 did not look for.
 
-**Three corrections were applied after the confirmation audit** (findings 1, 2 and 3
-below). They are text-only and objective. The score above therefore predates them by
-three low-severity edits, each enumerated so the delta is reproducible rather than
-hand-waved. No further audit was run, because re-auditing after every trivial correction
+**Four corrections were applied after the confirmation audit** (findings 1, 2, 3 and 4
+below, every one marked `fixed` in the findings table). They are text-only and objective.
+The score above therefore predates them by four low-severity edits, each enumerated so the
+delta is reproducible rather than hand-waved. No further audit was run, because re-auditing after every trivial correction
 is the regress the round cap exists to prevent.
 
 ## Scores (confirmation audit)
@@ -101,7 +101,7 @@ swallowed; the summarize shortcut's real failure scope; `users.info` is awaited;
 `No data frame provided` precondition restated as reachable only when a load resolves
 without assigning.
 
-Post-confirmation-audit (3 fixes): findings 1, 2 and 4 above.
+Post-confirmation-audit (4 fixes): findings 1, 2, 3 and 4 above.
 
 **One process failure worth recording.** The retry-wording fix was reported as applied
 during internal round 2 but never landed: the search string did not match because the

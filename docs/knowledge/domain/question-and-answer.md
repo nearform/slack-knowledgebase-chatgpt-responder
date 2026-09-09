@@ -42,12 +42,19 @@ plainly, because they set user expectations:
 
 A `thumbsup` reaction as an immediate receipt, then a holding message
 ("Let me check available information on that for you"), then the answer as a separate
-message. On a transcribed question the holding message instead echoes what was heard. On
-any failure, one fixed string:
+message. On a transcribed question the holding message instead echoes what was heard. When an
+awaited step inside the handler throws, one fixed string:
 
 > It appears I have run into an issue looking up an answer for you. Please try again
 
-That string is the same for every failure mode, so a user cannot distinguish "OpenAI is
-down" from "the embeddings never loaded". Diagnosis needs the Cloud Run logs.
+The same string covers every failure that reaches the outer catch, so a user cannot
+distinguish "OpenAI is down" from "the embeddings never loaded". Diagnosis needs the Cloud
+Run logs.
+
+**Two failure modes never produce it**, so do not treat it as a universal guarantee. A
+locale lookup failure is caught locally and falls back to the default locale, posting
+nothing. And the unawaited `reactions.add` and holding-message calls reject outside the
+`await` chain, so they bypass the catch entirely. See
+[[answer-a-question-end-to-end]].
 
 Handled by [[slack-event-surface]].

@@ -19,7 +19,10 @@ self-contained: it never creates the Pub/Sub topic, and its bucket-notification 
 guarded so that it never runs. Both are manual prerequisites on a fresh project. Extracted
 commands and the full caveats: [[deploy-step-commands]].
 
-Everything lives in **`europe-west1`**.
+Storage, compute and the scheduler live in **`europe-west1`**. Pub/Sub topics and
+subscriptions and Secret Manager secrets are **global**: they take no region, which is why
+the subscription create is the one provisioning call in the workflow with no `--region` or
+`--location` flag.
 
 | Resource | Kind | Notes |
 |---|---|---|

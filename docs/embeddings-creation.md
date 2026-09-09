@@ -50,7 +50,10 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   the record's tail is lost. Treat the criterion as the invariant to restore, not the
   behaviour to preserve.
 - Given a sentence longer than 500 tokens, when chunking runs, then that sentence is
-  dropped (unguarded).
+  dropped (unguarded). **The implementation also emits a spurious `"."` chunk** when such
+  a sentence arrives with an empty accumulator, because the push precedes the size check.
+  That chunk is embedded like any other. Treat the drop as intended and the `"."` as a
+  defect to remove.
 - Given a transient OpenAI failure, when a chunk is embedded, then the call is made up to
   5 times in total (4 retries) with a 5s maximum delay before the run fails (unguarded).
 

@@ -32,6 +32,13 @@ longer than 500 tokens, the final chunk of its text never becomes a [[content-ch
 is silently absent from the corpus. Short records are unaffected. This is the code as it
 stands, not documented intent, and it is worth fixing test-first.
 
+**An oversized sentence emits a bogus chunk.** The push happens *before* the
+size check, so when a sentence over 500 tokens arrives with an empty accumulator, the
+function pushes `[].join('. ') + '.'`, which is the single character `"."`, and only then
+discards the sentence. A leading over-long sentence therefore produces a `"."`
+[[content-chunk]] that is embedded and can be retrieved as context. Confirmed by tracing
+the loop: a first sentence of 600 tokens yields exactly `["."]`.
+
 **Splitting on `'. '` is fragile.** Abbreviations, decimals and version numbers all split
 mid-sentence, and the crawler has already stripped newlines
 ([[crawler-module]]), so there is no paragraph structure left to split on instead. The
