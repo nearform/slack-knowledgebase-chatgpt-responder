@@ -51,7 +51,10 @@ protect.
 
 `.github/workflows/ci.yml` runs lint and tests **per workspace** as three parallel jobs,
 then auto-merges Dependabot PRs. Note that CI never runs the root `npm run lint`, only the
-per-workspace one. Releases are cut by release-please from conventional commits, and a
+per-workspace one. Releases are cut manually rather than from commit messages:
+`.github/workflows/release.yml` is a `workflow_dispatch` with an explicit `semver` input
+(`patch`, `minor` or `major`, default `patch`) that runs
+`nearform-actions/optic-release-automation-action@v4`, so a human picks the version. A
 published release is what triggers the production deploy.
 
 Part of [[project-overview]].

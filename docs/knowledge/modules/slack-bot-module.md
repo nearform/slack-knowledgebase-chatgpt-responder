@@ -60,9 +60,18 @@ free of anything sensitive. See [[slack-event-surface]].
 
 ## Test coverage is uneven
 
-`getAnswer.js` and `utils.js` are well covered; `bot.js` and `summarize.js` have no tests
-at all. The message handler, the transcription wiring and the shortcut are all unguarded.
-See [[test-strategy-module-mocks]] and the coverage labels in the spec.
+`getAnswer.js` is well covered. `utils.js` is covered only in part: `download`
+(`packages/slack-bot/test/download.test.js`) and `distancesFromEmbeddings`
+(`packages/slack-bot/test/distancesFromEmbeddings.test.js`) have direct tests, and
+`parseCsv` is exercised indirectly because the `getAnswer` tests spread the real module and
+override only `download`. `downloadAudio` and `transcribe`
+(`packages/slack-bot/src/utils.js:49-84`), roughly half the module by line count, have no
+test at all: no test file so much as references either name. That is why the
+`response_format` defect in [[audio-transcription-path]] survived.
+
+`bot.js` and `summarize.js` have no tests at all. The message handler, the transcription
+wiring and the shortcut are all unguarded. See [[test-strategy-module-mocks]] and the
+coverage labels in the spec.
 
 Part of [[project-overview]]. Consumes [[content-chunk]] rows produced by
 [[embeddings-creation-module]].

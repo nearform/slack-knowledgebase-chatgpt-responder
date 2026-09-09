@@ -60,11 +60,13 @@ Each is described in its own note; collected here so nobody rediscovers them the
 
 | Issue | Note |
 |---|---|
+| A page with no `'. '` boundary, which is most bullet- or heading-heavy Notion pages, is replaced wholesale by a single `"."` chunk | [[chunking-strategy]] |
 | The trailing chunk of every over-long record is dropped before embedding | [[chunking-strategy]] |
 | `make bot-ask` calls a `try:bot` script that does not exist | see `Makefile:33` |
+| `transcribe` reads `.text` off a string, so it returns `undefined` and every voice question is answered from an empty question, silently | [[audio-transcription-path]] |
 | Transcription temp files (`./<id>.mp4`) are never cleaned up, and download errors are unhandled (can crash the process, not degrade quietly) | [[audio-transcription-path]] |
 | Notion child-block listing is not paginated, so large pages are silently truncated | [[crawler-module]] |
-| An over-long sentence emits a spurious `"."` chunk that gets embedded | [[chunking-strategy]] |
+| `downloadAudio` drops the URL's query string, so an authenticated Slack download can fail | [[audio-transcription-path]] |
 | A failed Pub/Sub reload is unlogged and unretried after the ack, so the bot serves stale embeddings silently | [[embedding-lifecycle-and-warm-start]] |
 | No credential is validated at startup, so a missing secret fails at first request rather than at deploy | [[external-integrations]] |
 | The deploy workflow never creates the Pub/Sub topic, and its notification step never runs | [[gcp-deployment-topology]] |

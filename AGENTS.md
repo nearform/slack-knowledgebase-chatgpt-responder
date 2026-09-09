@@ -35,7 +35,7 @@ use the corpus at all.
 | `packages/crawler` | Notion crawl to `scraped.csv` on GCS. See `packages/crawler/AGENTS.md`. |
 | `packages/embeddings-creation` | `scraped.csv` to `embeddings.csv` via OpenAI. See `packages/embeddings-creation/AGENTS.md`. |
 | `packages/slack-bot` | Bolt app: answers, summaries, transcription. See `packages/slack-bot/AGENTS.md`. |
-| `.github/workflows` | CI (lint + test per workspace), release-please, GCP deploy. |
+| `.github/workflows` | CI (lint + test per workspace), the linked-issue PR check, manual releases, GCP deploy. |
 | `Makefile` | Local run targets for each package. |
 | `assets/` | `assets/schema.png`, the architecture diagram used by the README. |
 | `docs/` | Per-subsystem specs, indexed by `docs/README.md`. |
@@ -88,7 +88,16 @@ export async function download(bucketName, fileName, destination) {
 Named exports for helpers (`packages/slack-bot/src/bot.js` and
 `packages/slack-bot/src/summarize.js` default-export their app and registrar), `node:`-prefixed builtin imports, async/await over promise chains, JSDoc
 where a type is not obvious. Commit messages follow conventional commits (commitlint runs
-on `commit-msg`); release-please cuts releases from them.
+on `commit-msg`). Releases are not derived from them: `.github/workflows/release.yml` is a
+manual `workflow_dispatch` taking an explicit `semver` choice (`patch`, `minor` or `major`,
+default `patch`) and running `nearform-actions/optic-release-automation-action@v4`, so a
+human picks the version.
+
+Every pull request body must link an issue, for example `Closes #123`.
+`.github/workflows/check-linked-issues.yml` runs
+`nearform-actions/github-action-check-linked-issues@v1` on every pull request and fails the
+check when the body links none. Only `release/**` and `dependabot/**` branches are excluded,
+so a PR opened without a linked issue is red on arrival.
 
 ## Engineering principles
 

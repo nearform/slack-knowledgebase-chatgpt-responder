@@ -36,8 +36,9 @@ A `thumbsup` reaction, then a `users.info` lookup for the asker's locale in its 
 (`packages/slack-bot/src/bot.js:61`), so the locale lookup does add latency to every
 answer. Only the reaction and the holding message are fire-and-forget.
 
-If a file is attached, the [[audio-transcription-path]] runs instead and its transcript
-becomes the question.
+If a file is attached, the [[audio-transcription-path]] runs instead of the holding
+message. It is meant to make the transcript the question, but as written `transcribe`
+returns `undefined`, so the question stays as `event.text`.
 
 ## 3. Ensure the data set — `getAnswer.js:142`
 

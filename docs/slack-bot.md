@@ -54,9 +54,14 @@ before answering them, and summarises links and files on request.
 - On a `message` event the bot ignores `bot_message` subtypes, adds a `thumbsup` reaction,
   looks up the user for their locale, and posts an acknowledgement before answering
   (`bot.js:41`).
-- If the message carries a file, the bot transcribes it with `whisper-1` and answers the
-  transcript, echoing it back to the thread; a transcription failure posts a fixed error
-  message instead (`bot.js:72`, `packages/slack-bot/src/utils.js:76`).
+- If the message carries a file, the bot is meant to transcribe it with `whisper-1`, echo
+  the transcript back to the thread and answer it (`bot.js:72`,
+  `packages/slack-bot/src/utils.js:76`). **As written none of that happens.**
+  `response_format: 'text'` makes the openai client resolve to a bare string, so
+  `packages/slack-bot/src/utils.js:83` reads `.text` off a string and returns `undefined`,
+  the `if (transcribedResponse)` guard at `bot.js:73` never passes, and the question stays
+  as the (usually empty) `event.text`. Nothing throws, so the fixed error message is not
+  posted either.
 - The `summarize` shortcut summarises each file attached to the message and each link in
   its rich-text blocks, replying ephemerally per item with `gpt-4.1`
   (`packages/slack-bot/src/summarize.js:20`).
@@ -109,10 +114,14 @@ before answering them, and summarises links and files on request.
   `embeddings are not loaded` when the load fails (unguarded).
 - Given a `message` event with subtype `bot_message`, when the handler runs, then it
   returns without replying (unguarded).
-- Given a message with an audio file, when the handler runs, then the file is transcribed
-  and the transcript is used as the question (unguarded).
-- Given a transcription failure, when the handler runs, then the fixed error message is
-  posted instead of an answer (unguarded).
+- Given a message with an audio file, when the handler runs, then the file **should** be
+  transcribed and the transcript used as the question (unguarded). **The implementation
+  returns `undefined` instead**, because `response_format: 'text'` resolves to a string and
+  `packages/slack-bot/src/utils.js:83` reads `.text` off it. Treat this criterion as the
+  behaviour to restore, either with `response_format: 'json'` or by returning the string.
+- Given a transcription that throws, when the handler runs, then the fixed error message is
+  posted instead of an answer (unguarded). Note this covers a thrown error only: the
+  `undefined` return above throws nothing, so it posts no error.
 - Given the `summarize` shortcut on a message with links or files, when it is invoked, then
   one ephemeral summary is posted per link and per file (unguarded).
 - Given an `OBJECT_FINALIZE` Pub/Sub message for the embeddings object, when it arrives,
