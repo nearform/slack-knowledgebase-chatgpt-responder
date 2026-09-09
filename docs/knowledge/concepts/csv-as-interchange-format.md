@@ -33,12 +33,13 @@ a plain file is a good bus payload.
   re-parsed on load. That is verbose on disk and slow to parse for a whole corpus, and it
   is the reason the bot's startup cost is high enough to need
   [[embedding-lifecycle-and-warm-start]].
-- **A quirk in the header.** The bot's parsed rows carry an empty-string key `''` for the
-  index column, visible in the type annotation at
-  `packages/slack-bot/src/getAnswer.js:29` and in the test fixtures, which begin
-  `,text,n_tokens,embeddings`. The embedding stage writes `index` as a named column, but
-  the round trip through `json-2-csv` leaves the bot reading it unnamed. The bot never uses
-  it, which is why the discrepancy has not mattered.
+- **A stale type annotation, not a round-trip quirk.** The embedding stage writes a named
+  `index` column and `csv2json` preserves it, so rows parsed from the real file carry an
+  `index` key. But the bot's inline type at `packages/slack-bot/src/getAnswer.js:29`
+  declares an empty-string first key, and its fixtures begin `,text,n_tokens,embeddings`
+  to match. The JSDoc and the fixtures are the stale side; the producer is correct. The bot
+  reads neither key, so nothing breaks, but a test fixture that does not match the file it
+  stands in for is a trap for the next person who writes a test against it.
 - **No schema evolution story.** Adding a column means coordinating a deploy across two
   services that communicate only through the file.
 

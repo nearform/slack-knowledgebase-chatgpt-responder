@@ -42,9 +42,10 @@ Produced from the record built at
 `packages/embeddings-creation/src/create-embeddings.js:100`. Note `title` is **not**
 carried forward: it exists in `scraped.csv` and is dropped here. See [[content-chunk]].
 
-## What the bot actually reads
+## What the bot's fixtures and JSDoc claim
 
-The slack-bot fixtures begin with an unnamed first column, not `index`:
+Not the same shape. The slack-bot fixtures begin with an unnamed first column, not
+`index`:
 
 ```
 ,text,n_tokens,embeddings
@@ -57,5 +58,8 @@ matching the type annotation at `packages/slack-bot/src/getAnswer.js:29`:
 /** @type {"": string; n_tokens: number; embeddings: number[]; text: string;}[] | undefined */
 ```
 
-The empty-string key is the index column after the `json-2-csv` round trip. The bot never
-reads it.
+This does **not** match the file the embedding stage produces. Verified against the
+libraries: `json2csv` emits the header `index,text,n_tokens,embeddings`, and `csv2json`
+parses it back to keys `["index","text","n_tokens","embeddings"]` with no empty-string key.
+So the fixtures and the JSDoc are stale, not the producer, and the bot reads neither the
+`index` key nor the `''` key. See [[csv-as-interchange-format]].

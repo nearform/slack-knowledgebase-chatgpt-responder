@@ -6,8 +6,9 @@ A ChatGPT-powered Slack bot that answers Nearform employees' questions from the 
 knowledge base ("The Nearform way" in Notion). Three pieces run on Google Cloud: a crawler
 that pulls Notion content to a GCS bucket, an embeddings job that turns that content into
 vectors, and a Slack bot that retrieves the nearest chunks and asks OpenAI to answer from
-them. Retrieval-augmented generation, nothing else: the bot must answer only from the
-crawled context.
+them. When answering a question the bot must use only the crawled context, never its own
+knowledge. The `summarize` shortcut is a separate capability that deliberately does not
+use the corpus at all.
 
 ## Tech stack
 
@@ -98,8 +99,13 @@ on `commit-msg`); release-please cuts releases from them.
   injected `openai` client rather than constructing one inside a helper (see `getAnswer`).
 - **DRY, YAGNI, KISS.** The three packages deliberately duplicate small per-package utils helpers
   because they deploy independently: do not extract a shared package without asking.
-- **Handle errors explicitly.** Fail fast with a meaningful error; the bot's message
-  handler is the one place that swallows, and it does so to post a user-facing fallback.
+- **Handle errors explicitly.** Fail fast with a meaningful error. Where the bot swallows,
+  it is deliberate and each site degrades to something useful: the message handler posts a
+  user-facing fallback, the locale lookup falls back to a default locale
+  (`packages/slack-bot/src/bot.js:66`), `/healthz` answers 503, and the import-time
+  embeddings load defers the retry to the next caller
+  (`packages/slack-bot/src/getAnswer.js:222`). Do not add a swallow without that kind of
+  reason.
 - **Validate at trust boundaries.** Slack requests are verified by `ExpressReceiver` via
   `SLACK_SIGNING_SECRET`; anything mounted outside that receiver is unauthenticated.
 - **Observability.** `console.log`/`console.error` to stdout is the convention here (Cloud
@@ -112,10 +118,10 @@ on `commit-msg`); release-please cuts releases from them.
 
 `node:test` with `--experimental-test-module-mocks`, tests in each package's `test/`
 directory as `*.test.js`, fixtures in `test/mocks/`. Run with `npm test` (all workspaces)
-or `npm test --workspace=<name>`. As of 2026-09-09 the suite is green: the runner reports 24
-passing, 4 in crawler, 1 in embeddings-creation and 19 in slack-bot. Two of slack-bot's 19
-are the test-less fixture modules under `test/mocks/`, which node's default glob executes,
-so there are 22 real tests.
+or `npm test --workspace=<name>`. As of 2026-09-09 the suite is green. The root script runs one
+`node:test` runner per workspace, reporting 4 in crawler, 1 in embeddings-creation and 19
+in slack-bot. Two of slack-bot's 19 are the test-less fixture modules under `test/mocks/`,
+which node's default glob executes, so there are 22 real tests across 24 reported.
 
 Conventions: mock the network at the module boundary with `mock.module`, and use `sinon`
 for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which its

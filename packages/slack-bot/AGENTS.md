@@ -48,7 +48,8 @@ optional `MAX_CONTEXT_TOKENS` (default 4000), and `IS_LOCAL_ENVIRONMENT` for loc
 - Context assembly sorts by cosine distance and adds chunks while
   `n_tokens + 4` keeps the running total within `maxLength`; it warns when a non-empty data
   set yields an empty context. `parsePositiveTokenCount` floors before the guard, so a
-  fractional `MAX_CONTEXT_TOKENS` falls back to the default.
+  `MAX_CONTEXT_TOKENS` **below 1** (`0.9`) floors to zero and falls back to the default,
+  while a fractional value of 1 or more (`2500.9`) is simply floored and accepted.
 - The prompt in `getAnswer` constrains the model to `<CONTEXT>` only and forbids citing the
   source. Changing that wording changes the product: ask first.
 - The local embeddings file is `/tmp/embeddings-<pid>.csv`, per process, so concurrent

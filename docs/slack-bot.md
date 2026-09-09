@@ -12,13 +12,14 @@ before answering them, and summarises links and files on request.
 
 - `getAnswer()` embeds the question with `text-embedding-ada-002`, ranks every stored chunk
   by cosine distance, and assembles the closest chunks into a context
-  (`packages/slack-bot/src/getAnswer.js:97`).
+  (`createContext`, `packages/slack-bot/src/getAnswer.js:97`, called by `getAnswer`).
 - Context assembly adds chunks in ascending distance order while
   `n_tokens + 4` per chunk keeps the running total within the budget, and stops at the
   first chunk that would exceed it (`getAnswer.js:124`).
 - The budget is `MAX_CONTEXT_TOKENS` from the environment, defaulting to 4000. Values that
-  are not a positive integer fall back to the default; `parsePositiveTokenCount` floors
-  before the guard, so a fractional value such as `0.9` is rejected (`getAnswer.js:13`).
+  do not floor to a positive integer fall back to the default. `parsePositiveTokenCount`
+  floors *before* the guard (`getAnswer.js:13`), so `0.9` floors to zero and is rejected,
+  whereas `2500.9` floors to `2500` and is accepted.
 - An explicit `maxLength` argument overrides the environment, because the environment is
   only read as the parameter's default value (`packages/slack-bot/src/getAnswer.js:146`).
 - If a non-empty data set yields an empty context, a warning is logged and the call still
@@ -137,9 +138,12 @@ before answering them, and summarises links and files on request.
 
 ## Data & state
 
-- Embeddings row: `{ '': string, text: string, n_tokens: number, embeddings: number[] }`,
-  typed inline at `packages/slack-bot/src/getAnswer.js:29` and produced by
-  [embeddings-creation](./embeddings-creation.md).
+- Embeddings row: [embeddings-creation](./embeddings-creation.md) writes a named
+  `index,text,n_tokens,embeddings` header, and `csv2json` preserves those keys, so parsed
+  rows carry `index`. The inline type at `packages/slack-bot/src/getAnswer.js:29` instead
+  declares an empty-string first key, which matches the test fixtures rather than the
+  produced file. The bot reads neither key, so the mismatch is latent, but the JSDoc and
+  fixtures are the stale side, not the producer.
 - In-memory `defaultDataSet` plus the memoised `initializationPromise`
   (`getAnswer.js:30`, `:32`) are the only mutable state.
 - Local cache file `/tmp/embeddings-<pid>.csv`.

@@ -43,9 +43,12 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   `(event bucket, GCP_STORAGE_EMBEDDING_FILE_NAME)` (guarded: `embeddings creation`).
 - Given an event whose object name is not `GCP_STORAGE_SCRAPED_FILE_NAME`, when the handler
   runs, then it logs a skip and returns without downloading or embedding (unguarded).
-- Given a record over 500 tokens, when the handler runs, then its leading text is split
-  into chunks each within the 500 token budget, and the trailing chunk is dropped
-  (unguarded).
+- Given a record over 500 tokens, when the handler runs, then **all** of its text should
+  be split into chunks each within the 500 token budget (unguarded). **The current
+  implementation violates this**: `splitIntoMany` pushes a chunk only when the next
+  sentence would exceed the budget, so the final accumulated chunk is never flushed and
+  the record's tail is lost. Treat the criterion as the invariant to restore, not the
+  behaviour to preserve.
 - Given a sentence longer than 500 tokens, when chunking runs, then that sentence is
   dropped (unguarded).
 - Given a transient OpenAI failure, when a chunk is embedded, then the call is retried up

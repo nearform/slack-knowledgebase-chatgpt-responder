@@ -12,7 +12,7 @@ updated: 2026-09-09
 
 # Slack event surface
 
-## Three routes, two trust levels
+## Two routes, two trust levels
 
 | Route | Mounted on | Verified |
 |---|---|---|

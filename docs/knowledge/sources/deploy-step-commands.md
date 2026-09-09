@@ -15,8 +15,13 @@ Extract of the provisioning and deploy steps from
 `.github/workflows/deploy-step.yml`, in order. Interpretation:
 [[gcp-deployment-topology]].
 
-Every step that creates a resource is guarded by a `describe` check, so the workflow is
-idempotent and safe to re-run.
+Most create steps are guarded by a `describe` check, so the workflow is broadly safe to
+re-run. **One guard is wrong**: "Create bucket notification" checks whether the *bucket*
+exists, not whether the notification exists. Because the preceding step just created the
+bucket, the `describe` succeeds and the notification is **skipped on a fresh deployment**,
+which is the step that wires [[pipeline-data-flow]]'s second coupling. On a re-run against
+an existing bucket it is skipped too, so the notification is only ever created if it is
+added by hand.
 
 | Step | Command shape |
 |---|---|

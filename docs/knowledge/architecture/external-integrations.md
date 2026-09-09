@@ -32,10 +32,11 @@ unauthenticated. See [[slack-event-surface]].
 
 ## The data-egress boundary worth being deliberate about
 
-Crawled Notion content is internal Nearform material, and every chunk of it is sent to
-OpenAI: once at embedding time, and again as prompt context on every question. The corpus
-also lands on disk as `scraped.csv`, `embeddings.csv` and `.cache/` contents, all
-git-ignored. Treat those files as internal data.
+Crawled Notion content is internal Nearform material. **Every** chunk is sent to OpenAI
+once, at embedding time. After that, each question sends only the nearest chunks that fit
+[[context-token-budget]], not the whole corpus. The corpus also lands on disk as
+`scraped.csv`, `embeddings.csv` and `.cache/` contents, all git-ignored. Treat those files
+as internal data.
 
 Which model receives it is pinned in code rather than configured: `text-embedding-ada-002`
 for vectors, `gpt-4.1` for answers and summaries, `whisper-1` for transcription. See

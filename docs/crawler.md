@@ -14,7 +14,7 @@ bucket. It is the first stage of the pipeline and the only component that talks 
 - A page's title is taken from the `Name` property, falling back to the `title` property,
   and is `null` when neither exists (`packages/crawler/src/notion.js:45`).
 - Page content is gathered by recursively listing block children and collecting every
-  block type's `rich_text[].plain_text` (`packages/crawler/src/notion.js:104`).
+  block type's `rich_text[].plain_text` (`packages/crawler/src/notion.js:108`).
 - Newlines are stripped from the assembled text; blocks are joined with a single space
   (`packages/crawler/src/notion.js:65`).
 - Pages whose assembled text is empty are dropped (`packages/crawler/src/notion.js:71`).

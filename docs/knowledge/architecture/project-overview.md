@@ -4,7 +4,9 @@ type: architecture
 tags: [overview, monorepo, rag]
 source_paths:
   - package.json
-  - packages
+  - packages/crawler/package.json
+  - packages/embeddings-creation/package.json
+  - packages/slack-bot/package.json
   - README.md
 source_commit: c4bc5ac
 created: 2026-09-09

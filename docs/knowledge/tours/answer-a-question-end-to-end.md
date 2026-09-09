@@ -76,8 +76,12 @@ production logs contain the retrieved content.
 
 ## 10. Reply — `bot.js:99`
 
-The trimmed answer is posted. Any throw anywhere above lands in the outer `catch` and posts
-one fixed error string, identical for every failure mode.
+The trimmed answer is posted. An awaited rejection from step 3 onwards lands in the outer
+`catch`, which posts one fixed error string, identical for every failure mode. Two classes
+of failure do **not** arrive there: the locale lookup and the transcription each have their
+own inner handler, and the unawaited `reactions.add` and holding-message calls reject
+outside the `await` chain entirely, so their failures surface only as unhandled
+rejections.
 [[question-and-answer]].
 
 ## Where you could get lost
