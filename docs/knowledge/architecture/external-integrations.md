@@ -30,6 +30,32 @@ exists: Bolt's `ExpressReceiver` verifies `/slack/events` against the signing se
 `/healthz` route is deliberately mounted **outside** that receiver and is therefore
 unauthenticated. See [[slack-event-surface]].
 
+## No credential is validated before use
+
+Every secret in the table above is read from `process.env` and handed straight to a
+constructor, with no null check, no empty-string guard and no startup assertion:
+
+| Credential | Read at |
+|---|---|
+| `SLACK_SIGNING_SECRET` | `packages/slack-bot/src/bot.js:11` |
+| `SLACK_BOT_TOKEN` | `packages/slack-bot/src/bot.js:15`, and again in `utils.js:58` and `summarize.js:57` |
+| `OPENAI_API_KEY` | `packages/slack-bot/src/bot.js:36`, `packages/embeddings-creation/src/create-embeddings.js:14` |
+| `NOTION_TOKEN` | `packages/crawler/src/notion.js:6` |
+
+The GCP bucket and project names are read the same way at module scope
+(`packages/slack-bot/src/getAnswer.js:21-22`).
+
+**So a misconfigured deployment starts cleanly and fails later**, at the first request or
+the first bucket call, with whatever opaque error the client library raises rather than a
+message naming the missing variable. On a Cloud function that means the failure surfaces to
+a user asking a question, not to whoever deployed it.
+
+`MAX_CONTEXT_TOKENS` is the **only** environment variable the codebase validates, via
+`parsePositiveTokenCount` ([[context-token-budget]]) — and that exists because a bad value
+silently produced a zero-token context, not because config validation was adopted as a
+pattern. A single validate-on-startup function called before the constructors would turn
+every one of these into a deploy-time failure. There is no such function today.
+
 ## The data-egress boundary worth being deliberate about
 
 Crawled Notion content is internal Nearform material. Every chunk is sent to OpenAI at

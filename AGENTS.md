@@ -148,6 +148,12 @@ for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which
   data: they are git-ignored, keep them that way.
 - The GCS bucket is created with `--public-access-prevention` and uniform bucket-level
   access in `europe-west1`. Do not weaken either.
+- **No credential is validated before use.** `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`,
+  `OPENAI_API_KEY` and `NOTION_TOKEN` are read from `process.env` and passed straight to
+  constructors with no null or empty check, so a misconfigured deployment starts cleanly
+  and fails at the first request with an opaque client-library error instead of naming the
+  missing variable. `MAX_CONTEXT_TOKENS` is the only validated variable. If you add a new
+  required variable, validate it at startup rather than following the existing pattern.
 - Dependabot (`.github/dependabot.yml`) covers dependency updates; there is no SAST or
   secret-scanning step in CI and the repo has no SECURITY.md.
 
