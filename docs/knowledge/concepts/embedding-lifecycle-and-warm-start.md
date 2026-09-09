@@ -66,6 +66,16 @@ the embeddings object. It **acks first, then reloads**, because the reload can t
 enough to look like a failed ack and earn a redelivery. This closes the loop in
 [[pipeline-data-flow]] and is why a crawl eventually changes answers without a redeploy.
 
+**The ack-first trade has an unhandled edge.** The reload is awaited with no `try`/`catch`
+(`packages/slack-bot/src/getAnswer.js:83`), so if `getEmbeddingsFile()` throws (the object
+is briefly unavailable, or malformed) the rejection escapes into the subscription's
+callback, nothing logs it, and `defaultDataSet` keeps pointing at the previous corpus. The
+message is already acked, so Pub/Sub will not redeliver. **The bot then serves stale
+embeddings indefinitely**, until another finalize message happens to arrive or the process
+restarts. Unlike the deliberate swallow sites, this one degrades to nothing useful. It is
+also the failure mode least likely to be noticed, because answers keep coming and only
+their content is out of date.
+
 ## The per-process cache file
 
 The download target is `/tmp/embeddings-${process.pid}.csv`. The pid suffix keeps

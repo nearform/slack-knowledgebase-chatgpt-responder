@@ -65,6 +65,7 @@ Each is described in its own note; collected here so nobody rediscovers them the
 | Transcription temp files (`./<id>.mp4`) are never cleaned up, and download errors are unhandled (can crash the process, not degrade quietly) | [[audio-transcription-path]] |
 | Notion child-block listing is not paginated, so large pages are silently truncated | [[crawler-module]] |
 | An over-long sentence emits a spurious `"."` chunk that gets embedded | [[chunking-strategy]] |
+| A failed Pub/Sub reload is unlogged and unretried after the ack, so the bot serves stale embeddings silently | [[embedding-lifecycle-and-warm-start]] |
 | The deploy workflow never creates the Pub/Sub topic, and its notification step never runs | [[gcp-deployment-topology]] |
 | A persistently failing Notion block subtree is skipped silently | [[resilience-and-rate-limiting]] |
 | `bot.js` and `summarize.js` have no tests at all | [[test-strategy-module-mocks]] |

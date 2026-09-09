@@ -101,13 +101,16 @@ on `commit-msg`); release-please cuts releases from them.
   injected `openai` client rather than constructing one inside a helper (see `getAnswer`).
 - **DRY, YAGNI, KISS.** The three packages deliberately duplicate small per-package utils helpers
   because they deploy independently: do not extract a shared package without asking.
-- **Handle errors explicitly.** Fail fast with a meaningful error. Where the bot swallows,
-  it is deliberate and each site degrades to something useful: the message handler posts a
+- **Handle errors explicitly.** Fail fast with a meaningful error. Four swallow sites are
+  deliberate and each degrades to something useful: the message handler posts a
   user-facing fallback, the locale lookup falls back to a default locale
   (`packages/slack-bot/src/bot.js:66`), `/healthz` answers 503, and the import-time
   embeddings load defers the retry to the next caller
   (`packages/slack-bot/src/getAnswer.js:222`). Do not add a swallow without that kind of
-  reason.
+  reason. **One existing path is not in that category and should not be copied**: the
+  Pub/Sub reload at `packages/slack-bot/src/getAnswer.js:83` acks first and then awaits
+  the reload with no `try`/`catch`, so a failed reload is lost and the bot serves stale
+  embeddings until a later message or a restart.
 - **Validate at trust boundaries.** Slack requests are verified by `ExpressReceiver` via
   `SLACK_SIGNING_SECRET`; anything mounted outside that receiver is unauthenticated.
 - **Observability.** `console.log`/`console.error` to stdout is the convention here (Cloud
@@ -162,6 +165,11 @@ for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which
   `packages/slack-bot/src/getAnswer.js` and `packages/slack-bot/src/summarize.js` (they change the bot's answers), altering the CSV schema
   shared between packages, editing anything under `.github/workflows`, changing GCP
   resource shape (memory, CPU, region, probes) in `.github/workflows/deploy-step.yml`.
+- ⚠️ **Editing anything under `.agents/skills/` forks it from upstream.** That tree is
+  vendored verbatim from the public `nearform/skills` and recorded in `skills-lock.json`.
+  Change it and the repo diverges from upstream and the lockfile entry no longer describes
+  what is on disk. To pull upstream changes use `npx skills update`; to fix a skill, fix it
+  upstream. Ask before editing one in place.
 - 🚫 **Never:** commit `.env`, `scraped.csv`, `embeddings.csv` or `.cache/` contents; print
   or log a token or signing secret; pass `--no-gpg-sign`; run `gcloud` commands that
   create, mutate or delete production resources; disable the bucket's public-access
@@ -185,3 +193,9 @@ for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which
   shortcut is registered in code, not here.
 - `.github/workflows/deploy-step.yml` — the authoritative description of how each package
   is deployed and what environment it gets.
+- `skills-lock.json` — provenance for the vendored skills: source repo, path upstream, and
+  a `computedHash` written by the skills CLI. The hash covers the whole skill directory as
+  the CLI computes it, so it is **not** a bare `sha256` of `SKILL.md` and comparing it to
+  one will not match. **Nothing in this repo verifies it**: there is no CI step, hook or
+  script that reads the lockfile, so it is a provenance record for `npx skills update`, not
+  an integrity guarantee. Verify against upstream by diffing, not by hashing.

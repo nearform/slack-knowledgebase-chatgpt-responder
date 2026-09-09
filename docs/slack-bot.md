@@ -117,6 +117,12 @@ before answering them, and summarises links and files on request.
   one ephemeral summary is posted per link and per file (unguarded).
 - Given an `OBJECT_FINALIZE` Pub/Sub message for the embeddings object, when it arrives,
   then it is acked and the data set is reloaded (unguarded).
+- Given the reload throws after the message was acked, when it fails, then the failure
+  **should** be logged and the reload retried (unguarded). **The implementation does
+  neither**: `packages/slack-bot/src/getAnswer.js:83` awaits the reload with no
+  `try`/`catch`, and since the message is already acked Pub/Sub will not redeliver, so the
+  bot serves the previous corpus until a later message or a restart. Treat this criterion
+  as the invariant to restore.
 
 ## Non-goals & boundaries
 

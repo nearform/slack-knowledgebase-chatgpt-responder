@@ -66,6 +66,10 @@ The running bot's subscription receives the message, **acks first**, checks the 
 and event type, and replaces `defaultDataSet` wholesale. No redeploy, no restart.
 [[embedding-lifecycle-and-warm-start]].
 
+This is the step most likely to fail invisibly. The reload has no `try`/`catch` and the
+message is already acked, so a failure here ends the cascade silently and the bot keeps
+answering from the previous corpus.
+
 ## 10. The next question sees new content
 
 There is no cache to invalidate beyond that in-memory array.
