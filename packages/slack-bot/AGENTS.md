@@ -12,13 +12,14 @@ and offers a `summarize` message shortcut for links and files.
 
 | File | Role |
 |---|---|
-| `src/index.js` | Exports `slackBot`, the Express app the function serves. |
+| `src/index.js` | Calls `validateEnv()`, then dynamically imports `bot.js` and exports `slackBot`, the Express app the function serves. |
+| `src/env.js` | `requiredEnvironmentVariables`, `pubSubEnvironmentVariables` and `validateEnv()`, which throws naming every missing variable. |
 | `src/bot.js` | Bolt app, `ExpressReceiver`, the `message` handler, `/healthz`. |
 | `src/messageEvents.js` | Pure predicates deciding which `message` events and files the handler acts on. |
 | `src/getAnswer.js` | Embeddings load/refresh, context assembly, chat completion. |
 | `src/summarize.js` | The `summarize` shortcut for links and file attachments. |
 | `src/utils.js` | `download`, `parseCsv`, `distancesFromEmbeddings`, `downloadAudio`, `transcribe`, `transcriptionText`. |
-| `src/dev.js` | Local Bolt server (`npm run dev`). |
+| `src/dev.js` | Local Bolt server (`npm run dev`); validates and imports `bot.js` the same way `src/index.js` does. |
 
 ## Commands
 
@@ -34,6 +35,20 @@ npm run lint --workspace=slack-bot
 `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `GCP_PROJECT_ID`,
 `GCP_STORAGE_BUCKET_NAME`, `GCP_STORAGE_EMBEDDING_FILE_NAME`, `GCP_EMBEDDING_SUBSCRIPTION`,
 optional `MAX_CONTEXT_TOKENS` (default 4000), and `IS_LOCAL_ENVIRONMENT` for local runs.
+
+`src/index.js` and `src/dev.js` both call `validateEnv()` before anything else, so a
+missing, empty or whitespace-only value fails startup with every missing name in one
+error instead of an opaque client-library error on the first Slack request. Always
+required: `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`,
+`GCP_STORAGE_BUCKET_NAME` and `GCP_STORAGE_EMBEDDING_FILE_NAME`. `GCP_PROJECT_ID` and
+`GCP_EMBEDDING_SUBSCRIPTION` are required only when `IS_LOCAL_ENVIRONMENT` is falsy,
+since they only build the Pub/Sub subscription name and the local environment skips that
+path. `MAX_CONTEXT_TOKENS` is outside `validateEnv` on purpose (optional, with
+`parsePositiveTokenCount` handling it), and `IS_LOCAL_ENVIRONMENT` is not itself
+validated. The dynamic import of `bot.js` is what keeps the check ahead of the
+`ExpressReceiver`, Bolt app and OpenAI client it builds as it loads:
+`test/startupValidation.test.js` pins the ordering, so do not turn it back into a static
+import.
 
 ## Notes for changes
 
