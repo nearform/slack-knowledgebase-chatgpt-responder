@@ -26,3 +26,6 @@ env
 embeddings.csv
 scraped.csv
 
+
+# Claude Code agent worktrees (local only, can be large)
+.claude/worktrees/
