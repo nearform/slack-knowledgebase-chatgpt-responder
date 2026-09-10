@@ -6,10 +6,11 @@ source_paths:
   - packages/crawler/src/utils.js
   - packages/embeddings-creation/src/utils.js
   - packages/slack-bot/src/utils.js
+  - packages/slack-bot/src/env.js
   - Makefile
 source_commit: 633de22
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # Local environment emulation
@@ -53,3 +54,10 @@ branch. It lives in a file of its own for two reasons: the deletion is process-w
 
 Note also that `IS_LOCAL_ENVIRONMENT` is truthy for *any* non-empty value, `"false"`
 included.
+
+The flag has one other job: `packages/slack-bot/src/env.js` reads it with the same
+`Boolean` semantics, off its own `env` argument rather than by importing `utils.js`, and
+requires `GCP_PROJECT_ID` and `GCP_EMBEDDING_SUBSCRIPTION` only when it is falsy. Those
+two exist solely to name the Pub/Sub subscription a local run never creates, so requiring
+them unconditionally would stop `make bot-start` for a developer who has no Pub/Sub
+configured at all. See [[external-integrations]].

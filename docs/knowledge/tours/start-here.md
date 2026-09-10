@@ -66,7 +66,6 @@ Each is described in its own note; collected here so nobody rediscovers them the
 | A downloaded audio file is always named `.mp4` whatever Slack actually sent, so the name is no evidence of the format | [[audio-transcription-path]] |
 | Notion child-block listing is not paginated, so large pages are silently truncated | [[crawler-module]] |
 | A failed Pub/Sub reload is unlogged and unretried after the ack, so the bot serves stale embeddings silently | [[embedding-lifecycle-and-warm-start]] |
-| No credential is validated at startup, so a missing secret fails at first request rather than at deploy | [[external-integrations]] |
 | The deploy workflow never creates the Pub/Sub topic, and its notification step never runs | [[gcp-deployment-topology]] |
 | A persistently failing Notion block subtree is skipped silently | [[resilience-and-rate-limiting]] |
 | `summarize.js`, `/healthz` and the Pub/Sub refresh path have no tests at all | [[test-strategy-module-mocks]] |

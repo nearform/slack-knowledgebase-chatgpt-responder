@@ -12,7 +12,8 @@ job (`crawler-job`) on a Cloud Scheduler trigger.
 
 | File | Role |
 |---|---|
-| `src/index.js` | Entry point: calls `crawl()`. |
+| `src/index.js` | Entry point: calls `validateEnv()`, then dynamically imports and calls `crawl()`. |
+| `src/env.js` | `requiredEnvironmentVariables` and `validateEnv()`, which throws naming every missing variable. |
 | `src/crawl.js` | Orchestrates fetch, CSV, write, upload. Exits `1` on failure. |
 | `src/notion.js` | Notion search pagination and recursive block-content extraction. |
 | `src/utils.js` | `upload()` and `createCsv()`; `upload` copies to `.cache/` when local. |
@@ -30,6 +31,13 @@ npm run lint --workspace=crawler
 
 `NOTION_TOKEN`, `GCP_STORAGE_BUCKET_NAME`, `GCP_STORAGE_SCRAPED_FILE_NAME`, and
 `IS_LOCAL_ENVIRONMENT` for local runs.
+
+The first three are required: `src/index.js` calls `validateEnv()` before anything else,
+so a missing, empty or whitespace-only value fails the run at startup with every missing
+name in one error rather than part way through a crawl. `IS_LOCAL_ENVIRONMENT` is not
+validated. The dynamic import of `crawl.js` is what keeps that check ahead of the Notion
+client, which `notion.js` constructs as it loads: `test/startupValidation.test.js` pins
+the ordering, so do not turn it back into a static import.
 
 ## Notes for changes
 

@@ -4,11 +4,12 @@ type: module
 tags: [openai, embeddings, cloud-function, cloudevent]
 source_paths:
   - packages/embeddings-creation/src/create-embeddings.js
+  - packages/embeddings-creation/src/env.js
   - packages/embeddings-creation/src/index.js
   - packages/embeddings-creation/src/utils.js
 source_commit: c4bc5ac
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # Embeddings creation module
@@ -22,6 +23,17 @@ A single CloudEvent handler, `create_embeddings`, that turns `scraped.csv` into
 `createEmbeddings(event)` does five things in sequence: guard the event, download and
 parse, token-count and chunk, embed with retry, write and upload. There is no layering
 because there is nothing to layer.
+
+## Startup validation before the client
+
+`src/index.js` calls `validateEnv()` from `src/env.js`, then dynamically imports
+`src/create-embeddings.js` and registers the handler. The dynamic import is what keeps the
+OpenAI client, built at that module's top level, from being constructed before the check
+runs. `GCP_STORAGE_BUCKET_NAME` is deliberately not required here: the bucket comes off
+the CloudEvent. `test/startupValidation.test.js` pins that ordering: it clears the
+required variables (including the two the test script sets via `cross-env`) and asserts
+the entry-point import rejects with the OpenAI constructor never called. See
+[[external-integrations]].
 
 ## The self-trigger guard
 

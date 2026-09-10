@@ -29,6 +29,16 @@ bucket. It is the first stage of the pipeline and the only component that talks 
   500ms first (`packages/crawler/src/notion.js:69`, `:84`, `:116`).
 - Any failure in `crawl()` is logged and the process exits with code 1
   (`packages/crawler/src/crawl.js:17`).
+- The entry point validates the environment before anything else runs.
+  `packages/crawler/src/index.js` loads dotenv, calls `validateEnv()` from
+  `packages/crawler/src/env.js`, and only then dynamically imports `crawl.js` and calls
+  `crawl()`. `validateEnv` requires `NOTION_TOKEN`, `GCP_STORAGE_BUCKET_NAME` and
+  `GCP_STORAGE_SCRAPED_FILE_NAME`, treats absent, empty and whitespace-only values alike,
+  and throws a single error naming every missing variable without including any value. The
+  order is load-bearing: `notion.js` constructs its Notion client as it loads, and `crawl()`
+  uses the two storage variables only after `fetchData()` has finished
+  (`packages/crawler/src/crawl.js:11-14`), so validating first is what stops a missing
+  bucket name costing a complete crawl.
 
 ## Acceptance criteria
 
@@ -50,6 +60,14 @@ bucket. It is the first stage of the pipeline and the only component that talks 
   process exits with code 1 (unguarded).
 - Given a Notion children listing that fails, when content is gathered, then it is retried
   up to three times before that block's children are skipped (unguarded).
+- Given an environment where `NOTION_TOKEN`, `GCP_STORAGE_BUCKET_NAME` or
+  `GCP_STORAGE_SCRAPED_FILE_NAME` is absent, empty or whitespace-only, when `validateEnv()`
+  runs, then it throws one error naming every missing variable and no variable's value
+  (guarded: the `crawler validateEnv` suite).
+- Given any of those three variables missing, when `packages/crawler/src/index.js` is
+  loaded, then the module rejects with that error, the Notion client is never constructed
+  and no Notion search is issued (guarded: `loading the crawler entry point without its
+  environment rejects before the crawl starts`).
 
 ## Non-goals & boundaries
 
@@ -77,7 +95,8 @@ bucket. It is the first stage of the pipeline and the only component that talks 
   (`packages/crawler/src/utils.js:25`) and asserted in
   `packages/crawler/test/utils.test.js`.
 - Config: `NOTION_TOKEN`, `GCP_STORAGE_BUCKET_NAME`, `GCP_STORAGE_SCRAPED_FILE_NAME`,
-  `IS_LOCAL_ENVIRONMENT`.
+  `IS_LOCAL_ENVIRONMENT`. The first three are required, and validated at startup by
+  `packages/crawler/src/env.js`.
 - Holds no persistent state; the process is one-shot.
 
 ## Dependencies & interactions
@@ -89,7 +108,8 @@ bucket. It is the first stage of the pipeline and the only component that talks 
 
 ## Key flows
 
-1. `packages/crawler/src/index.js` calls `crawl()`.
+1. `packages/crawler/src/index.js` validates the environment, then imports and calls
+   `crawl()`.
 2. `fetchData()` pages through Notion search, then fetches each page's block content at
    concurrency 3, dropping pages with no text.
 3. `createCsv()` serialises the records; the CSV is written to the local file.
@@ -98,15 +118,19 @@ bucket. It is the first stage of the pipeline and the only component that talks 
 ## Tests & verification
 
 Tests live in `packages/crawler/test/` and run with `npm test --workspace=crawler`
-(`node --test --experimental-test-module-mocks`). Four tests, all passing as of 2026-09-09:
+(`node --test --experimental-test-module-mocks`). Ten tests, all passing as of 2026-09-10:
 `crawl`, `notion > fetchData returns correct parsed data` (snapshot),
-`notion > getPages works correctly with pagination`, `createCsv works correctly`.
+`notion > getPages works correctly with pagination`, `createCsv works correctly`, the five
+cases in the `crawler validateEnv` suite, and `loading the crawler entry point without its
+environment rejects before the crawl starts`.
 
 Not covered: the retry and 500ms-delay behavior in `getRecursiveBlockContent`, the
 local-vs-bucket branch of `upload`, and the `process.exit(1)` error path.
 
 ## Related code
 
+- `packages/crawler/src/index.js`
+- `packages/crawler/src/env.js`
 - `packages/crawler/src/crawl.js`
 - `packages/crawler/src/notion.js`
 - `packages/crawler/src/utils.js`
