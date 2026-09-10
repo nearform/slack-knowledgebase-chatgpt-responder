@@ -147,11 +147,11 @@ a linked issue is red on arrival.
 
 `node:test` with `--experimental-test-module-mocks`, tests in each package's `test/`
 directory as `*.test.js`, fixtures in `test/mocks/`. Run with `npm test` (all workspaces)
-or `npm test --workspace=<name>`. As of 2026-09-09 the suite is green. The root script runs one
-`node:test` runner per workspace, reporting 4 in crawler, 1 in embeddings-creation and 105
-in slack-bot (14 suites). Two of slack-bot's 105 are the test-less fixture modules under
-`test/mocks/`, which node's default glob executes as test files, so there are 108 real tests
-across 110 reported. The crawler's fixtures are `.json` and are not executed, so its 4 are
+or `npm test --workspace=<name>`. As of 2026-09-10 the suite is green. The root script runs one
+`node:test` runner per workspace, reporting 10 in crawler, 7 in embeddings-creation and 116
+in slack-bot (15 suites). Two of slack-bot's 116 are the test-less fixture modules under
+`test/mocks/`, which node's default glob executes as test files, so there are 131 real tests
+across 133 reported. The crawler's fixtures are `.json` and are not executed, so its 10 are
 all real.
 
 Conventions: mock the network at the module boundary with `mock.module`, and use `sinon`
@@ -174,12 +174,20 @@ for spies and fakes. `embeddings-creation` needs `GCP_STORAGE_*` env vars, which
   data: they are git-ignored, keep them that way.
 - The GCS bucket is created with `--public-access-prevention` and uniform bucket-level
   access in `europe-west1`. Do not weaken either.
-- **No credential is validated before use.** `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`,
-  `OPENAI_API_KEY` and `NOTION_TOKEN` are read from `process.env` and passed straight to
-  constructors with no null or empty check, so a misconfigured deployment starts cleanly
-  and fails at the first request with an opaque client-library error instead of naming the
-  missing variable. `MAX_CONTEXT_TOKENS` is the only validated variable. If you add a new
-  required variable, validate it at startup rather than following the existing pattern.
+- **Required variables are validated at startup.** Each package has a `src/env.js`
+  exporting `validateEnv(env = process.env)`, called from its entry point
+  (`packages/*/src/index.js`, plus `packages/slack-bot/src/dev.js`) before anything else
+  is imported. It treats absent, empty and whitespace-only alike, collects every missing
+  name and throws one error listing all of them, and never puts a value in the message.
+  The clients are still built at module scope in `bot.js`, `create-embeddings.js` and
+  `notion.js`, so each entry point validates first and then `await import()`s the app
+  module: a static import would evaluate those constructors before the check ran.
+  Required sets follow `.github/workflows/deploy-step.yml`. For slack-bot,
+  `GCP_PROJECT_ID` and `GCP_EMBEDDING_SUBSCRIPTION` are required only when
+  `IS_LOCAL_ENVIRONMENT` is falsy, because they exist solely to name the Pub/Sub
+  subscription the local environment skips. `MAX_CONTEXT_TOKENS` is optional with a
+  default and is validated separately by `parsePositiveTokenCount`. If you add a new
+  required variable, add it to that package's `requiredEnvironmentVariables`.
 - Dependabot (`.github/dependabot.yml`) covers dependency updates; there is no SAST or
   secret-scanning step in CI and the repo has no SECURITY.md.
 

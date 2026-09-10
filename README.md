@@ -59,6 +59,10 @@ Add the following values in an `.env` file (needed for local development):
 | `GCP_STORAGE_BUCKET_NAME`       | GCP bucket name hosting embeddings file |
 | `GCP_STORAGE_SCRAPED_FILE_NAME` | Scraped data file name on the bucket    |
 
+All three are required. The crawler checks them before it starts, so a missing or empty
+value fails immediately with an error naming every variable that is missing, rather than
+part way through a crawl.
+
 ## Embeddings creation
 
 #### Environment variables
@@ -70,6 +74,10 @@ Add the following values in an `.env` file (needed for local development):
 | `OPENAI_API_KEY`                  | OpenAI API key                       |
 | `GCP_STORAGE_SCRAPED_FILE_NAME`   | Scraped data file name on the bucket |
 | `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket   |
+
+All three are required. The function checks them as it starts, so a missing or empty value
+fails immediately with an error naming every variable that is missing. The bucket is not
+configured here: it comes from the event that triggers the function.
 
 ## Slack bot
 
@@ -90,6 +98,7 @@ Add the following values in an `.env` file (needed for local development):
 
 | Env var                           |                                                                            |
 | --------------------------------- | -------------------------------------------------------------------------- |
+| `GCP_PROJECT_ID`                  | GCP project id holding the Pub/Sub subscription                            |
 | `GCP_EMBEDDING_SUBSCRIPTION`      | Embedding file update subscription name                                    |
 | `GCP_STORAGE_BUCKET_NAME`         | GCP bucket name hosting embeddings file                                    |
 | `GCP_STORAGE_EMBEDDING_FILE_NAME` | Embeddings file name on the bucket                                         |
@@ -99,6 +108,13 @@ Add the following values in an `.env` file (needed for local development):
 | `MAX_CONTEXT_TOKENS`              | Optional. Token budget for the context sent to the model (default `4000`)  |
 
 The deploy workflow sets `MAX_CONTEXT_TOKENS` from its input of the same name, defaulting to 4000, and the repository variable of the same name overrides it.
+
+Every variable in the table except `MAX_CONTEXT_TOKENS` is required, and the bot checks
+them as it starts: a missing or empty value fails immediately with an error naming every
+variable that is missing, instead of surfacing later as an opaque error on the first Slack
+request. `GCP_PROJECT_ID` and `GCP_EMBEDDING_SUBSCRIPTION` are the exception when
+`IS_LOCAL_ENVIRONMENT` is set (as `make bot-start` sets it), since they are only used for
+the Pub/Sub subscription that a local run does not create.
 
 #### Slack setup
 

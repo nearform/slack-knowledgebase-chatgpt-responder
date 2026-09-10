@@ -49,6 +49,27 @@ before answering them, and summarises links and files on request.
 - The download target is `/tmp/embeddings-<pid>.csv`, per process, so concurrent processes
   never share a file (`getAnswer.js:26`).
 
+### Startup validation
+
+- Both entry points validate the environment before `bot.js` is loaded.
+  `packages/slack-bot/src/index.js` and `packages/slack-bot/src/dev.js` load dotenv, call
+  `validateEnv()` from `packages/slack-bot/src/env.js`, and only then dynamically import
+  `bot.js`. `validateEnv` always requires `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`,
+  `OPENAI_API_KEY`, `GCP_STORAGE_BUCKET_NAME` and `GCP_STORAGE_EMBEDDING_FILE_NAME`, and
+  additionally `GCP_PROJECT_ID` and `GCP_EMBEDDING_SUBSCRIPTION` when
+  `IS_LOCAL_ENVIRONMENT` is falsy. It treats absent, empty and whitespace-only values
+  alike, and throws a single error naming every missing variable without including any
+  value.
+- The two Pub/Sub variables are conditional because they exist only to build the
+  subscription name (`getAnswer.js:85`), a path skipped in the local environment
+  (`getAnswer.js:60`).
+- The dynamic import is load-bearing: `bot.js` builds its `ExpressReceiver`, its Bolt
+  `App` and its OpenAI client as it loads, and ESM evaluates an imported module's body
+  before its importer's, so a static import would construct all three before the check
+  ran.
+- `MAX_CONTEXT_TOKENS` is outside this: it is optional with a default, and is handled by
+  `parsePositiveTokenCount`.
+
 ### Slack surface
 
 - Bolt uses `ExpressReceiver`, so Slack requests to `/slack/events` are verified against
@@ -231,6 +252,18 @@ before answering them, and summarises links and files on request.
   `try`/`catch`, and since the message is already acked Pub/Sub will not redeliver, so the
   bot serves the previous corpus until a later message or a restart. Treat this criterion
   as the invariant to restore.
+- Given an environment missing any always-required variable, when `validateEnv()` runs,
+  then it throws one error naming every missing variable and no variable's value (guarded:
+  the `slack-bot validateEnv` suite).
+- Given `IS_LOCAL_ENVIRONMENT` is unset, when `validateEnv()` runs, then `GCP_PROJECT_ID`
+  and `GCP_EMBEDDING_SUBSCRIPTION` are required; given it is set to a truthy value, they
+  are not (guarded: `slack-bot validateEnv > requires the Pub/Sub variables when
+  IS_LOCAL_ENVIRONMENT is unset` and `... does not require the Pub/Sub variables when
+  IS_LOCAL_ENVIRONMENT is set`).
+- Given the required variables are absent, when `packages/slack-bot/src/index.js` is
+  loaded, then the module rejects with an error naming them and no `ExpressReceiver`, Bolt
+  `App` or OpenAI client is constructed (guarded: `loading the slack bot entry point
+  without its environment rejects before any client is constructed`).
 
 ## Non-goals & boundaries
 
@@ -274,7 +307,10 @@ before answering them, and summarises links and files on request.
 - Local cache file `/tmp/embeddings-<pid>.csv`.
 - Config: `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `GCP_PROJECT_ID`,
   `GCP_STORAGE_BUCKET_NAME`, `GCP_STORAGE_EMBEDDING_FILE_NAME`,
-  `GCP_EMBEDDING_SUBSCRIPTION`, `MAX_CONTEXT_TOKENS`, `IS_LOCAL_ENVIRONMENT`.
+  `GCP_EMBEDDING_SUBSCRIPTION`, `MAX_CONTEXT_TOKENS`, `IS_LOCAL_ENVIRONMENT`. All but the
+  last two are required and validated at startup by `packages/slack-bot/src/env.js`, with
+  `GCP_PROJECT_ID` and `GCP_EMBEDDING_SUBSCRIPTION` required only outside the local
+  environment.
 - Slack OAuth scopes and the `message.im` bot event subscription are declared in `slack_manifest.yaml`. The `summarize` shortcut is registered in code at `packages/slack-bot/src/summarize.js:20`, not in the manifest.
 - The non-user `message` subtype deny list is a module-scope `Set` at
   `packages/slack-bot/src/messageEvents.js:35-64`. It is configuration expressed in code
@@ -298,7 +334,8 @@ before answering them, and summarises links and files on request.
    awaited threw.
 2. **Context assembly.** Embed the question → cosine distances over the data set → sort
    ascending → take chunks until the token budget is spent → build the prompt → complete.
-3. **Startup.** Import kicks off the embeddings load → the startup probe on `/healthz`
+3. **Startup.** The entry point validates the environment, then imports `bot.js` →
+   import kicks off the embeddings load → the startup probe on `/healthz`
    awaits it → once loaded, subscribe to embedding updates (non-local only).
 4. **Refresh.** `OBJECT_FINALIZE` for the embeddings object → ack → reload the data set.
 5. **Summarise.** Shortcut → for each attached file, fetch and base64 it, then summarise;
@@ -307,9 +344,9 @@ before answering them, and summarises links and files on request.
 ## Tests & verification
 
 Tests live in `packages/slack-bot/test/` (fixtures in `test/mocks/`) and run with
-`npm test --workspace=slack-bot`. The workspace reports 105 passing tests in 14 suites as of
-2026-09-09. Two of the 105 are the test-less fixture modules in `test/mocks/`, which node's
-default glob executes as test files, so there are 103 real tests across these nine files:
+`npm test --workspace=slack-bot`. The workspace reports 116 passing tests in 15 suites as of
+2026-09-10. Two of the 116 are the test-less fixture modules in `test/mocks/`, which node's
+default glob executes as test files, so there are 114 real tests across these eleven files:
 
 | File | Covers |
 |---|---|
@@ -322,6 +359,8 @@ default glob executes as test files, so there are 103 real tests across these ni
 | `test/messageEvents.test.js` | five of the six predicates directly, including every deny-list subtype |
 | `test/messageHandler.test.js` | the `message` handler, through a stubbed Bolt app and `client` |
 | `test/transcribe.test.js` | `downloadAudio`, `transcribe` and `transcriptionText` |
+| `test/env.test.js` | `validateEnv`: the required sets, the conditional Pub/Sub pair, and that no value is leaked |
+| `test/startupValidation.test.js` | that `src/index.js` rejects before any client is constructed |
 
 Coverage is now broad but not uniform. `packages/slack-bot/src/getAnswer.js`,
 `packages/slack-bot/src/messageEvents.js` (bar `hasAttachments`, reached only through
@@ -345,4 +384,5 @@ testable at all.
 - `packages/slack-bot/src/messageEvents.js`
 - `packages/slack-bot/src/summarize.js`
 - `packages/slack-bot/src/utils.js`
+- `packages/slack-bot/src/env.js`
 - `packages/slack-bot/src/index.js`, `packages/slack-bot/src/dev.js`

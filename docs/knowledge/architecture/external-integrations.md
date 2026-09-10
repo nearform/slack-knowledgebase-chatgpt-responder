@@ -3,13 +3,16 @@ title: External integrations
 type: architecture
 tags: [integrations, trust-boundaries, secrets]
 source_paths:
+  - packages/crawler/src/env.js
   - packages/crawler/src/notion.js
   - packages/slack-bot/src/bot.js
+  - packages/slack-bot/src/env.js
   - packages/slack-bot/src/getAnswer.js
   - packages/embeddings-creation/src/create-embeddings.js
+  - packages/embeddings-creation/src/env.js
 source_commit: 4a9f973
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # External integrations
@@ -30,10 +33,10 @@ exists: Bolt's `ExpressReceiver` verifies `/slack/events` against the signing se
 `/healthz` route is deliberately mounted **outside** that receiver and is therefore
 unauthenticated. See [[slack-event-surface]].
 
-## No credential is validated before use
+## Every credential is checked at startup
 
-Every secret in the table above is read from `process.env` and handed straight to a
-constructor, with no null check, no empty-string guard and no startup assertion:
+Each secret in the table above is still read from `process.env` and handed straight to a
+constructor, at module scope:
 
 | Credential | Read at |
 |---|---|
@@ -45,16 +48,40 @@ constructor, with no null check, no empty-string guard and no startup assertion:
 The GCP bucket and project names are read the same way at module scope
 (`packages/slack-bot/src/getAnswer.js:21-22`).
 
-**So a misconfigured deployment starts cleanly and fails later**, at the first request or
-the first bucket call, with whatever opaque error the client library raises rather than a
-message naming the missing variable. On a Cloud function that means the failure surfaces to
-a user asking a question, not to whoever deployed it.
+What changed is that nothing gets that far with a hole in the environment. Each package
+has a `src/env.js` exporting `validateEnv(env = process.env)`, and each entry point calls
+it as its first act:
 
-`MAX_CONTEXT_TOKENS` is the **only** environment variable the codebase validates, via
-`parsePositiveTokenCount` ([[context-token-budget]]) — and that exists because a bad value
-silently produced a zero-token context, not because config validation was adopted as a
-pattern. A single validate-on-startup function called before the constructors would turn
-every one of these into a deploy-time failure. There is no such function today.
+| Entry point | Requires |
+|---|---|
+| `packages/crawler/src/index.js` | `NOTION_TOKEN`, `GCP_STORAGE_BUCKET_NAME`, `GCP_STORAGE_SCRAPED_FILE_NAME` |
+| `packages/embeddings-creation/src/index.js` | `OPENAI_API_KEY`, `GCP_STORAGE_SCRAPED_FILE_NAME`, `GCP_STORAGE_EMBEDDING_FILE_NAME` |
+| `packages/slack-bot/src/index.js`, `dev.js` | `SLACK_SIGNING_SECRET`, `SLACK_BOT_TOKEN`, `OPENAI_API_KEY`, `GCP_STORAGE_BUCKET_NAME`, `GCP_STORAGE_EMBEDDING_FILE_NAME`, plus `GCP_PROJECT_ID` and `GCP_EMBEDDING_SUBSCRIPTION` unless `IS_LOCAL_ENVIRONMENT` is set |
+
+The sets come from `.github/workflows/deploy-step.yml` ([[deploy-step-commands]]) rather
+than from the README, which is why the bucket is absent from embeddings-creation: that one
+arrives on the CloudEvent, not from the environment. The bot's two Pub/Sub variables are
+conditional because they exist only to name the subscription that
+[[embedding-lifecycle-and-warm-start]] skips locally.
+
+Absent, empty and whitespace-only all count as missing. Every missing name is collected
+and reported in one error, so a fresh deployment is told about all of its holes at once
+rather than one per redeploy, and no value ever reaches the message because these are
+secrets.
+
+**The ordering is the whole trick.** ESM evaluates an imported module's body before its
+importer's, so a `validateEnv()` sitting below a static `import` of `bot.js` would run
+after the Bolt receiver, the Bolt app and the OpenAI client had already been built. Each
+entry point therefore validates and then `await import()`s the app module. The crawler is
+the sharpest case: `crawl()` runs the entire Notion crawl in `fetchData()` and only uses
+the storage variables afterwards (`packages/crawler/src/crawl.js:11-14`), so before this a
+missing bucket name burned a complete crawl before failing. That ordering is pinned by
+`packages/slack-bot/test/startupValidation.test.js` and
+`packages/crawler/test/startupValidation.test.js`, which assert the entry-point import
+rejects and that no client was constructed.
+
+`MAX_CONTEXT_TOKENS` is deliberately outside all of this: it is optional with a default,
+and `parsePositiveTokenCount` ([[context-token-budget]]) already handles it.
 
 ## The data-egress boundary worth being deliberate about
 

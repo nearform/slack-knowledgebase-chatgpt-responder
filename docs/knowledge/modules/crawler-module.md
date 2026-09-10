@@ -4,12 +4,13 @@ type: module
 tags: [notion, crawl, cloud-run-job]
 source_paths:
   - packages/crawler/src/crawl.js
+  - packages/crawler/src/env.js
   - packages/crawler/src/notion.js
   - packages/crawler/src/utils.js
   - packages/crawler/src/csv.js
 source_commit: c4bc5ac
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # Crawler module
@@ -20,9 +21,12 @@ It discovers pages, flattens each page's block tree to one line of text, and wri
 
 ## Shape
 
-`src/index.js` calls `crawl()`, which is a four-step orchestration with a single
-`try`/`catch` that logs and `process.exit(1)`s. Everything interesting is in
-`src/notion.js`.
+`src/index.js` calls `validateEnv()` from `src/env.js`, then dynamically imports
+`src/crawl.js` and calls `crawl()`, which is a four-step orchestration with a single
+`try`/`catch` that logs and `process.exit(1)`s. The validate-then-import order matters:
+`crawl()` uses the storage variables only after the whole Notion crawl has finished, so
+checking them up front is what stops a missing bucket name costing a complete crawl. See
+[[external-integrations]]. Everything interesting is in `src/notion.js`.
 
 ## The two-phase Notion read
 

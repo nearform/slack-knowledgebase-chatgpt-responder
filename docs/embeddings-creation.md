@@ -9,7 +9,7 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
 ## Behavior & rules
 
 - Registered as the `create_embeddings` CloudEvent handler
-  (`packages/embeddings-creation/src/index.js:5`); deployed as the `embedding-creation`
+  (`packages/embeddings-creation/src/index.js:11`); deployed as the `embedding-creation`
   Cloud Run function.
 - The handler returns early, logging a skip, unless the event's object name equals
   `GCP_STORAGE_SCRAPED_FILE_NAME` (`packages/embeddings-creation/src/create-embeddings.js:60`).
@@ -29,6 +29,17 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   the whole run (`create-embeddings.js:107`).
 - The result is written to `GCP_STORAGE_EMBEDDING_FILE_NAME` and uploaded to the same
   bucket the event came from (`create-embeddings.js:119`).
+- The entry point validates the environment before the handler is registered.
+  `packages/embeddings-creation/src/index.js` loads dotenv, calls `validateEnv()` from
+  `packages/embeddings-creation/src/env.js`, and only then dynamically imports
+  `create-embeddings.js` to register it as the CloudEvent handler. `validateEnv` requires
+  `OPENAI_API_KEY`, `GCP_STORAGE_SCRAPED_FILE_NAME` and `GCP_STORAGE_EMBEDDING_FILE_NAME`,
+  treats absent, empty and whitespace-only values alike, and throws a single error naming
+  every missing variable without including any value. `GCP_STORAGE_BUCKET_NAME` is
+  deliberately not required: the bucket comes off the CloudEvent
+  (`packages/embeddings-creation/src/create-embeddings.js:57`). The dynamic import is what
+  keeps the OpenAI client, built at that module's top level, from being constructed before
+  the check runs.
 
 ## Acceptance criteria
 
@@ -60,6 +71,14 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   and the `"."` as a defect to remove.
 - Given a transient OpenAI failure, when a chunk is embedded, then the call is made up to
   5 times in total (4 retries) with a 5s maximum delay before the run fails (unguarded).
+- Given an environment where `OPENAI_API_KEY`, `GCP_STORAGE_SCRAPED_FILE_NAME` or
+  `GCP_STORAGE_EMBEDDING_FILE_NAME` is absent, empty or whitespace-only, when
+  `validateEnv()` runs, then it throws one error naming every missing variable and no
+  variable's value (guarded: the `embeddings-creation validateEnv` suite).
+- Given only `GCP_STORAGE_BUCKET_NAME` is absent, when `validateEnv()` runs, then it does
+  not throw, because the bucket arrives on the CloudEvent (guarded:
+  `embeddings-creation validateEnv > does not require a bucket name, which arrives on the
+  CloudEvent`).
 
 ## Non-goals & boundaries
 
@@ -89,7 +108,8 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
   (`packages/embeddings-creation/src/create-embeddings.js:8`) and `MAX_TOKENS = 500`
   (`packages/embeddings-creation/src/create-embeddings.js:11`).
 - Config: `OPENAI_API_KEY`, `GCP_STORAGE_SCRAPED_FILE_NAME`,
-  `GCP_STORAGE_EMBEDDING_FILE_NAME`, `IS_LOCAL_ENVIRONMENT`.
+  `GCP_STORAGE_EMBEDDING_FILE_NAME`, `IS_LOCAL_ENVIRONMENT`. The first three are required,
+  and validated at startup by `packages/embeddings-creation/src/env.js`.
 - The whole corpus is held in memory during a run, which is why the function is deployed
   with 2GiB.
 
@@ -103,24 +123,27 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
 
 ## Key flows
 
-1. A finalize event arrives; the object name is checked against the scraped file name.
-2. The object is downloaded and parsed; empty-text records are dropped and each record is
+1. The entry point validates the environment, then registers the handler.
+2. A finalize event arrives; the object name is checked against the scraped file name.
+3. The object is downloaded and parsed; empty-text records are dropped and each record is
    token counted.
-3. Over-long records are chunked; every chunk is embedded with retry at concurrency 10.
-4. The rows are serialised to CSV, written locally, and uploaded to the bucket.
+4. Over-long records are chunked; every chunk is embedded with retry at concurrency 10.
+5. The rows are serialised to CSV, written locally, and uploaded to the bucket.
 
 ## Tests & verification
 
 Tests live in `packages/embeddings-creation/test/` and run with
 `npm test --workspace=embeddings-creation`; the script supplies the two `GCP_STORAGE_*`
-names via `cross-env`. One test, `embeddings creation`, passing as of 2026-09-09.
+names via `cross-env`. Seven tests, all passing as of 2026-09-10: `embeddings creation`
+and the six cases in the `embeddings-creation validateEnv` suite.
 
-That single test covers the happy path end to end with mocked storage and OpenAI. The
+`embeddings creation` covers the happy path end to end with mocked storage and OpenAI. The
 skip-on-wrong-object-name branch, `splitIntoMany`, and the backoff *retry* branch are uncovered. `backOff` itself runs on
 the happy path, so it is the retry, not the wrapper, that is unexercised.
 
 ## Related code
 
 - `packages/embeddings-creation/src/create-embeddings.js`
+- `packages/embeddings-creation/src/env.js`
 - `packages/embeddings-creation/src/index.js`
 - `packages/embeddings-creation/src/utils.js`

@@ -8,7 +8,7 @@ source_paths:
   - packages/slack-bot/test
 source_commit: 4a9f973
 created: 2026-09-09
-updated: 2026-09-09
+updated: 2026-09-10
 ---
 
 # Test strategy and module mocks
@@ -64,9 +64,9 @@ answering path is no longer in that group: `messageEvents.test.js`,
 `messageHandler.test.js` and `transcribe.test.js` cover it.
 
 One reporting quirk: node's default glob executes the fixture modules under
-`test/mocks/` as test files, so the runner's 105 for slack-bot includes two files
-containing no tests. There are 108 real tests across the repo, 110 reported: 4 in crawler,
-1 in embeddings-creation, and 103 of slack-bot's 105.
+`test/mocks/` as test files, so the runner's 116 for slack-bot includes two files
+containing no tests. There are 131 real tests across the repo, 133 reported: 10 in crawler,
+7 in embeddings-creation, and 114 of slack-bot's 116.
 
 Vendored guidance for this repo now lives in `.agents/skills/test-unit-guidelines/` and
 `.agents/skills/test-review/`.
