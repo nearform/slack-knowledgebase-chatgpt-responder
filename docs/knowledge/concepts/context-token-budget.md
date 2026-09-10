@@ -4,7 +4,7 @@ type: concept
 tags: [tokens, config, guard]
 source_paths:
   - packages/slack-bot/src/getAnswer.js
-source_commit: c4bc5ac
+source_commit: 633de22
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -18,9 +18,9 @@ How much retrieved text reaches the model. Default 4000 tokens, overridable by
 
 Walking chunks in [[cosine-distance-ranking]] order, each chunk adds `n_tokens + 4` to a
 running total, and the loop **breaks** at the first chunk that would exceed the budget
-(`packages/slack-bot/src/getAnswer.js:124`). The `+ 4` approximates the separator overhead
-per chunk. Note it breaks rather than continues, so one oversized chunk ends assembly even
-if smaller chunks further down would have fitted.
+(`packages/slack-bot/src/getAnswer.js:126-127`). The `+ 4` at `:124` approximates the
+separator overhead per chunk. Note it breaks rather than continues, so one oversized
+chunk ends assembly even if smaller chunks further down would have fitted.
 
 ## The guard, and why it is shaped oddly
 

@@ -35,7 +35,7 @@ use the corpus at all.
 | `packages/crawler` | Notion crawl to `scraped.csv` on GCS. See `packages/crawler/AGENTS.md`. |
 | `packages/embeddings-creation` | `scraped.csv` to `embeddings.csv` via OpenAI. See `packages/embeddings-creation/AGENTS.md`. |
 | `packages/slack-bot` | Bolt app: answers, summaries, transcription. See `packages/slack-bot/AGENTS.md`. |
-| `.github/workflows` | CI (lint + test per workspace), the linked-issue PR check, manual releases, GCP deploy. |
+| `.github/workflows` | CI (lint + test per workspace, then Dependabot automerge), the linked-issue PR check, manual releases, release notification, GCP deploy. |
 | `Makefile` | Local run targets for each package. |
 | `assets/` | `assets/schema.png`, the architecture diagram used by the README. |
 | `docs/` | Per-subsystem specs, indexed by `docs/README.md`. |

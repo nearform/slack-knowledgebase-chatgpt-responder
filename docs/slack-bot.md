@@ -15,7 +15,7 @@ before answering them, and summarises links and files on request.
   (`createContext`, `packages/slack-bot/src/getAnswer.js:97`, called by `getAnswer`).
 - Context assembly adds chunks in ascending distance order while
   `n_tokens + 4` per chunk keeps the running total within the budget, and stops at the
-  first chunk that would exceed it (`getAnswer.js:124`).
+  first chunk that would exceed it (`getAnswer.js:124-127`).
 - The budget is `MAX_CONTEXT_TOKENS` from the environment, defaulting to 4000. Values that
   do not floor to a positive integer fall back to the default. `parsePositiveTokenCount`
   floors *before* the guard (`getAnswer.js:13`), so `0.9` floors to zero and is rejected,

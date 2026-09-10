@@ -5,7 +5,7 @@ tags: [ubiquitous-language, embeddings, retrieval-unit]
 source_paths:
   - packages/embeddings-creation/src/create-embeddings.js
   - packages/slack-bot/src/getAnswer.js
-source_commit: c4bc5ac
+source_commit: 633de22
 created: 2026-09-09
 updated: 2026-09-09
 ---

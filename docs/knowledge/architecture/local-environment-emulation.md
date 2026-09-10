@@ -7,7 +7,7 @@ source_paths:
   - packages/embeddings-creation/src/utils.js
   - packages/slack-bot/src/utils.js
   - Makefile
-source_commit: c4bc5ac
+source_commit: 633de22
 created: 2026-09-09
 updated: 2026-09-09
 ---
@@ -46,9 +46,10 @@ Storage would otherwise send. That is the local stand-in for the event bus.
 
 `isLocalEnvironment` is evaluated **once, when the module is imported**, not per call.
 Setting or clearing the environment variable after import has no effect. This shapes the
-test suite: `packages/slack-bot/test/download.test.js` has to delete the variable at the
-top of its own file, before importing `utils.js`, and must live in a separate file for
-that reason. See [[test-strategy-module-mocks]].
+test suite: `packages/slack-bot/test/download.test.js` deletes the variable at the top of
+the file, before importing `utils.js`, because that is the only way to reach the bucket
+branch. It lives in a file of its own for two reasons: the deletion is process-wide, and
+`mock.module` registers a specifier once per process. See [[test-strategy-module-mocks]].
 
 Note also that `IS_LOCAL_ENVIRONMENT` is truthy for *any* non-empty value, `"false"`
 included.

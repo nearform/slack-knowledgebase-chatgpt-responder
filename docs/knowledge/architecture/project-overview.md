@@ -8,7 +8,7 @@ source_paths:
   - packages/embeddings-creation/package.json
   - packages/slack-bot/package.json
   - README.md
-source_commit: c4bc5ac
+source_commit: 633de22
 created: 2026-09-09
 updated: 2026-09-09
 ---
