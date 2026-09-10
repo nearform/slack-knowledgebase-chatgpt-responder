@@ -65,8 +65,8 @@ answering path is no longer in that group: `messageEvents.test.js`,
 
 One reporting quirk: node's default glob executes the fixture modules under
 `test/mocks/` as test files, so the runner's 116 for slack-bot includes two files
-containing no tests. There are 131 real tests across the repo, 133 reported: 10 in crawler,
-7 in embeddings-creation, and 114 of slack-bot's 116.
+containing no tests. There are 132 real tests across the repo, 134 reported: 10 in crawler,
+8 in embeddings-creation, and 114 of slack-bot's 116.
 
 Vendored guidance for this repo now lives in `.agents/skills/test-unit-guidelines/` and
 `.agents/skills/test-review/`.

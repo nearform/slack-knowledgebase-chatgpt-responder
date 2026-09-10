@@ -30,7 +30,10 @@ because there is nothing to layer.
 `src/create-embeddings.js` and registers the handler. The dynamic import is what keeps the
 OpenAI client, built at that module's top level, from being constructed before the check
 runs. `GCP_STORAGE_BUCKET_NAME` is deliberately not required here: the bucket comes off
-the CloudEvent. See [[external-integrations]].
+the CloudEvent. `test/startupValidation.test.js` pins that ordering: it clears the
+required variables (including the two the test script sets via `cross-env`) and asserts
+the entry-point import rejects with the OpenAI constructor never called. See
+[[external-integrations]].
 
 ## The self-trigger guard
 

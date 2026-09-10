@@ -148,10 +148,10 @@ a linked issue is red on arrival.
 `node:test` with `--experimental-test-module-mocks`, tests in each package's `test/`
 directory as `*.test.js`, fixtures in `test/mocks/`. Run with `npm test` (all workspaces)
 or `npm test --workspace=<name>`. As of 2026-09-10 the suite is green. The root script runs one
-`node:test` runner per workspace, reporting 10 in crawler, 7 in embeddings-creation and 116
+`node:test` runner per workspace, reporting 10 in crawler, 8 in embeddings-creation and 116
 in slack-bot (15 suites). Two of slack-bot's 116 are the test-less fixture modules under
-`test/mocks/`, which node's default glob executes as test files, so there are 131 real tests
-across 133 reported. The crawler's fixtures are `.json` and are not executed, so its 10 are
+`test/mocks/`, which node's default glob executes as test files, so there are 132 real tests
+across 134 reported. The crawler's fixtures are `.json` and are not executed, so its 10 are
 all real.
 
 Conventions: mock the network at the module boundary with `mock.module`, and use `sinon`

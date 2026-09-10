@@ -76,9 +76,9 @@ entry point therefore validates and then `await import()`s the app module. The c
 the sharpest case: `crawl()` runs the entire Notion crawl in `fetchData()` and only uses
 the storage variables afterwards (`packages/crawler/src/crawl.js:11-14`), so before this a
 missing bucket name burned a complete crawl before failing. That ordering is pinned by
-`packages/slack-bot/test/startupValidation.test.js` and
-`packages/crawler/test/startupValidation.test.js`, which assert the entry-point import
-rejects and that no client was constructed.
+a `test/startupValidation.test.js` in each of
+the three packages, which assert the entry-point import rejects and that no client was
+constructed.
 
 `MAX_CONTEXT_TOKENS` is deliberately outside all of this: it is optional with a default,
 and `parsePositiveTokenCount` ([[context-token-budget]]) already handles it.

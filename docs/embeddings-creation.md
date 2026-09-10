@@ -134,8 +134,9 @@ OpenAI, and writes the vectors back to the same bucket for the Slack bot to cons
 
 Tests live in `packages/embeddings-creation/test/` and run with
 `npm test --workspace=embeddings-creation`; the script supplies the two `GCP_STORAGE_*`
-names via `cross-env`. Seven tests, all passing as of 2026-09-10: `embeddings creation`
-and the six cases in the `embeddings-creation validateEnv` suite.
+names via `cross-env`. Eight tests, all passing as of 2026-09-10: `embeddings creation`,
+the six cases in the `embeddings-creation validateEnv` suite, and `loading the embeddings
+entry point without its environment rejects before the OpenAI client is constructed`.
 
 `embeddings creation` covers the happy path end to end with mocked storage and OpenAI. The
 skip-on-wrong-object-name branch, `splitIntoMany`, and the backoff *retry* branch are uncovered. `backOff` itself runs on
